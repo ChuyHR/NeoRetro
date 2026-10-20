@@ -1,0 +1,3 @@
+# El producto corre en Linux: finales de línea LF aunque se edite desde Windows.
+# Con CRLF, bash no ejecuta los scripts de instalación.
+* text=auto eol=lf

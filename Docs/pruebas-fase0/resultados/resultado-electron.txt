@@ -1,0 +1,19 @@
+[6.75s] Electron 44.5.1 | Chromium 152.0.7977.130
+[6.79s] pantalla 1366x768 escala 1
+[9.22s] página cargada
+[9.24s] lista para mostrarse
+[9.97s] tipografías cargadas: Bungee, Kaushan Script, Pixelify Sans, Press Start 2P, Share Tech Mono
+[9.99s] lienzo: escala 0.710 en 1365x767
+[12.50s] área de contenido 1365x767
+[13.41s] captura escalada 1365x767
+[15.11s] captura a tamaño completo 1920x1080
+[15.68s] estado de la GPU {"2d_canvas":"enabled","direct_rendering_display_compositor":"disabled_off_ok","gpu_compositing":"enabled","multiple_raster_threads":"enabled_on","opengl":"enabled_on","rasterization":"enabled","raw_draw":"disabled_off_ok","skia_graphite":"disabled_off","trees_in_viz":"disabled_off","video_decode":"enabled","video_encode":"disabled_software","vulkan":"disabled_off","webgl":"enabled","webgpu":"enabled","webgpu_on_vk_via_gl_interop":"disabled_off","webnn":"disabled_off"}
+[15.69s] GPU (sin dato) | 
+[15.81s] códecs {"h264":"probably","h264Alto":"probably","vp9":"probably","av1":"probably","aac":"probably"}
+[18.84s] carrusel {"botonEncontrado":true,"fps":37.9,"peorCuadroMs":150.6}
+[18.84s] seleccionado antes de jugar: Lumines, seleccionado
+[18.85s] ventana oculta; lanzando RetroArch
+[24.97s] cerrando RetroArch (simula salir del juego)
+[25.10s] RetroArch terminó; código 0 señal 
+[25.11s] ventana visible de nuevo en 7 ms
+[25.93s] enfocada: true | seleccionado después: Lumines, seleccionado | mismo punto: true

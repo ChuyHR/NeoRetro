@@ -1,0 +1,8 @@
+cabecera (sin reloj)           0.3 % de píxeles distintos
+barra de sistemas              0.0 % de píxeles distintos
+carrusel                       6.2 % de píxeles distintos
+reflejos bajo las portadas     0.0 % de píxeles distintos
+ficha del juego                3.1 % de píxeles distintos
+acciones                       0.0 % de píxeles distintos
+vista previa                   0.0 % de píxeles distintos
+pie de controles               0.0 % de píxeles distintos

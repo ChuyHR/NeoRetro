@@ -1,0 +1,9 @@
+{
+  "name": "prueba-electron-fase0",
+  "private": true,
+  "description": "Prueba de la fase 0: el prototipo dentro de Electron, sin portar nada",
+  "main": "main.js",
+  "devDependencies": {
+    "electron": "44.5.1"
+  }
+}

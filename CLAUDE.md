@@ -17,17 +17,26 @@ sección «Ajustes al plan» de este archivo manda sobre el plan y sobre los pro
 
 ## Estado actual
 
-Verificado el 2026-10-20. La fase 0 no ha empezado: no hay tecnología elegida, código, carpeta
-`config/` ni repositorio git. Solo existe `Docs/`, con el prototipo exportado, su README y el plan.
-El contexto de la última sesión está en [handoffs/HANDOFF_LATEST.md](handoffs/HANDOFF_LATEST.md);
-léelo al empezar.
+Verificado el 2026-10-20. La fase 0 está a la mitad: las pruebas están hechas y
+[Docs/decision-tecnica.md](Docs/decision-tecnica.md) propone Electron 44, emuladores desde Flathub y
+Debian 13 con Cage. **Espera la aprobación del usuario**; hasta entonces no se crea el proyecto base
+(segundo prompt de la fase 0). No hay código de la app ni carpeta `config/`. El contexto de la última
+sesión está en [handoffs/HANDOFF_LATEST.md](handoffs/HANDOFF_LATEST.md); léelo al empezar.
 
-**PC de trabajo**, donde se desarrolla: Windows 11 Pro, Intel Core i7-1165G7 (4 núcleos, 8 hilos),
-gráficos Iris Xe y 8 GB de RAM. Tiene git 2.55, Node 20.20 con npm 10.8, y Python 3.14 como `py`
-(`python` y `python3` abren la tienda de Microsoft). WSL 2 está activo, pero solo con la distribución
-de Docker Desktop; Debian se instala en la fase 0. RetroArch, Godot y los demás emuladores no están
-instalados. Sus gráficos son mucho más potentes que los de la MP80, así que la fluidez medida aquí no
-cuenta como evidencia.
+**Dónde vive cada cosa.** El repositorio está en `D:\UtilsDev\ArcadeRetro`, en un disco externo USB
+(NTFS, 1 TB). El Debian 13 de desarrollo es una distribución de WSL llamada `Debian`, con su disco
+virtual en `D:\NeoArcade\wsl`; su usuario por omisión es `arcade` (uid 1000, sudo sin contraseña,
+systemd activo). Las carpetas `roms/<sistema>/` y `media/<sistema>/` ya existen vacías dentro del
+repositorio, fuera de git. Sin el disco D: conectado no arranca Debian; antes de desconectarlo hay que
+cerrar WSL con `wsl --shutdown`, porque desconectarlo encendido puede dañar el disco virtual.
+
+**PC de trabajo**: Windows 11 Pro, laptop con Intel Core i7-1165G7 (4 núcleos, 8 hilos), gráficos Iris
+Xe, 8 GB de RAM y pantalla de 1366×768. En Windows tiene git 2.55, Node 20.20 y Python 3.14 como `py`
+(`python` y `python3` abren la tienda de Microsoft). En el Debian de WSL tiene Node 20.19 (Electron 44
+pide 22.12 o posterior), Python 3.13, Flatpak con Flathub, WebKitGTK, GStreamer y el RetroArch de
+Debian (instalado solo para las pruebas; se quita si se aprueban los emuladores de Flathub). Sus
+gráficos son mucho más potentes que los de la MP80, así que la fluidez medida aquí no cuenta como
+evidencia.
 
 **Equipo de referencia**: Blackview MP80 (dato del usuario, 2026-10-20; especificaciones confirmadas
 en la ficha de Intel y en la reseña de CNX Software). Intel N95 (4 núcleos, hasta 3.4 GHz, 15 W) con
@@ -37,9 +46,23 @@ dedicado. Su GPU es el recurso más justo, tanto para los efectos de la interfaz
 
 ## Comandos
 
-Todavía no hay comandos de desarrollo, compilación ni pruebas. Dependen de la tecnología que se
-apruebe en la fase 0, y esa fase los agrega aquí (su segundo prompt pide uno para desarrollo y otro
-para la versión final).
+Todavía no hay comandos de desarrollo, compilación ni pruebas de la app. Los agrega el segundo prompt
+de la fase 0, una vez aprobada la tecnología.
+
+Claude Code corre en Windows y todo lo de Linux se ejecuta en el Debian de WSL. Usa `--exec`: sin él,
+WSL vuelve a interpretar el comando con otro shell y las variables llegan vacías. Desde Git Bash
+hace falta `MSYS_NO_PATHCONV=1` para que las rutas de Linux no se conviertan en rutas de Windows.
+
+```bash
+export MSYS_NO_PATHCONV=1
+wsl.exe -d Debian --exec bash -c 'cd /mnt/d/UtilsDev/ArcadeRetro && <comando>'
+wsl.exe -d Debian --exec bash -c 'cd /mnt/d/UtilsDev/ArcadeRetro && bash Docs/pruebas-fase0/correr.sh'
+```
+
+En WSL, toda ventana gráfica necesita `GALLIUM_DRIVER=d3d12`; sin esa variable Mesa dibuja por
+software. Electron necesita además `--no-sandbox` porque corre desde `/mnt/d`. Ninguno de los dos se
+usa en la MP80. `/mnt/d` no distingue mayúsculas y la MP80 sí: nombres de archivo en minúsculas y sin
+acentos en el código.
 
 Para ver el prototipo hay que servir la carpeta, porque el navegador bloquea sus scripts por `file://`:
 
@@ -55,7 +78,8 @@ omisión), hay que fijarle otro puerto.
 ## Ajustes al plan (decididos con el usuario el 2026-10-20)
 
 1. **Dónde se desarrolla.** En Debian dentro de WSL 2, en la PC de trabajo, con las ventanas gráficas
-   de WSLg. Ahí se construyen y prueban la interfaz, el escáner, el lanzador y el almacenamiento. No
+   de WSLg; el repositorio y el disco de Debian viven en el externo D: para no llenar C:. Ahí se
+   construyen y prueban la interfaz, el escáner, el lanzador y el almacenamiento. No
    sirve para medir rendimiento ni para probar el arranque, la sesión de quiosco, el Bluetooth o los
    controles. Eso se prueba en la MP80 cuando el producto esté casi completo, y el instalador de la
    fase 8 antes en una máquina virtual completa.

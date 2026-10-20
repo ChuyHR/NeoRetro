@@ -1,0 +1,6 @@
+[5.85s] WebKitGTK 2.54.0 | aceleración: always
+[7.24s] página cargada
+[11.25s] área de la ventana 1920x1080
+[11.51s] captura 1920x1080
+[11.80s] códecs {"h264":"probably","vp9":"probably","av1":"probably"}
+[14.82s] carrusel {"botonEncontrado":true,"fps":38.2,"peorCuadroMs":382}
