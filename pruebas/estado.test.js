@@ -4,11 +4,14 @@ import { test } from 'node:test';
 import { DATOS } from '../app/datos-ejemplo.js';
 import { aplicar, estadoInicial, juegosDelSistema } from '../app/estado.js';
 
-const pasos = (acciones, estado = estadoInicial()) =>
+// El estado con que arranca la demostración del prototipo.
+const DEMO = { seleccion: 'sf2', favoritos: ['sf2'] };
+
+const pasos = (acciones, estado = estadoInicial(DEMO)) =>
   acciones.reduce((actual, accion) => aplicar(actual, accion, DATOS), estado);
 
 test('arranca como el prototipo: todos los juegos, Street Fighter II elegido y Jugar marcado', () => {
-  const estado = estadoInicial();
+  const estado = estadoInicial(DEMO);
   assert.equal(estado.sistema, 'todos');
   assert.equal(estado.seleccion, 'sf2');
   assert.equal(estado.accion, 0);
@@ -18,7 +21,7 @@ test('arranca como el prototipo: todos los juegos, Street Fighter II elegido y J
 test('izquierda y derecha recorren el carrusel y dan la vuelta en los extremos', () => {
   assert.equal(pasos(['derecha']).seleccion, 'mgs');
   assert.equal(pasos(['izquierda']).seleccion, 'sonic');
-  const primero = { ...estadoInicial(), seleccion: 'pacman' };
+  const primero = { ...estadoInicial(DEMO), seleccion: 'pacman' };
   assert.equal(pasos(['izquierda'], primero).seleccion, 'lumines');
 });
 
@@ -73,4 +76,28 @@ test('las acciones de la pantalla principal no hacen nada con una ventana abiert
 test('juegosDelSistema filtra por carpeta y «todos» devuelve la biblioteca completa', () => {
   assert.equal(juegosDelSistema(DATOS.juegos, 'todos').length, DATOS.juegos.length);
   assert.deepEqual(juegosDelSistema(DATOS.juegos, 'nes').map((juego) => juego.id), ['castlevania', 'megaman']);
+});
+
+test('al terminar el juego se vuelve a la pantalla principal con el mismo juego elegido', () => {
+  const jugando = pasos(['derecha', 'aceptar']);
+  const vuelta = pasos(['juego-terminado'], jugando);
+  assert.equal(vuelta.ventana, null);
+  assert.equal(vuelta.seleccion, 'mgs');
+});
+
+test('un error del lanzador se muestra en la pantalla de lanzamiento y Retroceso lo limpia', () => {
+  const fallido = pasos(['aceptar', { tipo: 'error-lanzamiento', valor: 'Falta el núcleo Snes9x de RetroArch.' }]);
+  assert.equal(fallido.ventana, 'lanzamiento');
+  assert.equal(fallido.error, 'Falta el núcleo Snes9x de RetroArch.');
+  const limpio = pasos(['volver'], fallido);
+  assert.equal(limpio.ventana, null);
+  assert.equal(limpio.error, null);
+});
+
+test('sin juegos ni sistemas, cambiar de sistema o moverse no rompe nada', () => {
+  const vacio = { sistemas: [], juegos: [] };
+  const estado = estadoInicial();
+  for (const accion of ['sistema-siguiente', 'sistema-anterior', 'derecha', 'aceptar']) {
+    assert.equal(aplicar(estado, accion, vacio), estado);
+  }
 });

@@ -61,8 +61,9 @@ ssh -i ~/.ssh/neoarcade_ed25519 arcade@192.168.100.94
 Su firmware (AMI) impone su propio orden de arranque e ignora `efibootmgr`. Arranca Debian por la
 entrada `Boot0003`, que apunta a una copia de shim y GRUB en la partición EFI de Windows; esa copia la
 mantiene `/usr/local/sbin/neoarcade-copiar-grub`, que apt corre después de cada instalación
-(`scripts/instalador/copiar-grub-a-esp-windows.sh`). Windows se elige en el menú de GRUB. **Antes de
-reiniciarla, pregúntale al usuario.** La fase 8 la reinstala como sistema dedicado. Su GPU es el
+(`scripts/instalador/copiar-grub-a-esp-windows.sh`). Windows se elige en el menú de GRUB. El usuario
+dio permiso para instalar ahí lo necesario, llevar el proyecto y abrir la app o los emuladores en su
+TV sin preguntar. **Reiniciarla o apagarla sí se le avisa antes.** La fase 8 la reinstala como sistema dedicado. Su GPU es el
 recurso más justo, tanto para los efectos de la interfaz como para GameCube.
 
 ## Comandos

@@ -61,6 +61,8 @@ if $con_emuladores; then
   echo "== Emuladores de Flathub"
   sudo flatpak install -y --noninteractive flathub "${EMULADORES[@]}"
   flatpak list --app --columns=application,version
+  echo "== Núcleos de RetroArch"
+  bash "$(dirname "$0")/instalar-nucleos.sh"
 else
   echo "== Emuladores: omitidos (--sin-emuladores)"
 fi

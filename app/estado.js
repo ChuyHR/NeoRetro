@@ -11,15 +11,18 @@ export const BOTONES = {
   lanzamiento: ['cerrar'],
 };
 
-export function estadoInicial() {
+// Sin selección se muestra el primer juego de la lista. La demostración del prototipo arranca con
+// { seleccion: 'sf2', favoritos: ['sf2'] }.
+export function estadoInicial({ seleccion = null, favoritos = [] } = {}) {
   return {
     sistema: 'todos',
-    seleccion: 'sf2',
-    favoritos: ['sf2'],
+    seleccion,
+    favoritos,
     accion: 0,
     ventana: null,
     foco: 0,
     crt: true,
+    error: null, // mensaje para el usuario si un juego no se pudo abrir
   };
 }
 
@@ -56,6 +59,7 @@ function enPantalla(estado, tipo, valor, datos) {
     case 'sistema-anterior':
     case 'sistema-siguiente': {
       const total = datos.sistemas.length;
+      if (total === 0) return estado;
       const actual = datos.sistemas.findIndex((sistema) => sistema.id === estado.sistema);
       const paso = tipo === 'sistema-siguiente' ? 1 : -1;
       return elegirSistema(estado, datos.sistemas[(actual + paso + total) % total].id, datos);
@@ -109,10 +113,19 @@ function enVentana(estado, tipo, valor) {
     case 'boton':
       return botones.includes(valor) ? pulsar({ ...estado, foco: botones.indexOf(valor) }, valor) : estado;
     case 'volver':
-      return { ...estado, ventana: null, foco: 0 };
+      return cerrar(estado);
+    // Las dos siguientes las produce el lanzador, no el teclado.
+    case 'juego-terminado':
+      return cerrar(estado);
+    case 'error-lanzamiento':
+      return estado.ventana === 'lanzamiento' ? { ...estado, error: valor } : estado;
     default:
       return estado;
   }
+}
+
+function cerrar(estado) {
+  return { ...estado, ventana: null, foco: 0, error: null };
 }
 
 function pulsar(estado, boton) {
@@ -124,7 +137,7 @@ function pulsar(estado, boton) {
     case 'crt-desactivado':
       return { ...estado, crt: false };
     case 'cerrar':
-      return { ...estado, ventana: null, foco: 0 };
+      return cerrar(estado);
     default:
       return estado;
   }

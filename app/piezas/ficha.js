@@ -3,6 +3,11 @@
 // no invadir el pie.
 import { montar } from './dom.js';
 
+// Desarrollador • año • género, con lo que haya; sin ningún dato, el nombre del sistema.
+export function lineaDatos(juego) {
+  return [juego.desarrollador, juego.anio, juego.genero].filter(Boolean).join(' • ') || juego.nombreSistema;
+}
+
 export function crearFicha(lienzo) {
   const refs = montar(lienzo, `
   <section aria-label="Juego seleccionado" style="position: absolute; left: 58px; top: 798px; width: 690px; height: 190px; display: flex; flex-direction: column; gap: 10px">
@@ -21,7 +26,7 @@ export function crearFicha(lienzo) {
   return {
     actualizar({ juego }) {
       refs.titulo.textContent = juego ? juego.titulo.toUpperCase() : '';
-      refs.meta.textContent = juego ? `${juego.desarrollador} • ${juego.anio} • ${juego.genero}` : '';
+      refs.meta.textContent = juego ? lineaDatos(juego) : '';
       refs.descripcion.textContent = juego ? juego.descripcion : '';
     },
   };

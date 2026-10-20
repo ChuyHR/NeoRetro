@@ -5,6 +5,7 @@ import { fondoPortada } from '../app/arte.js';
 import { DATOS } from '../app/datos-ejemplo.js';
 import { estadoInicial } from '../app/estado.js';
 import { marcador, ranurasCarrusel, textosReloj, ventanaSistemas, vistaDe } from '../app/modelo.js';
+import { tamanoTitulo } from '../app/piezas/carrusel.js';
 
 test('el carrusel dibuja solo los lugares de -4 a +5 alrededor del juego elegido', () => {
   const ranuras = ranurasCarrusel(DATOS.juegos, 3);
@@ -44,8 +45,13 @@ test('cada motivo produce un fondo, y el desconocido cae en zigzag', () => {
   assert.equal(fondoPortada({ ...juego, motivo: 'otro' }), fondoPortada({ ...juego, motivo: 'zigzag' }));
 });
 
+test('la letra de una portada se achica solo si su palabra más larga no cabe en una línea', () => {
+  assert.equal(tamanoTitulo('Street Fighter II', 417, 58), 58);
+  assert.equal(tamanoTitulo('Bonk Adventure', 184, 26), 23);
+});
+
 test('la vista inicial marca Street Fighter II como favorito y elegido', () => {
-  const vista = vistaDe(estadoInicial(), DATOS, new Date(2026, 9, 20));
+  const vista = vistaDe(estadoInicial({ seleccion: 'sf2', favoritos: ['sf2'] }), DATOS, new Date(2026, 9, 20));
   assert.equal(vista.juego.id, 'sf2');
   assert.equal(vista.esFavorito, true);
   assert.equal(vista.ranuras.length, 9);

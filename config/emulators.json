@@ -1,0 +1,25 @@
+{
+  "_nota": "Emuladores instalados desde Flathub (docs/decision-tecnica.md). comando es lo que reemplaza a {emulador} en systems.json. flatpak se usa para comprobar que la app está instalada antes de lanzar. carpetaNucleos se comprueba en la MP80 al instalar RetroArch (fase 3). ~ es la carpeta del usuario.",
+  "emuladores": {
+    "retroarch": {
+      "nombre": "RetroArch",
+      "comando": ["flatpak", "run", "org.libretro.RetroArch"],
+      "flatpak": "org.libretro.RetroArch",
+      "carpetaNucleos": "~/.var/app/org.libretro.RetroArch/config/retroarch/cores"
+    },
+    "dolphin": {
+      "nombre": "Dolphin",
+      "comando": ["flatpak", "run", "org.DolphinEmu.dolphin-emu"],
+      "flatpak": "org.DolphinEmu.dolphin-emu"
+    },
+    "ppsspp": {
+      "nombre": "PPSSPP",
+      "comando": ["flatpak", "run", "org.ppsspp.PPSSPP"],
+      "flatpak": "org.ppsspp.PPSSPP"
+    },
+    "directo": {
+      "nombre": "Ejecutable propio",
+      "comando": []
+    }
+  }
+}

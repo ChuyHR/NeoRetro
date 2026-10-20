@@ -1,0 +1,152 @@
+{
+  "_nota": "Un sistema por carpeta de roms/. comando: plantilla con {emulador} (el comando de emulators.json), {nucleo} (ruta del núcleo de RetroArch) y {juego} (ruta del archivo). nombre va en la barra; nombreLargo, en la banda de la portada. colores y motivo arman la portada de reemplazo cuando falta la carátula.",
+  "sistemas": [
+    {
+      "id": "arcade", "nombre": "ARCADE", "nombreLargo": "ARCADE", "carpeta": "arcade",
+      "extensiones": [".zip", ".7z"],
+      "emulador": "retroarch", "nucleo": "fbneo", "nombreEmulador": "FinalBurn Neo",
+      "comando": ["{emulador}", "-f", "-L", "{nucleo}", "{juego}"],
+      "controles": "Palanca y botones", "colores": ["#E53935", "#FFD23F", "#0A0A2A"], "motivo": "grid"
+    },
+    {
+      "id": "neogeo", "nombre": "NEO GEO", "nombreLargo": "NEO GEO", "carpeta": "neogeo",
+      "extensiones": [".zip", ".7z"],
+      "emulador": "retroarch", "nucleo": "fbneo", "nombreEmulador": "FinalBurn Neo",
+      "comando": ["{emulador}", "-f", "-L", "{nucleo}", "{juego}"],
+      "controles": "Palanca y 4 botones", "colores": ["#FFB020", "#F5F7FF", "#1A1405"], "motivo": "rays"
+    },
+    {
+      "id": "cps", "nombre": "CPS", "nombreLargo": "CAPCOM CPS", "carpeta": "cps",
+      "extensiones": [".zip", ".7z"],
+      "emulador": "retroarch", "nucleo": "fbneo", "nombreEmulador": "FinalBurn Neo",
+      "comando": ["{emulador}", "-f", "-L", "{nucleo}", "{juego}"],
+      "controles": "Palanca y 6 botones", "colores": ["#1769FF", "#FFD23F", "#06142E"], "motivo": "stripes"
+    },
+    {
+      "id": "nes", "nombre": "NES", "nombreLargo": "NES", "carpeta": "nes",
+      "extensiones": [".nes", ".unf", ".unif", ".fds", ".zip", ".7z"],
+      "emulador": "retroarch", "nucleo": "mesen", "nombreEmulador": "Mesen",
+      "comando": ["{emulador}", "-f", "-L", "{nucleo}", "{juego}"],
+      "controles": "Cruceta + 2 botones", "colores": ["#7F1D1D", "#C9D2E8", "#12051A"], "motivo": "diamond"
+    },
+    {
+      "id": "snes", "nombre": "SNES", "nombreLargo": "SUPER NINTENDO", "carpeta": "snes",
+      "extensiones": [".sfc", ".smc", ".fig", ".swc", ".bs", ".zip", ".7z"],
+      "emulador": "retroarch", "nucleo": "snes9x", "nombreEmulador": "Snes9x",
+      "comando": ["{emulador}", "-f", "-L", "{nucleo}", "{juego}"],
+      "controles": "Mando de 6 botones", "colores": ["#8B5CF6", "#C9D2E8", "#120A2E"], "motivo": "circles"
+    },
+    {
+      "id": "n64", "nombre": "NINTENDO 64", "nombreLargo": "NINTENDO 64", "carpeta": "n64",
+      "extensiones": [".n64", ".z64", ".v64", ".zip", ".7z"],
+      "emulador": "retroarch", "nucleo": "mupen64plus_next", "nombreEmulador": "Mupen64Plus-Next",
+      "comando": ["{emulador}", "-f", "-L", "{nucleo}", "{juego}"],
+      "controles": "Mando con stick analógico", "colores": ["#1769FF", "#16A34A", "#1A1040"], "motivo": "circles"
+    },
+    {
+      "id": "gb", "nombre": "GAME BOY", "nombreLargo": "GAME BOY", "carpeta": "gb",
+      "extensiones": [".gb", ".zip", ".7z"],
+      "emulador": "retroarch", "nucleo": "mgba", "nombreEmulador": "mGBA",
+      "comando": ["{emulador}", "-f", "-L", "{nucleo}", "{juego}"],
+      "controles": "Cruceta + 2 botones", "colores": ["#7FA06A", "#C9D2E8", "#0A1F10"], "motivo": "stripes"
+    },
+    {
+      "id": "gbc", "nombre": "GBC", "nombreLargo": "GAME BOY COLOR", "carpeta": "gbc",
+      "extensiones": [".gbc", ".zip", ".7z"],
+      "emulador": "retroarch", "nucleo": "mgba", "nombreEmulador": "mGBA",
+      "comando": ["{emulador}", "-f", "-L", "{nucleo}", "{juego}"],
+      "controles": "Cruceta + 2 botones", "colores": ["#8B5CF6", "#FFD23F", "#120A2E"], "motivo": "zigzag"
+    },
+    {
+      "id": "gba", "nombre": "GBA", "nombreLargo": "GAME BOY ADVANCE", "carpeta": "gba",
+      "extensiones": [".gba", ".zip", ".7z"],
+      "emulador": "retroarch", "nucleo": "mgba", "nombreEmulador": "mGBA",
+      "comando": ["{emulador}", "-f", "-L", "{nucleo}", "{juego}"],
+      "controles": "Cruceta + 4 botones", "colores": ["#6A4BC0", "#00BFFF", "#0A0620"], "motivo": "diamond"
+    },
+    {
+      "id": "gamecube", "nombre": "GAMECUBE", "nombreLargo": "GAMECUBE", "carpeta": "gamecube",
+      "extensiones": [".iso", ".gcm", ".rvz", ".gcz", ".ciso"],
+      "emulador": "dolphin", "nombreEmulador": "Dolphin",
+      "comando": ["{emulador}", "-b", "-C", "Dolphin.Display.Fullscreen=True", "-e", "{juego}"],
+      "controles": "Mando con sticks y gatillos", "colores": ["#6A4BC0", "#C9D2E8", "#0A0620"], "motivo": "grid"
+    },
+    {
+      "id": "mastersystem", "nombre": "MASTER SYSTEM", "nombreLargo": "MASTER SYSTEM", "carpeta": "mastersystem",
+      "extensiones": [".sms", ".zip", ".7z"],
+      "emulador": "retroarch", "nucleo": "genesis_plus_gx", "nombreEmulador": "Genesis Plus GX",
+      "comando": ["{emulador}", "-f", "-L", "{nucleo}", "{juego}"],
+      "controles": "Cruceta + 2 botones", "colores": ["#E53935", "#C9D2E8", "#0B1116"], "motivo": "stripes"
+    },
+    {
+      "id": "megadrive", "nombre": "SEGA GENESIS", "nombreLargo": "SEGA GENESIS", "carpeta": "megadrive",
+      "extensiones": [".md", ".gen", ".smd", ".bin", ".zip", ".7z"],
+      "emulador": "retroarch", "nucleo": "genesis_plus_gx", "nombreEmulador": "Genesis Plus GX",
+      "comando": ["{emulador}", "-f", "-L", "{nucleo}", "{juego}"],
+      "controles": "Mando de 3 o 6 botones", "colores": ["#1769FF", "#C9D2E8", "#0A1A4A"], "motivo": "zigzag"
+    },
+    {
+      "id": "segacd", "nombre": "SEGA CD", "nombreLargo": "SEGA CD", "carpeta": "segacd",
+      "extensiones": [".cue", ".chd", ".iso", ".m3u"],
+      "emulador": "retroarch", "nucleo": "genesis_plus_gx", "nombreEmulador": "Genesis Plus GX",
+      "comando": ["{emulador}", "-f", "-L", "{nucleo}", "{juego}"],
+      "controles": "Mando de 3 o 6 botones", "colores": ["#00BFFF", "#C9D2E8", "#06142E"], "motivo": "circles"
+    },
+    {
+      "id": "sega32x", "nombre": "32X", "nombreLargo": "SEGA 32X", "carpeta": "sega32x",
+      "extensiones": [".32x", ".zip", ".7z"],
+      "emulador": "retroarch", "nucleo": "picodrive", "nombreEmulador": "PicoDrive",
+      "comando": ["{emulador}", "-f", "-L", "{nucleo}", "{juego}"],
+      "controles": "Mando de 6 botones", "colores": ["#FF3B3B", "#FFD23F", "#1A0505"], "motivo": "rays"
+    },
+    {
+      "id": "gamegear", "nombre": "GAME GEAR", "nombreLargo": "GAME GEAR", "carpeta": "gamegear",
+      "extensiones": [".gg", ".zip", ".7z"],
+      "emulador": "retroarch", "nucleo": "genesis_plus_gx", "nombreEmulador": "Genesis Plus GX",
+      "comando": ["{emulador}", "-f", "-L", "{nucleo}", "{juego}"],
+      "controles": "Cruceta + 2 botones", "colores": ["#3A4055", "#00BFFF", "#050914"], "motivo": "grid"
+    },
+    {
+      "id": "dreamcast", "nombre": "DREAMCAST", "nombreLargo": "DREAMCAST", "carpeta": "dreamcast",
+      "extensiones": [".gdi", ".cdi", ".chd", ".m3u"],
+      "emulador": "retroarch", "nucleo": "flycast", "nombreEmulador": "Flycast",
+      "comando": ["{emulador}", "-f", "-L", "{nucleo}", "{juego}"],
+      "controles": "Mando con gatillos", "colores": ["#FF8A3D", "#C9D2E8", "#1A1405"], "motivo": "circles"
+    },
+    {
+      "id": "psx", "nombre": "PLAYSTATION", "nombreLargo": "PLAYSTATION", "carpeta": "psx",
+      "extensiones": [".cue", ".chd", ".pbp", ".m3u"],
+      "emulador": "retroarch", "nucleo": "swanstation", "nombreEmulador": "SwanStation",
+      "comando": ["{emulador}", "-f", "-L", "{nucleo}", "{juego}"],
+      "controles": "Mando", "colores": ["#5A6A7A", "#C9D2E8", "#0B1116"], "motivo": "stripes"
+    },
+    {
+      "id": "psp", "nombre": "PSP", "nombreLargo": "PSP", "carpeta": "psp",
+      "extensiones": [".iso", ".cso", ".pbp", ".chd"],
+      "emulador": "ppsspp", "nombreEmulador": "PPSSPP",
+      "comando": ["{emulador}", "--fullscreen", "{juego}"],
+      "controles": "Cruceta + botones", "colores": ["#8B5CF6", "#FF168C", "#0A0620"], "motivo": "rays"
+    },
+    {
+      "id": "pcengine", "nombre": "PC ENGINE", "nombreLargo": "PC ENGINE", "carpeta": "pcengine",
+      "extensiones": [".pce", ".cue", ".chd", ".zip", ".7z"],
+      "emulador": "retroarch", "nucleo": "mednafen_pce", "nombreEmulador": "Beetle PCE",
+      "comando": ["{emulador}", "-f", "-L", "{nucleo}", "{juego}"],
+      "controles": "Cruceta + 2 botones", "colores": ["#FF8A3D", "#F5F7FF", "#1A1405"], "motivo": "zigzag"
+    },
+    {
+      "id": "atari2600", "nombre": "ATARI", "nombreLargo": "ATARI 2600", "carpeta": "atari2600",
+      "extensiones": [".a26", ".bin", ".zip", ".7z"],
+      "emulador": "retroarch", "nucleo": "stella", "nombreEmulador": "Stella",
+      "comando": ["{emulador}", "-f", "-L", "{nucleo}", "{juego}"],
+      "controles": "Palanca + 1 botón", "colores": ["#FF8A3D", "#FACC15", "#1A0505"], "motivo": "zigzag"
+    },
+    {
+      "id": "ports", "nombre": "PORTS", "nombreLargo": "PORTS", "carpeta": "ports",
+      "extensiones": [".sh"],
+      "emulador": "directo", "nombreEmulador": "Propio del juego",
+      "comando": ["bash", "{juego}"],
+      "controles": "Mando o teclado", "colores": ["#B91C1C", "#FFB020", "#1A0505"], "motivo": "rays"
+    }
+  ]
+}

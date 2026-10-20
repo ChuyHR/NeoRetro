@@ -9,6 +9,11 @@ const esperar = (ms) => new Promise((listo) => setTimeout(listo, ms));
 export async function abrir(cargar) {
   const ventana = new BrowserWindow({ width: 1280, height: 720, frame: false, backgroundColor: '#050914' });
   await cargar(ventana);
+  return controlar(ventana);
+}
+
+// Lo mismo para una ventana que ya está abierta, como la de la app en scripts/simulacion.mjs.
+export async function controlar(ventana) {
   const depurador = ventana.webContents.debugger;
   depurador.attach('1.3');
   await depurador.sendCommand('Emulation.setDeviceMetricsOverride', { width: 1920, height: 1080, deviceScaleFactor: 1, mobile: false });

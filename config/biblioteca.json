@@ -1,0 +1,5 @@
+{
+  "_nota": "Dónde están los juegos y sus medios. Una ruta relativa se toma desde la raíz de la app; ~ es la carpeta del usuario. En desarrollo, NEO_ARCADE_ROMS cambia la carpeta de juegos sin tocar este archivo.",
+  "roms": "roms",
+  "medios": "media"
+}

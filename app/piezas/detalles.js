@@ -1,7 +1,14 @@
 // Ventana de detalles del juego. El texto va a 24 px (ajuste aprobado; el prototipo usaba 21).
 import { BOTONES } from '../estado.js';
 import { montar } from './dom.js';
+import { lineaDatos } from './ficha.js';
 import { marcarFocoAlterno } from './foco.js';
+
+// Una línea «Etiqueta: valor» que se oculta si el dato todavía no existe.
+function rellenar(elemento, etiqueta, valor) {
+  elemento.textContent = valor ? `${etiqueta}: ${valor}` : '';
+  elemento.style.display = valor ? '' : 'none';
+}
 
 export function crearDetalles(lienzo, { despachar }) {
   const refs = montar(lienzo, `
@@ -42,11 +49,11 @@ export function crearDetalles(lienzo, { despachar }) {
       refs.banda.textContent = juego.nombreSistema;
       refs.banda.style.color = secundario;
       refs.titulo.textContent = titulo;
-      refs.meta.textContent = `${juego.desarrollador} • ${juego.anio} • ${juego.genero}`;
-      refs.plataforma.textContent = `Plataforma: ${juego.nombreSistema}`;
-      refs.jugadores.textContent = `Jugadores: ${juego.jugadores}`;
-      refs.controles.textContent = `Controles: ${juego.controles}`;
-      refs.emulador.textContent = `Emulador: ${juego.emulador}`;
+      refs.meta.textContent = lineaDatos(juego);
+      rellenar(refs.plataforma, 'Plataforma', juego.nombreSistema);
+      rellenar(refs.jugadores, 'Jugadores', juego.jugadores);
+      rellenar(refs.controles, 'Controles', juego.controles);
+      rellenar(refs.emulador, 'Emulador', juego.emulador);
       const enfocado = BOTONES.detalles[estado.foco];
       marcarFocoAlterno(refs.jugar, enfocado === 'jugar');
       marcarFocoAlterno(refs.cerrar, enfocado === 'cerrar');
