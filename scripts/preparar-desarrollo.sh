@@ -1,20 +1,29 @@
 #!/usr/bin/env bash
 # Deja listo un Debian 13 recién instalado para desarrollar Neo Arcade: las bibliotecas que pide
 # Electron, Node LTS y los tres emuladores de Flathub. Se puede correr otra vez sin romper nada.
-# Uso, dentro de Debian y con sudo: bash scripts/preparar-desarrollo.sh [--pruebas-fase0]
+# Uso, dentro de Debian y con sudo:
+#   bash scripts/preparar-desarrollo.sh [--sin-emuladores] [--pruebas-fase0]
+# --sin-emuladores deja fuera los emuladores de Flathub (unos 2.5 GB), que se usan desde la fase 3.
+# --pruebas-fase0 agrega lo necesario para repetir docs/pruebas-fase0/correr.sh.
 # Los pasos para crear el Debian de WSL desde Windows están en CLAUDE.md.
 set -euo pipefail
 
 NODE_VERSION=v24.21.0 # LTS vigente; Electron 44 pide 22.12 o posterior y Debian 13 trae 20.19
 EMULADORES=(org.libretro.RetroArch org.DolphinEmu.dolphin-emu org.ppsspp.PPSSPP)
 
-paquetes=(ca-certificates xdg-utils flatpak xdotool
-  libgtk-3-0t64 libnss3 libgbm1 libasound2t64 libxss1 libxtst6)
-if [[ "${1:-}" == "--pruebas-fase0" ]]; then
-  # Solo para repetir docs/pruebas-fase0/correr.sh (WebKitGTK, vídeo y comparación de capturas).
-  paquetes+=(python3-gi python3-gi-cairo gir1.2-webkit2-4.1 python3-pil mesa-utils
-    gstreamer1.0-libav gstreamer1.0-plugins-good gstreamer1.0-plugins-bad gstreamer1.0-gl)
-fi
+paquetes=(ca-certificates xdg-utils flatpak xdotool python3
+  libgtk-3-0t64 libnss3 libgbm1 libasound2t64 libxss1 libxtst6
+  libgl1 libegl1 libgl1-mesa-dri) # sin OpenGL, Chromium dibuja por software
+con_emuladores=true
+for opcion in "$@"; do
+  case "$opcion" in
+    --sin-emuladores) con_emuladores=false ;;
+    --pruebas-fase0)
+      paquetes+=(python3-gi python3-gi-cairo gir1.2-webkit2-4.1 python3-pil mesa-utils
+        gstreamer1.0-libav gstreamer1.0-plugins-good gstreamer1.0-plugins-bad gstreamer1.0-gl) ;;
+    *) echo "Opción desconocida: $opcion" >&2; exit 2 ;;
+  esac
+done
 
 echo "== Paquetes de Debian"
 sudo apt-get update -qq
@@ -47,7 +56,11 @@ PY
 fi
 node --version
 
-echo "== Emuladores de Flathub"
 sudo flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
-sudo flatpak install -y --noninteractive flathub "${EMULADORES[@]}"
-flatpak list --app --columns=application,version
+if $con_emuladores; then
+  echo "== Emuladores de Flathub"
+  sudo flatpak install -y --noninteractive flathub "${EMULADORES[@]}"
+  flatpak list --app --columns=application,version
+else
+  echo "== Emuladores: omitidos (--sin-emuladores)"
+fi

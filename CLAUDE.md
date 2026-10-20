@@ -17,48 +17,52 @@ sección «Ajustes al plan» de este archivo manda sobre el plan y sobre los pro
 
 ## Estado actual
 
-Verificado el 2026-10-20. El usuario aprobó [docs/decision-tecnica.md](docs/decision-tecnica.md):
-Electron 44, emuladores desde Flathub y Debian 13 con Cage. El proyecto base está escrito (ver
-«Arquitectura») pero **sin ejecutar ni verificar**: el Debian de WSL se dañó cuando el disco externo
-perdió la conexión USB a media instalación. Se rehízo en C:, solo con el usuario; falta correr
-`scripts/preparar-desarrollo.sh`. El usuario está evaluando desarrollar directamente en la MP80 (ver
-handoff); si lo decide, el entorno se monta allá y no aquí. La fase 0 se cierra cuando la ventana
-muestre NEO ARCADE y Esc la cierre solo en desarrollo. El contexto de la
-última sesión está en [handoffs/HANDOFF_LATEST.md](handoffs/HANDOFF_LATEST.md); léelo al empezar.
+Verificado el 2026-10-20. **La fase 0 pasó su prueba de aceptación en el Debian de WSL**: la app abre
+a pantalla completa con el texto NEO ARCADE sobre el lienzo escalado, Esc la cierra en desarrollo y
+no en la versión final, y `npm test` pasa (4 pruebas). Falta que el usuario la vea con sus ojos. La
+tecnología es la de [docs/decision-tecnica.md](docs/decision-tecnica.md), aprobada: Electron 44,
+emuladores desde Flathub y Debian 13 con Cage. Lo siguiente es la fase 1. En paralelo, el usuario
+instalará Debian en la MP80 con la imagen automática de `scripts/instalador/` (ver handoff). El
+contexto de la última sesión está en [handoffs/HANDOFF_LATEST.md](handoffs/HANDOFF_LATEST.md); léelo
+al empezar.
 
-**Dónde vive cada cosa.** El repositorio está en `D:\UtilsDev\ArcadeRetro`, en un disco externo USB
-(NTFS, 1 TB), con respaldo en GitHub: `https://github.com/ChuyHR/NeoRetro.git` (privado, rama `main`).
-Las carpetas `roms/<sistema>/` y `media/<sistema>/` ya existen vacías dentro del repositorio, fuera
-de git. El Debian 13 de desarrollo es una distribución de WSL llamada `Debian`, con su disco virtual
-en C: (ubicación por omisión de WSL); su usuario por omisión es `arcade` (uid 1000, sudo sin
-contraseña, systemd activo). **El disco virtual no va en D:.** Con escritura sostenida, el adaptador
-USB del externo (puente JMicron JMS583, `USB\VID_152D&PID_0583`) se restablece solo, en cualquier
-puerto: el 2026-10-20 dañó un Debian y volvió a fallar en otro puerto a los dos minutos de instalar
-paquetes (eventos UASPStor 129 y disk 153 de Windows). Las escrituras chicas de Windows sobre NTFS no
-han dado problemas. Antes de desconectar el externo, cierra lo que tengas abierto del repositorio.
+**Dónde vive cada cosa.** El repositorio está en `C:\Users\ADMIN\Documents\UtilsDev\ArcadeRetro`, con
+respaldo en GitHub: `https://github.com/ChuyHR/NeoRetro.git` (privado, rama `main`). Las carpetas
+`roms/<sistema>/` y `media/<sistema>/` existen vacías, fuera de git. `credenciales/` (también fuera
+de git) guarda la contraseña del Wi-Fi para armar la imagen de instalación; nunca se lee en voz alta
+ni se sube. El Debian 13 de desarrollo es una distribución de WSL llamada `Debian`, con su disco
+virtual en C:; su usuario por omisión es `arcade` (uid 1000, sudo sin contraseña, systemd activo).
+El usuario pidió que le avises **antes de que C: se llene**: revisa el espacio libre antes de cada
+instalación grande y detente si baja de 10 GB. Su disco externo D: no se usa: con escritura sostenida
+su adaptador USB (puente JMicron JMS583) se restablece solo, en cualquier puerto, y el 2026-10-20 dañó
+un Debian de WSL.
 
 **PC de trabajo**: Windows 11 Pro, laptop con Intel Core i7-1165G7 (4 núcleos, 8 hilos), gráficos Iris
 Xe, 8 GB de RAM y pantalla de 1366×768. En Windows tiene git 2.55, Node 20.20 y Python 3.14 como `py`
 (`python` y `python3` abren la tienda de Microsoft). El Debian de WSL se prepara con
-`scripts/preparar-desarrollo.sh`: bibliotecas de Electron, Node 24.21.0 en `/opt` (Debian trae 20.19
-y Electron 44 pide 22.12 o posterior) y los tres emuladores de Flathub. Sus gráficos son mucho más
+`scripts/preparar-desarrollo.sh --sin-emuladores`: bibliotecas de Electron y OpenGL, Python y Node
+24.21.0 en `/opt` (Debian trae 20.19 y Electron 44 pide 22.12 o posterior). Los emuladores de Flathub
+(unos 2.5 GB) se instalan en la fase 3, sin la opción, para no gastar C: antes. Sus gráficos son mucho más
 potentes que los de la MP80, así que la fluidez medida aquí no cuenta como evidencia. El controlador
 de discos de Windows ha avisado cuatro veces que su SSD interno (C:) anticipa una falla.
 
 **Equipo de referencia**: Blackview MP80 (dato del usuario, 2026-10-20; especificaciones confirmadas
 en la ficha de Intel y en la reseña de CNX Software). Intel N95 (4 núcleos, hasta 3.4 GHz, 15 W) con
 gráficos UHD de 16 EU, 16 GB LPDDR5, SSD M.2 SATA de 512 GB, Wi-Fi 5, Bluetooth 4.2, tres HDMI 2.0 y
-tres USB 3. Conserva su Windows 11 Pro hasta las pruebas reales; la fase 8 instala ahí el sistema
-dedicado. Su GPU es el recurso más justo, tanto para los efectos de la interfaz como para GameCube.
+tres USB 3. Está en el Wi-Fi de la casa (`Totalplay-66AE_5G`, red 192.168.100.x, la misma de la
+laptop). Conserva su Windows 11 Pro, sin contraseñas, y recibirá Debian 13 en arranque dual con la
+imagen automática de `scripts/instalador/`: usuario `arcade` sin contraseña con sesión automática,
+Xfce, y SSH solo con la llave `C:\Users\ADMIN\.ssh\neoarcade_ed25519` de la laptop. La fase 8 la
+reinstala como sistema dedicado. Su GPU es el recurso más justo, tanto para los efectos de la
+interfaz como para GameCube.
 
 ## Comandos
 
-Comandos del proyecto, escritos el 2026-10-20 y **todavía sin ejecutar** (se verifican al rehacer el
-Debian de WSL). Corren dentro de Debian, en la raíz del repositorio:
+Probados el 2026-10-20. Corren dentro de Debian, en la raíz del repositorio:
 
 ```bash
 npm install                            # instala Electron 44.5.1 (única dependencia)
-npm start                              # desarrollo: pantalla completa, Esc la cierra
+npm start                              # desarrollo: pantalla completa, Esc la cierra; baja el motor la 1.ª vez
 npm start -- --captura=/tmp/a.png      # guarda lo que muestra la ventana y sale (solo desarrollo)
 npm test                               # pruebas con el ejecutor de Node (carpeta pruebas/)
 node --test pruebas/lienzo.test.js     # un solo archivo de pruebas
@@ -71,14 +75,24 @@ hace falta `MSYS_NO_PATHCONV=1` para que las rutas de Linux no se conviertan en 
 
 ```bash
 export MSYS_NO_PATHCONV=1
-wsl.exe -d Debian --exec bash -c 'cd /mnt/d/UtilsDev/ArcadeRetro && <comando>'
-wsl.exe -d Debian --exec bash -c 'cd /mnt/d/UtilsDev/ArcadeRetro && bash docs/pruebas-fase0/correr.sh'
+wsl.exe -d Debian --exec bash -c 'cd /mnt/c/Users/ADMIN/Documents/UtilsDev/ArcadeRetro && <comando>'
+wsl.exe -d Debian --exec bash -c 'cd /mnt/c/Users/ADMIN/Documents/UtilsDev/ArcadeRetro && bash docs/pruebas-fase0/correr.sh'
 ```
 
 En WSL, toda ventana gráfica necesita `GALLIUM_DRIVER=d3d12`; sin esa variable Mesa dibuja por
-software. Electron necesita además `--no-sandbox` porque corre desde `/mnt/d`. Ninguno de los dos se
-usa en la MP80. `/mnt/d` no distingue mayúsculas y la MP80 sí: nombres de archivo en minúsculas y sin
-acentos en el código.
+software. Electron necesita además `--no-sandbox` porque corre desde `/mnt/c`. Ninguno de los dos se
+usa en la MP80. `/mnt/c` no distingue mayúsculas y la MP80 sí: nombres de archivo en minúsculas y sin
+acentos en el código. Otros detalles de WSL que ya costaron tiempo:
+
+- Electron 44 no baja su motor con `npm install`, sino la primera vez que se ejecuta. Sin una primera
+  ejecución, `npm run empaquetar` no encuentra `node_modules/electron/dist`.
+- `xdotool` no consigue entregar teclas a la ventana en WSLg, aunque la tenga enfocada. Para probar
+  el teclado, la tecla se manda desde Electron con `webContents.sendInputEvent`, que pasa por
+  `before-input-event` igual que una tecla real.
+- `/tmp` está en memoria y WSL apaga Debian cuando nadie lo usa, así que lo que dejes ahí entre dos
+  comandos desaparece.
+- `pkill -f` puede cerrar el propio comando que lo ejecuta, si el patrón aparece en su línea de
+  comandos. Para la app usa `pkill -x electron` o `pkill -x neo-arcade`.
 
 **Rehacer el Debian de desarrollo** (por ejemplo, si su disco virtual se daña). Desde PowerShell en
 Windows:
@@ -86,9 +100,9 @@ Windows:
 ```powershell
 wsl --unregister Debian      # borra el Debian anterior y todo lo que tenga dentro
 wsl --install Debian --no-launch
-wsl -d Debian -u root --exec bash /mnt/d/UtilsDev/ArcadeRetro/scripts/crear-usuario-wsl.sh
+wsl -d Debian -u root --exec bash /mnt/c/Users/ADMIN/Documents/UtilsDev/ArcadeRetro/scripts/crear-usuario-wsl.sh
 wsl --terminate Debian
-wsl -d Debian --exec bash /mnt/d/UtilsDev/ArcadeRetro/scripts/preparar-desarrollo.sh
+wsl -d Debian --exec bash /mnt/c/Users/ADMIN/Documents/UtilsDev/ArcadeRetro/scripts/preparar-desarrollo.sh --sin-emuladores
 ```
 
 Los pasos van en scripts y no en línea porque PowerShell 5.1 rompe las comillas internas al pasarle un

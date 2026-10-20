@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Crea el usuario de desarrollo en un Debian de WSL recién instalado. Se corre como root desde Windows:
-#   wsl -d Debian -u root --exec bash /mnt/d/UtilsDev/ArcadeRetro/scripts/crear-usuario-wsl.sh
+#   wsl -d Debian -u root --exec bash /mnt/c/Users/ADMIN/Documents/UtilsDev/ArcadeRetro/scripts/crear-usuario-wsl.sh
 # Va en un script porque PowerShell 5.1 rompe las comillas internas al pasarle el comando a WSL.
 # El uid 1000 hace que WSL se salte su pantalla de bienvenida, que pide un usuario de forma interactiva.
 set -euo pipefail

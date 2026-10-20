@@ -50,5 +50,6 @@ function crearVentana() {
 
 // Sin menú tampoco existen sus atajos (recargar, herramientas de desarrollo, zoom).
 Menu.setApplicationMenu(null);
+console.log(`Neo Arcade ${app.getVersion()} en ${DESARROLLO ? 'modo desarrollo' : 'versión final'}`);
 app.whenReady().then(crearVentana);
 app.on('window-all-closed', () => app.quit());
