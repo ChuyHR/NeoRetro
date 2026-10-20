@@ -60,12 +60,22 @@ MP80 desde ella.
 
 1. **El usuario revisa la fase 0** con `npm start` (en una terminal de WSL, dentro del repositorio) y
    la aprueba. Con eso sigue la fase 1.
-2. **Instalar Debian en la MP80**, cuando el usuario tenga tiempo:
-   1. Grabar `neoarcade-debian-13.7.0.iso` en la Kingston con Rufus, en modo DD.
-   2. En la MP80: confirmar que BitLocker está apagado, desactivar el inicio rápido y reducir C:
-      (sugerencia 200 GB).
-   3. Desconectar el cable de red, arrancar desde la memoria y confirmar el particionado.
-   Después, entrar por SSH con la llave y preparar la MP80 con `scripts/preparar-desarrollo.sh`.
+2. **Instalar Debian en la MP80**:
+   1. ~~Grabar la imagen en la Kingston.~~ Hecho con Rufus 4.15 (firma de Akeo Consulting verificada),
+      en modo DD. La tabla de particiones de la memoria tiene la partición EFI de la imagen híbrida;
+      no se pudo comparar byte por byte sin permisos de administrador.
+   2. ~~Preparar Windows.~~ El usuario corrió `scripts/instalador/preparar-windows-mp80.ps1`, que
+      revisa BitLocker y el espacio, pide escribir SI, apaga el inicio rápido y reduce C: (hasta
+      200 GB, dejando a Windows 40 GB libres). Respondió «listo todo ok»; no se vio la salida.
+   3. Pendiente: desconectar el cable de red, arrancar desde la memoria y confirmar el particionado.
+   Después, entrar por SSH con la llave y preparar la MP80 con `scripts/preparar-desarrollo.sh`. En
+   Windows, la MP80 tenía la dirección `192.168.100.94`; el router no aísla a los equipos del Wi-Fi.
+
+   Cómo llegó el script a la MP80: un `py -m http.server` en la laptop, servido desde una carpeta
+   que solo contenía ese archivo. El firewall lo bloqueaba porque la red estaba como Privada y la
+   regla de Python solo vale para Pública; el usuario cambió la red a Pública. El sistema de seguridad
+   de Claude Code bloqueó dos alternativas, que no se intentaron rodear: abrir un SSH permanente en el
+   Windows de la MP80 y crear una regla de firewall con permisos de administrador.
 3. **Después de instalar**: borrar la imagen con la contraseña, `credenciales/wifi.txt` y la imagen
    oficial si ya no hace falta, y pedirle al usuario que formatee la memoria USB.
 4. **Probar la imagen en una máquina virtual** antes de que el usuario la use, si hay espacio: QEMU con
