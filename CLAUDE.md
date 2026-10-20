@@ -20,19 +20,22 @@ sección «Ajustes al plan» de este archivo manda sobre el plan y sobre los pro
 Verificado el 2026-10-20. El usuario aprobó [docs/decision-tecnica.md](docs/decision-tecnica.md):
 Electron 44, emuladores desde Flathub y Debian 13 con Cage. El proyecto base está escrito (ver
 «Arquitectura») pero **sin ejecutar ni verificar**: el Debian de WSL se dañó cuando el disco externo
-perdió la conexión USB a media instalación, y hay que rehacerlo (pasos en «Comandos»). La fase 0 se
-cierra cuando la ventana muestre NEO ARCADE y Esc la cierre solo en desarrollo. El contexto de la
+perdió la conexión USB a media instalación. Se rehízo en C:, solo con el usuario; falta correr
+`scripts/preparar-desarrollo.sh`. El usuario está evaluando desarrollar directamente en la MP80 (ver
+handoff); si lo decide, el entorno se monta allá y no aquí. La fase 0 se cierra cuando la ventana
+muestre NEO ARCADE y Esc la cierre solo en desarrollo. El contexto de la
 última sesión está en [handoffs/HANDOFF_LATEST.md](handoffs/HANDOFF_LATEST.md); léelo al empezar.
 
 **Dónde vive cada cosa.** El repositorio está en `D:\UtilsDev\ArcadeRetro`, en un disco externo USB
-(NTFS, 1 TB). El Debian 13 de desarrollo es una distribución de WSL llamada `Debian`, con su disco
-virtual en `D:\NeoArcade\wsl`; su usuario por omisión es `arcade` (uid 1000, sudo sin contraseña,
-systemd activo). Las carpetas `roms/<sistema>/` y `media/<sistema>/` ya existen vacías dentro del
-repositorio, fuera de git. Sin el disco D: conectado no arranca Debian; antes de desconectarlo hay que
-cerrar WSL con `wsl --shutdown`, porque desconectarlo encendido puede dañar el disco virtual. Con
-escritura sostenida (instalaciones grandes) el adaptador USB del disco se ha restablecido solo, y eso
-dañó el disco virtual el 2026-10-20 (eventos UASPStor 129 y disk 153 de Windows). Si Windows vuelve a
-registrarlos, Debian no debe vivir en ese disco.
+(NTFS, 1 TB), con respaldo en GitHub: `https://github.com/ChuyHR/NeoRetro.git` (privado, rama `main`).
+Las carpetas `roms/<sistema>/` y `media/<sistema>/` ya existen vacías dentro del repositorio, fuera
+de git. El Debian 13 de desarrollo es una distribución de WSL llamada `Debian`, con su disco virtual
+en C: (ubicación por omisión de WSL); su usuario por omisión es `arcade` (uid 1000, sudo sin
+contraseña, systemd activo). **El disco virtual no va en D:.** Con escritura sostenida, el adaptador
+USB del externo (puente JMicron JMS583, `USB\VID_152D&PID_0583`) se restablece solo, en cualquier
+puerto: el 2026-10-20 dañó un Debian y volvió a fallar en otro puerto a los dos minutos de instalar
+paquetes (eventos UASPStor 129 y disk 153 de Windows). Las escrituras chicas de Windows sobre NTFS no
+han dado problemas. Antes de desconectar el externo, cierra lo que tengas abierto del repositorio.
 
 **PC de trabajo**: Windows 11 Pro, laptop con Intel Core i7-1165G7 (4 núcleos, 8 hilos), gráficos Iris
 Xe, 8 GB de RAM y pantalla de 1366×768. En Windows tiene git 2.55, Node 20.20 y Python 3.14 como `py`
@@ -78,17 +81,18 @@ usa en la MP80. `/mnt/d` no distingue mayúsculas y la MP80 sí: nombres de arch
 acentos en el código.
 
 **Rehacer el Debian de desarrollo** (por ejemplo, si su disco virtual se daña). Desde PowerShell en
-Windows; la ubicación es la del disco virtual:
+Windows:
 
 ```powershell
 wsl --unregister Debian      # borra el Debian anterior y todo lo que tenga dentro
-wsl --install Debian --no-launch --location D:\NeoArcade\wsl
-wsl -d Debian -u root --exec bash -c 'adduser --uid 1000 --quiet --disabled-password --gecos "" arcade && usermod -aG sudo,video,render,audio,input arcade && echo "arcade ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/arcade && chmod 440 /etc/sudoers.d/arcade && printf "[boot]\nsystemd=true\n\n[user]\ndefault=arcade\n" > /etc/wsl.conf'
+wsl --install Debian --no-launch
+wsl -d Debian -u root --exec bash /mnt/d/UtilsDev/ArcadeRetro/scripts/crear-usuario-wsl.sh
 wsl --terminate Debian
-wsl -d Debian --exec bash -c 'cd /mnt/d/UtilsDev/ArcadeRetro && bash scripts/preparar-desarrollo.sh'
+wsl -d Debian --exec bash /mnt/d/UtilsDev/ArcadeRetro/scripts/preparar-desarrollo.sh
 ```
 
-El uid 1000 hace que WSL se salte su pantalla de bienvenida, que pide un usuario de forma interactiva.
+Los pasos van en scripts y no en línea porque PowerShell 5.1 rompe las comillas internas al pasarle un
+comando a WSL.
 
 Para ver el prototipo hay que servir la carpeta, porque el navegador bloquea sus scripts por `file://`:
 
@@ -124,7 +128,7 @@ Electron con JavaScript sin framework ni paso de compilación: lo que está en `
 ## Ajustes al plan (decididos con el usuario el 2026-10-20)
 
 1. **Dónde se desarrolla.** En Debian dentro de WSL 2, en la PC de trabajo, con las ventanas gráficas
-   de WSLg; el repositorio y el disco de Debian viven en el externo D: para no llenar C:. Ahí se
+   de WSLg; el repositorio vive en el externo D: para no llenar C:. Ahí se
    construyen y prueban la interfaz, el escáner, el lanzador y el almacenamiento. No
    sirve para medir rendimiento ni para probar el arranque, la sesión de quiosco, el Bluetooth o los
    controles. Eso se prueba en la MP80 cuando el producto esté casi completo, y el instalador de la

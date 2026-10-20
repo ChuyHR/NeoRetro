@@ -9,6 +9,21 @@ viabilidad, el usuario tomó las decisiones que cambian el plan (sección «Ajus
 **La fase 0 está detenida esperando que el usuario apruebe ese documento.** Con su aprobación sigue
 el segundo prompt de la fase 0: crear el proyecto base.
 
+## Última actualización: el externo vuelve a fallar; el usuario evalúa trabajar en la MP80
+
+- El usuario cambió el disco externo de puerto y creó el repositorio privado
+  `https://github.com/ChuyHR/NeoRetro.git`. Se conectó como `origin` y se subieron los commits.
+- Se rehízo Debian en D:. A los dos minutos de instalar paquetes, Windows registró 31 reintentos
+  disk 153 y 2 reinicios UASPStor 129 (13:13:55 a 13:16:06). Los errores pararon al apagar Debian, así
+  que aparecen con la escritura sostenida y no con el disco en reposo. Como se había acordado
+  («si reaparecen, lo muevo a C:»), se rehízo Debian en C:, por ahora solo con el usuario `arcade`.
+- El comando en línea para crear el usuario fallaba desde PowerShell 5.1 (rompe las comillas internas
+  al pasarlo a WSL). Ahora es `scripts/crear-usuario-wsl.sh`.
+- **No se corrió `preparar-desarrollo.sh` en C:.** El usuario preguntó «si decido que trabajes en el
+  Blackview, ¿qué necesito hacer?». Se le respondió con los pasos y se espera su decisión. Si elige la
+  MP80, el Debian de C: se puede quitar (`wsl --unregister Debian`) para no ocupar el SSD con avisos de
+  falla.
+
 ## Actualización: decisión aprobada e incidente con el disco externo
 
 El usuario aprobó `decision-tecnica.md` («si»). Se hizo esto del segundo prompt de la fase 0:
