@@ -1,0 +1,37 @@
+/* El diseño vive en un lienzo fijo de 1920×1080 que lienzo.js escala a la pantalla.
+   Fuera del lienzo solo queda el fondo, y nunca hay scroll. */
+html,
+body {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+  background: #050914;
+}
+
+#lienzo {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 1920px;
+  height: 1080px;
+  overflow: hidden;
+  transform-origin: 0 0;
+  background: #050914;
+  color: #F5F7FF;
+  font-family: 'Pixelify Sans', 'Courier New', monospace;
+}
+
+/* Provisional hasta la fase 1, que reproduce la pantalla del prototipo. */
+.marca {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Bungee', 'Arial Black', sans-serif;
+  font-size: 140px;
+  font-weight: normal;
+  line-height: 1;
+  text-shadow: 0 10px 0 #1769FF66;
+}

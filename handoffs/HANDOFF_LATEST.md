@@ -9,6 +9,34 @@ viabilidad, el usuario tomó las decisiones que cambian el plan (sección «Ajus
 **La fase 0 está detenida esperando que el usuario apruebe ese documento.** Con su aprobación sigue
 el segundo prompt de la fase 0: crear el proyecto base.
 
+## Actualización: decisión aprobada e incidente con el disco externo
+
+El usuario aprobó `decision-tecnica.md` («si»). Se hizo esto del segundo prompt de la fase 0:
+- Se quitó el RetroArch de Debian, se instalaron los tres emuladores de Flathub y Node 24.21.0 (LTS,
+  suma SHA-256 verificada) en `/opt`.
+- `Docs/` pasó a `docs/` con el prototipo en `docs/referencia/`.
+- Se escribió el proyecto base: `package.json` (Electron 44.5.1), `core/main.js`, `app/` (lienzo
+  escalado con el texto NEO ARCADE), `pruebas/lienzo.test.js`, `scripts/dev.sh`,
+  `scripts/empaquetar.sh` y `scripts/preparar-desarrollo.sh`.
+- **Nada de eso se ha ejecutado ni verificado todavía.**
+
+**Incidente.** Entre las 12:52 y las 12:53, con la descarga de los emuladores, el adaptador USB del
+disco externo se restableció varias veces (Windows: 27 eventos UASPStor 129 y 136 reintentos disk 153
+el 2026-10-20, desde las 12:22, cuando se movió Debian). El núcleo de Linux registró errores de E/S y
+escrituras perdidas («lost async page write») en el disco de Debian, que quedó en solo lectura.
+- El repositorio en D: está íntegro (`git fsck --full` sin errores) y D: aparece sano en Windows.
+- El Debian de WSL se da por dañado y hay que rehacerlo; no tiene nada que no se reconstruya con
+  `scripts/preparar-desarrollo.sh`.
+- No se reinició para no escribir más sobre un sistema de archivos con escrituras perdidas.
+
+**Hallazgo más grave, fuera del proyecto.** El controlador de discos de Windows registró cuatro veces
+(3 y 24 de septiembre, 6 y 13 de octubre) que `\Device\Harddisk0\DR0`, el SSD interno Samsung donde
+está C:, anticipa una falla y pide respaldo inmediato (evento disk 52). `Get-PhysicalDisk` lo muestra
+«Healthy»; ver el detalle SMART requiere permisos de administrador. Se le avisó al usuario.
+
+**Decisiones que esperan al usuario:** dónde rehacer el Debian (D: en otro puerto USB, C:, o D: sin
+UASP) y si el repositorio se respalda en un remoto privado.
+
 ## Decisiones del usuario y cómo se interpretaron
 
 - **Camino A: Debian + Neo Arcade.** Preguntó si «Debian» era Batocera, que él entendía que se iba a
@@ -71,17 +99,14 @@ el segundo prompt de la fase 0: crear el proyecto base.
 
 ## Lo que falta, en orden
 
-1. Que el usuario apruebe la decisión técnica.
-2. Segundo prompt de la fase 0:
-   - Mover `Docs/` a `docs/` con el prototipo en `docs/referencia/`, en dos pasos con `git mv` porque
-     el disco no distingue mayúsculas.
-   - Instalar Node 22.12 o posterior en el Debian de WSL, crear la estructura de carpetas del
-     documento y el `package.json` con Electron fijo.
-   - Hacer que la ventana abra a pantalla completa, con fondo `#050914`, el lienzo escalado y el texto
-     NEO ARCADE, y que Esc la cierre solo en desarrollo.
-   - Dejar los comandos de desarrollo y de versión final en el `CLAUDE.md`.
-3. Al aprobar Flathub: quitar el RetroArch de Debian que se instaló para las pruebas e instalar los
-   tres emuladores de Flathub. Con la tecnología aprobada, eso ya no adelanta nada.
+1. Que el usuario respalde lo importante de C: y decida dónde rehacer el Debian.
+2. Rehacer el Debian (pasos en `CLAUDE.md`) y correr `scripts/preparar-desarrollo.sh`.
+3. Verificar el proyecto base: `npm install`, `npm test`, `npm start -- --captura=…` para ver la
+   ventana con NEO ARCADE, Esc con `xdotool` en desarrollo (debe cerrar) y en la versión final de
+   `npm run empaquetar` (no debe cerrar).
+4. Comprobar qué núcleos trae el RetroArch de Flathub, que quedó sin verificar por el incidente.
+5. Actualizar en `CLAUDE.md` las rutas `Docs/` → `docs/`, los comandos y la arquitectura base, y
+   cerrar la fase 0 con su commit.
 
 ## Datos verificados en esta sesión
 

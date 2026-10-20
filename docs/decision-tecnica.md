@@ -17,8 +17,8 @@ medida ahí no cuenta para las metas del plan: se mide en la MP80.
 
 ## Lo que se probó
 
-Pruebas en `Docs/pruebas-fase0/` (se repiten con `bash Docs/pruebas-fase0/correr.sh` en Linux);
-capturas y mediciones en `Docs/pruebas-fase0/resultados/`. Debian 13 en WSL 2, gráficos Iris Xe a
+Pruebas en `docs/pruebas-fase0/` (se repiten con `bash docs/pruebas-fase0/correr.sh` en Linux);
+capturas y mediciones en `docs/pruebas-fase0/resultados/`. Debian 13 en WSL 2, gráficos Iris Xe a
 través de WSLg, pantalla de 1366×768.
 
 | Prueba | Electron 44.5.1 | WebKitGTK 2.54 (el motor de Tauri en Linux) |
@@ -121,8 +121,8 @@ ArcadeRetro/
   handoffs/
 ```
 
-`Docs/` pasa a `docs/` con el prototipo en `docs/referencia/`. En Windows el cambio de mayúsculas se
-hace en dos pasos con `git mv`, porque el disco no las distingue.
+`Docs/` pasó a `docs/` el 2026-10-20, con el prototipo en `docs/referencia/`. En Windows el cambio de
+mayúsculas se hizo en dos pasos con `git mv`, porque el disco no las distingue.
 
 ## Riesgos y lo que falta probar
 

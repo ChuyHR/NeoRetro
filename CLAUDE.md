@@ -10,33 +10,37 @@ que se vea el sistema operativo ni los menús de los emuladores. Debe instalarse
 cualquier PC que cumpla los requisitos mínimos; la Blackview MP80 es el equipo de referencia. Es de
 uso personal y el repositorio no incluye ROMs.
 
-La fuente de verdad es el plan, [Docs/plan-desarrollo.md](Docs/plan-desarrollo.md). Ahí están los
+La fuente de verdad es el plan, [docs/plan-desarrollo.md](docs/plan-desarrollo.md). Ahí están los
 cinco criterios de terminado, la tabla de requisitos técnicos, las nueve fases (0 a 8) con su prueba
 de aceptación, el prompt de cada fase, las pruebas del producto final y la tabla de riesgos. La
 sección «Ajustes al plan» de este archivo manda sobre el plan y sobre los prompts cuando choquen.
 
 ## Estado actual
 
-Verificado el 2026-10-20. La fase 0 está a la mitad: las pruebas están hechas y
-[Docs/decision-tecnica.md](Docs/decision-tecnica.md) propone Electron 44, emuladores desde Flathub y
-Debian 13 con Cage. **Espera la aprobación del usuario**; hasta entonces no se crea el proyecto base
-(segundo prompt de la fase 0). No hay código de la app ni carpeta `config/`. El contexto de la última
-sesión está en [handoffs/HANDOFF_LATEST.md](handoffs/HANDOFF_LATEST.md); léelo al empezar.
+Verificado el 2026-10-20. El usuario aprobó [docs/decision-tecnica.md](docs/decision-tecnica.md):
+Electron 44, emuladores desde Flathub y Debian 13 con Cage. El proyecto base está escrito (ver
+«Arquitectura») pero **sin ejecutar ni verificar**: el Debian de WSL se dañó cuando el disco externo
+perdió la conexión USB a media instalación, y hay que rehacerlo (pasos en «Comandos»). La fase 0 se
+cierra cuando la ventana muestre NEO ARCADE y Esc la cierre solo en desarrollo. El contexto de la
+última sesión está en [handoffs/HANDOFF_LATEST.md](handoffs/HANDOFF_LATEST.md); léelo al empezar.
 
 **Dónde vive cada cosa.** El repositorio está en `D:\UtilsDev\ArcadeRetro`, en un disco externo USB
 (NTFS, 1 TB). El Debian 13 de desarrollo es una distribución de WSL llamada `Debian`, con su disco
 virtual en `D:\NeoArcade\wsl`; su usuario por omisión es `arcade` (uid 1000, sudo sin contraseña,
 systemd activo). Las carpetas `roms/<sistema>/` y `media/<sistema>/` ya existen vacías dentro del
 repositorio, fuera de git. Sin el disco D: conectado no arranca Debian; antes de desconectarlo hay que
-cerrar WSL con `wsl --shutdown`, porque desconectarlo encendido puede dañar el disco virtual.
+cerrar WSL con `wsl --shutdown`, porque desconectarlo encendido puede dañar el disco virtual. Con
+escritura sostenida (instalaciones grandes) el adaptador USB del disco se ha restablecido solo, y eso
+dañó el disco virtual el 2026-10-20 (eventos UASPStor 129 y disk 153 de Windows). Si Windows vuelve a
+registrarlos, Debian no debe vivir en ese disco.
 
 **PC de trabajo**: Windows 11 Pro, laptop con Intel Core i7-1165G7 (4 núcleos, 8 hilos), gráficos Iris
 Xe, 8 GB de RAM y pantalla de 1366×768. En Windows tiene git 2.55, Node 20.20 y Python 3.14 como `py`
-(`python` y `python3` abren la tienda de Microsoft). En el Debian de WSL tiene Node 20.19 (Electron 44
-pide 22.12 o posterior), Python 3.13, Flatpak con Flathub, WebKitGTK, GStreamer y el RetroArch de
-Debian (instalado solo para las pruebas; se quita si se aprueban los emuladores de Flathub). Sus
-gráficos son mucho más potentes que los de la MP80, así que la fluidez medida aquí no cuenta como
-evidencia.
+(`python` y `python3` abren la tienda de Microsoft). El Debian de WSL se prepara con
+`scripts/preparar-desarrollo.sh`: bibliotecas de Electron, Node 24.21.0 en `/opt` (Debian trae 20.19
+y Electron 44 pide 22.12 o posterior) y los tres emuladores de Flathub. Sus gráficos son mucho más
+potentes que los de la MP80, así que la fluidez medida aquí no cuenta como evidencia. El controlador
+de discos de Windows ha avisado cuatro veces que su SSD interno (C:) anticipa una falla.
 
 **Equipo de referencia**: Blackview MP80 (dato del usuario, 2026-10-20; especificaciones confirmadas
 en la ficha de Intel y en la reseña de CNX Software). Intel N95 (4 núcleos, hasta 3.4 GHz, 15 W) con
@@ -46,8 +50,17 @@ dedicado. Su GPU es el recurso más justo, tanto para los efectos de la interfaz
 
 ## Comandos
 
-Todavía no hay comandos de desarrollo, compilación ni pruebas de la app. Los agrega el segundo prompt
-de la fase 0, una vez aprobada la tecnología.
+Comandos del proyecto, escritos el 2026-10-20 y **todavía sin ejecutar** (se verifican al rehacer el
+Debian de WSL). Corren dentro de Debian, en la raíz del repositorio:
+
+```bash
+npm install                            # instala Electron 44.5.1 (única dependencia)
+npm start                              # desarrollo: pantalla completa, Esc la cierra
+npm start -- --captura=/tmp/a.png      # guarda lo que muestra la ventana y sale (solo desarrollo)
+npm test                               # pruebas con el ejecutor de Node (carpeta pruebas/)
+node --test pruebas/lienzo.test.js     # un solo archivo de pruebas
+npm run empaquetar                     # versión final en dist/neo-arcade/ (ejecutable neo-arcade)
+```
 
 Claude Code corre en Windows y todo lo de Linux se ejecuta en el Debian de WSL. Usa `--exec`: sin él,
 WSL vuelve a interpretar el comando con otro shell y las variables llegan vacías. Desde Git Bash
@@ -56,7 +69,7 @@ hace falta `MSYS_NO_PATHCONV=1` para que las rutas de Linux no se conviertan en 
 ```bash
 export MSYS_NO_PATHCONV=1
 wsl.exe -d Debian --exec bash -c 'cd /mnt/d/UtilsDev/ArcadeRetro && <comando>'
-wsl.exe -d Debian --exec bash -c 'cd /mnt/d/UtilsDev/ArcadeRetro && bash Docs/pruebas-fase0/correr.sh'
+wsl.exe -d Debian --exec bash -c 'cd /mnt/d/UtilsDev/ArcadeRetro && bash docs/pruebas-fase0/correr.sh'
 ```
 
 En WSL, toda ventana gráfica necesita `GALLIUM_DRIVER=d3d12`; sin esa variable Mesa dibuja por
@@ -64,16 +77,49 @@ software. Electron necesita además `--no-sandbox` porque corre desde `/mnt/d`. 
 usa en la MP80. `/mnt/d` no distingue mayúsculas y la MP80 sí: nombres de archivo en minúsculas y sin
 acentos en el código.
 
+**Rehacer el Debian de desarrollo** (por ejemplo, si su disco virtual se daña). Desde PowerShell en
+Windows; la ubicación es la del disco virtual:
+
+```powershell
+wsl --unregister Debian      # borra el Debian anterior y todo lo que tenga dentro
+wsl --install Debian --no-launch --location D:\NeoArcade\wsl
+wsl -d Debian -u root --exec bash -c 'adduser --uid 1000 --quiet --disabled-password --gecos "" arcade && usermod -aG sudo,video,render,audio,input arcade && echo "arcade ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/arcade && chmod 440 /etc/sudoers.d/arcade && printf "[boot]\nsystemd=true\n\n[user]\ndefault=arcade\n" > /etc/wsl.conf'
+wsl --terminate Debian
+wsl -d Debian --exec bash -c 'cd /mnt/d/UtilsDev/ArcadeRetro && bash scripts/preparar-desarrollo.sh'
+```
+
+El uid 1000 hace que WSL se salte su pantalla de bienvenida, que pide un usuario de forma interactiva.
+
 Para ver el prototipo hay que servir la carpeta, porque el navegador bloquea sus scripts por `file://`:
 
 ```bash
-cd Docs && py -m http.server 8765     # en Linux: python3 -m http.server 8765
+cd docs/referencia && py -m http.server 8765     # en Linux: python3 -m http.server 8765
 # abrir http://localhost:8765/NeoArcade.dc.html
 ```
 
 Probado el 2026-10-20. Los puertos 5173 a 5176, 8002, 8003, 8007, 8080 y 8090 los usan contenedores
 de otros proyectos de esta PC. Si la fase 0 elige un servidor de desarrollo (Vite usa 5173 por
 omisión), hay que fijarle otro puerto.
+
+## Arquitectura
+
+Electron con JavaScript sin framework ni paso de compilación: lo que está en `app/` es lo que corre.
+`package.json` usa `"type": "module"`, así que todo es ESM, también el proceso principal.
+
+- `core/main.js` es el proceso principal. Abre una ventana a pantalla completa, sin bordes ni menú, y
+  carga `app/index.html`. Quitar el menú también quita sus atajos (recargar, herramientas de
+  desarrollo, zoom). El modo desarrollo se decide con `app.isPackaged`: con `electron .` es
+  desarrollo, y en la versión final el ejecutable se llama `neo-arcade` y Electron la da por
+  empaquetada. Solo en desarrollo Esc cierra la app y existen las herramientas de desarrollo.
+- `app/` es la interfaz. `lienzo.js` escala el lienzo fijo de 1920×1080 a la ventana con
+  `transform`, sin deformarlo y centrado; `calcularEscala` es una función pura para poder probarla
+  con Node. Las piezas de la pantalla irán en `app/piezas/` y las tipografías en `app/fuentes/`.
+- `core/entrada/`, `core/lanzador/`, `core/escaner/` y `core/almacenamiento/` están vacías; cada una
+  se llena en su fase. La interfaz no toca Node: cuando necesite al núcleo, hablará con él por un
+  `preload` con `contextBridge`, con aislamiento de contexto y sin integración de Node en la página.
+- `scripts/empaquetar.sh` copia el motor de `node_modules/electron/dist`, renombra el ejecutable y
+  pone la app en `resources/app`, que Electron carga en lugar de su app de ejemplo. En la MP80,
+  `chrome-sandbox` necesita dueño root y permiso 4755 (lo hará `install.sh` en la fase 8).
 
 ## Ajustes al plan (decididos con el usuario el 2026-10-20)
 
@@ -125,7 +171,7 @@ omisión), hay que fijarle otro puerto.
 
 ## Cómo está hecho el prototipo
 
-`Docs/NeoArcade.dc.html` es un componente exportado de una herramienta de diseño, en dos partes:
+`docs/referencia/NeoArcade.dc.html` es un componente exportado de una herramienta de diseño, en dos partes:
 
 - La plantilla `<x-dc>`: marcado con estilos en línea, marcadores `{{…}}` y las etiquetas `<sc-for>`
   y `<sc-if>`. Los colores, medidas, radios, sombras y tipografías a reproducir están en los
@@ -162,9 +208,9 @@ guarda dentro del proyecto.
 
 ## Diferencias abiertas entre el plan y el prototipo
 
-1. **Ruta del prototipo.** El plan lo llama `docs/referencia/neo-arcade.html`. El archivo real es
-   `Docs/NeoArcade.dc.html` y necesita `support.js` y `vendor/` junto a él para verse. En Linux
-   `Docs` y `docs` son carpetas distintas. Moverlo a la estructura del plan se propone en la fase 0.
+1. **Nombre del prototipo.** El plan lo llama `docs/referencia/neo-arcade.html`. El archivo real se
+   llama `NeoArcade.dc.html` y está en `docs/referencia/` junto con `support.js` y `vendor/`, que
+   necesita para verse.
 2. **Ids de sistema.** El prototipo usa 12 entradas con ids propios (`all`, `atari`, `genesis`, `ps`,
    `dc`…). Los datos reales usan los nombres de carpeta del plan (`atari2600`, `megadrive`, `psx`,
    `dreamcast`…).
@@ -183,7 +229,7 @@ Vienen de la sección «CLAUDE.md del proyecto» del plan, con las rutas corregi
 arriba incorporados.
 
 ### Diseño
-- `Docs/NeoArcade.dc.html` es el diseño final aprobado, con los cambios del ajuste 7. No cambies
+- `docs/referencia/NeoArcade.dc.html` es el diseño final aprobado, con los cambios del ajuste 7. No cambies
   colores, tipografías, medidas, disposición ni animaciones sin que te lo pida explícitamente.
 - La interfaz es un lienzo de 1920×1080 escalado manteniendo la proporción. Nunca uses scroll vertical
   en la pantalla principal.

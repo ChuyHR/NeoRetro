@@ -4,7 +4,7 @@ Oct 20, 2026 · @manuel
 
 > Copia sin cambios del plan entregado el 2026-10-20. Los ajustes decididos con el usuario ese mismo
 > día (desarrollo en WSL, teclado primero, cualquier PC y pantalla, cambios al diseño) y las rutas
-> reales (el prototipo está en `Docs/NeoArcade.dc.html`) están en `CLAUDE.md` y mandan sobre este plan.
+> reales (el prototipo está en `docs/referencia/NeoArcade.dc.html`) están en `CLAUDE.md` y mandan sobre este plan.
 
 ## Objetivo
 

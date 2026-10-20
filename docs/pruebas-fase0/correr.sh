@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Pruebas de la fase 0, en Linux (el Debian de WSL o la MP80).
-# Uso: bash Docs/pruebas-fase0/correr.sh
-# Deja capturas y mediciones en Docs/pruebas-fase0/resultados/.
+# Uso: bash docs/pruebas-fase0/correr.sh
+# Deja capturas y mediciones en docs/pruebas-fase0/resultados/.
 set -u
 
 AQUI="$(cd "$(dirname "$0")" && pwd)"
@@ -16,7 +16,7 @@ if grep -qi microsoft /proc/version; then
   export GALLIUM_DRIVER=d3d12
 fi
 
-python3 -m http.server 8765 --directory "$DOCS" >/dev/null 2>&1 &
+python3 -m http.server 8765 --directory "$DOCS/referencia" >/dev/null 2>&1 &
 SERVIDOR=$!
 trap 'kill $SERVIDOR 2>/dev/null' EXIT
 sleep 1
