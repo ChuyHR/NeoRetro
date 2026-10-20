@@ -72,10 +72,18 @@ MP80 desde ella.
   `Totalplay-66AE_5G` en 5 GHz; la MP80 queda en `192.168.100.94`. La contraseña se pasó por la
   entrada estándar desde `credenciales/wifi.txt`, que se borró después. La imagen armada que la
   contenía también se borró; **la memoria USB todavía la tiene: el usuario debe formatearla.**
-- **Pendiente: el firmware arranca Windows primero** aunque `efibootmgr` ya decía `BootOrder:
-  0000,0002`. Al reiniciar (el usuario rechazó el comando, pero se ejecutó) arrancó Windows directo.
-  Se le indicó cambiar «Boot Option #1» a «debian» en el BIOS, entrando desde Windows por «Inicio
-  avanzado → Configuración del firmware UEFI». Falta confirmar que el escritorio abre solo.
+- **Arranque resuelto (17:10).** El firmware AMI impone su propio orden: ignoró `efibootmgr -o`, y al
+  guardar el BIOS volvió a poner Windows primero. `bcdedit /set "{bootmgr}" path \EFI\debian\shimx64.efi`
+  no cambió la entrada de Windows: creó `Boot0003` «debian» apuntando a la copia de shim en la
+  partición EFI de Windows (sda1). El usuario la puso primera dentro del submenú del disco en el BIOS,
+  y desde entonces arranca Debian solo, con escritorio y Wi-Fi (`BootCurrent: 0003`,
+  `BootOrder: 0003,0000,0002`). Esa copia la mantiene `/usr/local/sbin/neoarcade-copiar-grub`, que apt
+  corre después de cada instalación (`/etc/apt/apt.conf.d/99neoarcade-copiar-grub`): sin ella, una
+  actualización de GRUB dejaría desfasado el cargador que usa el firmware.
+  `efibootmgr` 18 no puede modificar la entrada de Windows (`Boot entry 2 not found`), probablemente
+  por los datos de BCD que trae.
+- Falta comprobar que Windows arranca desde el menú de GRUB y que, después de usarlo, la MP80 vuelve
+  a mostrar el menú (Windows a veces se pone primero al arrancar).
 - La laptop puede apagar el uso compartido del cable cuando ya no haga falta; la MP80 tiene Wi-Fi.
 
 ## Lo que falta, en orden
