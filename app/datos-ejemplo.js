@@ -1,0 +1,70 @@
+// Datos de ejemplo del prototipo aprobado. La fase 2 los reemplaza por la biblioteca real; los ids de
+// sistema ya son los nombres de carpeta del plan (roms/<sistema>/).
+
+export const SISTEMAS = [
+  { id: 'todos', nombre: 'ALL GAMES' },
+  { id: 'arcade', nombre: 'ARCADE' },
+  { id: 'atari2600', nombre: 'ATARI' },
+  { id: 'nes', nombre: 'NES' },
+  { id: 'snes', nombre: 'SNES' },
+  { id: 'megadrive', nombre: 'SEGA GENESIS' },
+  { id: 'gb', nombre: 'GAME BOY' },
+  { id: 'psx', nombre: 'PLAYSTATION' },
+  { id: 'n64', nombre: 'NINTENDO 64' },
+  { id: 'dreamcast', nombre: 'DREAMCAST' },
+  { id: 'psp', nombre: 'PSP' },
+  { id: 'ports', nombre: 'PORTS' },
+];
+
+const juego = (id, titulo, sistema, nombreSistema, anio, desarrollador, genero, jugadores, controles,
+  emulador, colores, motivo, descripcion) => ({
+  id, titulo, sistema, nombreSistema, anio, desarrollador, genero, jugadores, controles, emulador,
+  colores, motivo, descripcion,
+});
+
+export const JUEGOS = [
+  juego('pacman', 'Pac-Man', 'arcade', 'ARCADE', 1980, 'NAMCO', 'LABERINTO', '1-2 alternos',
+    'Palanca de 4 direcciones', 'MAME', ['#E53935', '#FFD23F', '#0A0A2A'], 'grid',
+    'Recorre el laberinto, come todos los puntos y esquiva a los fantasmas. Las píldoras grandes cambian las tornas.'),
+  juego('zelda', 'Zelda: A Link to the Past', 'snes', 'SUPER NINTENDO', 1991, 'NINTENDO', 'AVENTURA', '1',
+    'Mando', 'Snes9x', ['#C8A43A', '#E53935', '#2A2410'], 'diamond',
+    'Explora dos mundos paralelos, supera mazmorras y reúne los objetos que te harán más fuerte.'),
+  juego('sonic', 'Sonic the Hedgehog', 'megadrive', 'SEGA GENESIS', 1991, 'SEGA', 'PLATAFORMAS', '1',
+    'Mando de 3 botones', 'Genesis Plus GX', ['#1769FF', '#C9D2E8', '#0A1A4A'], 'zigzag',
+    'Corre a toda velocidad por bucles y rampas, recoge anillos y libera a los animales atrapados.'),
+  juego('sf2', 'Street Fighter II', 'snes', 'SUPER NINTENDO', 1991, 'CAPCOM', 'LUCHA / FIGHTING', '1-2',
+    '6 botones', 'Snes9x', ['#FF3B3B', '#FF3B3B', '#2A0A3A'], 'rays',
+    'El clásico que definió el género de lucha. Elige a tu luchador, enfréntate a los mejores y demuestra quién es el verdadero campeón.'),
+  juego('mgs', 'Metal Gear Solid', 'psx', 'PLAYSTATION', 1998, 'KONAMI', 'SIGILO', '1', 'Mando',
+    'DuckStation', ['#5A6A7A', '#C9D2E8', '#0B1116'], 'stripes',
+    'Infíltrate en una base tomada por terroristas sin ser descubierto, en una aventura de sigilo cinematográfica.'),
+  juego('sm64', 'Super Mario 64', 'n64', 'NINTENDO 64', 1996, 'NINTENDO', 'PLATAFORMAS 3D', '1',
+    'Mando con stick analógico', 'Mupen64Plus', ['#1769FF', '#F5F7FF', '#1A1040'], 'circles',
+    'Salta dentro de cuadros mágicos y explora mundos en 3D para recuperar las estrellas.'),
+  juego('tetris', 'Tetris', 'gb', 'GAME BOY', 1989, 'NINTENDO', 'PUZLE', '1-2', 'Cruceta + 2 botones',
+    'mGBA', ['#8B5CF6', '#C9D2E8', '#120A2E'], 'stripes',
+    'Encaja las piezas que caen para completar líneas. Fácil de aprender, imposible de soltar.'),
+  juego('doom', 'DOOM', 'ports', 'PORTS', 1993, 'ID SOFTWARE', 'DISPAROS', '1-4', 'Mando o teclado',
+    'PrBoom', ['#B91C1C', '#FFB020', '#1A0505'], 'rays',
+    'Abre fuego contra hordas de demonios en una base marciana. Velocidad y tensión sin descanso.'),
+  juego('castlevania', 'Castlevania', 'nes', 'NES', 1986, 'KONAMI', 'ACCIÓN', '1', 'Cruceta + 2 botones',
+    'Mesen', ['#7F1D1D', '#C084FC', '#12051A'], 'diamond',
+    'Arma en mano, recorre un castillo encantado hasta enfrentarte a su temible señor.'),
+  juego('megaman', 'Mega Man', 'nes', 'NES', 1987, 'CAPCOM', 'ACCIÓN', '1', 'Cruceta + 2 botones', 'Mesen',
+    ['#00BFFF', '#F5F7FF', '#06142E'], 'grid',
+    'Derrota a seis robots en el orden que prefieras y quédate con sus armas.'),
+  juego('pitfall', 'Pitfall!', 'atari2600', 'ATARI', 1982, 'ACTIVISION', 'PLATAFORMAS', '1',
+    'Palanca + 1 botón', 'Stella', ['#16A34A', '#FACC15', '#0A1F10'], 'zigzag',
+    'Cruza la jungla saltando fosos y cocodrilos para reunir tesoros antes de que acabe el tiempo.'),
+  juego('galaga', 'Galaga', 'arcade', 'ARCADE', 1981, 'NAMCO', 'DISPAROS', '1-2 alternos',
+    'Palanca + 1 botón', 'MAME', ['#00BFFF', '#FF168C', '#050914'], 'rays',
+    'Defiende tu nave de oleadas alienígenas que atacan en formación.'),
+  juego('crazytaxi', 'Crazy Taxi', 'dreamcast', 'DREAMCAST', 1999, 'HITMAKER', 'CONDUCCIÓN', '1',
+    'Mando con gatillos', 'Flycast', ['#FACC15', '#FF8A3D', '#1A1405'], 'stripes',
+    'Recoge pasajeros y llévalos a su destino lo más rápido posible, por cualquier atajo.'),
+  juego('lumines', 'Lumines', 'psp', 'PSP', 2004, 'Q ENTERTAINMENT', 'PUZLE MUSICAL', '1-2',
+    'Cruceta + botones', 'PPSSPP', ['#8B5CF6', '#FF168C', '#0A0620'], 'circles',
+    'Agrupa bloques del mismo color mientras una línea barre la pantalla al ritmo de la música.'),
+];
+
+export const DATOS = { sistemas: SISTEMAS, juegos: JUEGOS };

@@ -1,0 +1,42 @@
+/* Las cinco tipografías del prototipo, guardadas en el proyecto para funcionar sin internet.
+   Subconjunto latino de Google Fonts (incluye á, é, í, ó, ú, ñ, ¿ y ¡); licencias en fuentes/OFL-*.txt.
+   Pixelify Sans es variable: un solo archivo para los grosores 500, 600 y 700. */
+@font-face {
+  font-family: 'Bungee';
+  font-style: normal;
+  font-weight: 400;
+  font-display: block;
+  src: url('fuentes/bungee.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Pixelify Sans';
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: block;
+  src: url('fuentes/pixelify-sans.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Share Tech Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: block;
+  src: url('fuentes/share-tech-mono.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Kaushan Script';
+  font-style: normal;
+  font-weight: 400;
+  font-display: block;
+  src: url('fuentes/kaushan-script.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Press Start 2P';
+  font-style: normal;
+  font-weight: 400;
+  font-display: block;
+  src: url('fuentes/press-start-2p.woff2') format('woff2');
+}

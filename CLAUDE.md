@@ -17,12 +17,12 @@ sección «Ajustes al plan» de este archivo manda sobre el plan y sobre los pro
 
 ## Estado actual
 
-Verificado el 2026-10-20. **La fase 0 pasó su prueba de aceptación en el Debian de WSL**: la app abre
-a pantalla completa con el texto NEO ARCADE sobre el lienzo escalado, Esc la cierra en desarrollo y
-no en la versión final, y `npm test` pasa (4 pruebas). Falta que el usuario la vea con sus ojos. La
-tecnología es la de [docs/decision-tecnica.md](docs/decision-tecnica.md), aprobada: Electron 44,
-emuladores desde Flathub y Debian 13 con Cage. Lo siguiente es la fase 1. En paralelo, el usuario
-instalará Debian en la MP80 con la imagen automática de `scripts/instalador/` (ver handoff). El
+Verificado el 2026-10-20. La fase 0 quedó aprobada por el usuario. **La fase 1 está terminada y
+verificada; espera su revisión.** La pantalla del prototipo está reproducida por piezas, con 0.0 % de
+píxeles distintos en todas las zonas salvo las dos con cambios aprobados (ficha a 24 px y pie con
+teclas), y se recorre entera con el teclado (`docs/pruebas-fase1/`). `npm test` pasa (21 pruebas).
+La tecnología es la de [docs/decision-tecnica.md](docs/decision-tecnica.md): Electron 44, emuladores
+desde Flathub y Debian 13 con Cage. La MP80 ya tiene Debian en arranque dual y responde por SSH. El
 contexto de la última sesión está en [handoffs/HANDOFF_LATEST.md](handoffs/HANDOFF_LATEST.md); léelo
 al empezar.
 
@@ -49,12 +49,21 @@ de discos de Windows ha avisado cuatro veces que su SSD interno (C:) anticipa un
 **Equipo de referencia**: Blackview MP80 (dato del usuario, 2026-10-20; especificaciones confirmadas
 en la ficha de Intel y en la reseña de CNX Software). Intel N95 (4 núcleos, hasta 3.4 GHz, 15 W) con
 gráficos UHD de 16 EU, 16 GB LPDDR5, SSD M.2 SATA de 512 GB, Wi-Fi 5, Bluetooth 4.2, tres HDMI 2.0 y
-tres USB 3. Está en el Wi-Fi de la casa (`Totalplay-66AE_5G`, red 192.168.100.x, la misma de la
-laptop). Conserva su Windows 11 Pro, sin contraseñas, y recibirá Debian 13 en arranque dual con la
-imagen automática de `scripts/instalador/`: usuario `arcade` sin contraseña con sesión automática,
-Xfce, y SSH solo con la llave `C:\Users\ADMIN\.ssh\neoarcade_ed25519` de la laptop. La fase 8 la
-reinstala como sistema dedicado. Su GPU es el recurso más justo, tanto para los efectos de la
-interfaz como para GameCube.
+tres USB 3. Tiene Debian 13 en arranque dual con Windows 11 Pro: usuario `arcade` sin contraseña,
+sesión automática en Xfce, sudo sin contraseña y SSH solo con la llave
+`C:\Users\ADMIN\.ssh\neoarcade_ed25519` de la laptop. Está en el Wi-Fi de la casa en `192.168.100.94`
+(tarjeta Realtek RTL8821CE, 5 GHz):
+
+```bash
+ssh -i ~/.ssh/neoarcade_ed25519 arcade@192.168.100.94
+```
+
+Su firmware (AMI) impone su propio orden de arranque e ignora `efibootmgr`. Arranca Debian por la
+entrada `Boot0003`, que apunta a una copia de shim y GRUB en la partición EFI de Windows; esa copia la
+mantiene `/usr/local/sbin/neoarcade-copiar-grub`, que apt corre después de cada instalación
+(`scripts/instalador/copiar-grub-a-esp-windows.sh`). Windows se elige en el menú de GRUB. **Antes de
+reiniciarla, pregúntale al usuario.** La fase 8 la reinstala como sistema dedicado. Su GPU es el
+recurso más justo, tanto para los efectos de la interfaz como para GameCube.
 
 ## Comandos
 
@@ -65,9 +74,15 @@ npm install                            # instala Electron 44.5.1 (única depende
 npm start                              # desarrollo: pantalla completa, Esc la cierra; baja el motor la 1.ª vez
 npm start -- --captura=/tmp/a.png      # guarda lo que muestra la ventana y sale (solo desarrollo)
 npm test                               # pruebas con el ejecutor de Node (carpeta pruebas/)
-node --test pruebas/lienzo.test.js     # un solo archivo de pruebas
+node --test pruebas/estado.test.js     # un solo archivo de pruebas
+npm run comparar                       # app contra prototipo a 1920×1080: % distinto por zona y mapa
+npm run recorrido                      # recorre la app con el teclado y captura cada pantalla
 npm run empaquetar                     # versión final en dist/neo-arcade/ (ejecutable neo-arcade)
 ```
+
+`comparar` y `recorrido` dejan sus capturas en `docs/pruebas-fase1/`. La comparación es la prueba de
+fidelidad de cualquier cambio visual: fuera de los cambios aprobados, cada zona debe quedar en 0.0 %.
+Necesita internet, porque el prototipo pide sus tipografías a Google Fonts.
 
 Claude Code corre en Windows y todo lo de Linux se ejecuta en el Debian de WSL. Usa `--exec`: sin él,
 WSL vuelve a interpretar el comando con otro shell y las variables llegan vacías. Desde Git Bash
@@ -129,9 +144,30 @@ Electron con JavaScript sin framework ni paso de compilación: lo que está en `
   desarrollo, zoom). El modo desarrollo se decide con `app.isPackaged`: con `electron .` es
   desarrollo, y en la versión final el ejecutable se llama `neo-arcade` y Electron la da por
   empaquetada. Solo en desarrollo Esc cierra la app y existen las herramientas de desarrollo.
-- `app/` es la interfaz. `lienzo.js` escala el lienzo fijo de 1920×1080 a la ventana con
-  `transform`, sin deformarlo y centrado; `calcularEscala` es una función pura para poder probarla
-  con Node. Las piezas de la pantalla irán en `app/piezas/` y las tipografías en `app/fuentes/`.
+- `app/` es la interfaz. El flujo es de un solo sentido: tecla → acción → estado nuevo → vista →
+  piezas.
+  - `entrada-teclado.js` traduce teclas a acciones: flechas para mover, Enter para aceptar,
+    Retroceso para volver, y Re Pág y Av Pág para cambiar de sistema. Esc no está porque en
+    desarrollo cierra la app.
+  - `estado.js` (`aplicar`) decide cómo cambia el estado con cada acción, en la pantalla principal o
+    en una ventana.
+  - `modelo.js` (`vistaDe`) calcula lo que cada pieza dibuja: los lugares del carrusel (tabla
+    `RANURAS` del prototipo), la ventana de 12 sistemas, el reloj, el marcador y la portada.
+  - Las tres son puras y se prueban con Node. `inicio.js` las conecta y vuelve a pintar tras cada
+    cambio.
+- `app/piezas/` tiene una pieza por parte de la pantalla: cabecera, barra de sistemas, carrusel, ficha,
+  acciones, vista previa, pie, detalles, configuración, lanzamiento y decoración. Cada una crea su
+  marcado una sola vez (`crearX(lienzo, contexto)`) y luego solo cambia lo dinámico en
+  `actualizar(vista)`. **El marcado conserva los estilos en línea del prototipo, copiados tal cual**:
+  así cada valor se compara directo con `docs/referencia/NeoArcade.dc.html`. El orden de creación en
+  `inicio.js` es el del prototipo y define qué queda encima.
+- El carrusel coloca cada portada al instante en su lugar final y anima el paso con `transform` y
+  opacidad (técnica FLIP, `element.animate`), sin animar posición ni tamaño (ajuste 8).
+- `datos-ejemplo.js` (los 14 juegos del prototipo, con ids de sistema del plan), `arte.js` (portada de
+  reemplazo), `iconos.js` y `fuentes.css` con las cinco tipografías locales de `app/fuentes/`.
+  `lienzo.js` escala el lienzo de 1920×1080 a la ventana sin deformarlo.
+- `scripts/captura.mjs` abre una página a 1920×1080 aunque la pantalla sea más chica (emula el tamaño
+  con el protocolo de depuración de Chromium) y compara capturas con `nativeImage`, sin dependencias.
 - `core/entrada/`, `core/lanzador/`, `core/escaner/` y `core/almacenamiento/` están vacías; cada una
   se llena en su fase. La interfaz no toca Node: cuando necesite al núcleo, hablará con él por un
   `preload` con `contextBridge`, con aislamiento de contexto y sin integración de Node en la página.
@@ -229,9 +265,9 @@ guarda dentro del proyecto.
 1. **Nombre del prototipo.** El plan lo llama `docs/referencia/neo-arcade.html`. El archivo real se
    llama `NeoArcade.dc.html` y está en `docs/referencia/` junto con `support.js` y `vendor/`, que
    necesita para verse.
-2. **Ids de sistema.** El prototipo usa 12 entradas con ids propios (`all`, `atari`, `genesis`, `ps`,
-   `dc`…). Los datos reales usan los nombres de carpeta del plan (`atari2600`, `megadrive`, `psx`,
-   `dreamcast`…).
+2. **Ids de sistema.** El prototipo usa ids propios (`all`, `atari`, `genesis`, `ps`, `dc`…). La app
+   ya usa los nombres de carpeta del plan (`todos`, `atari2600`, `megadrive`, `psx`, `dreamcast`…),
+   también en los datos de ejemplo.
 3. **Pantallas que el plan pide y el prototipo no dibuja.** Filtros Favoritos y Recientes, buscador
    con teclado en pantalla, perfil Peques, el resto de los ajustes (neón, animaciones, volumen, color
    del tema, combinación para salir), Apagar y Reiniciar, animación de arranque y mensajes de error
@@ -240,6 +276,9 @@ guarda dentro del proyecto.
 4. **Textos en inglés.** El prototipo trae lemas de marca (PLAY AGAIN, Same games. New adventures.,
    INSERT COIN, RETRO IS NOT A STYLE…, PRESS START) y la pestaña ALL GAMES. Por la regla de no
    cambiar el diseño se conservan; si alguno debe pasar a español, lo decide el usuario.
+5. **Títulos cortados a media palabra.** En las portadas laterales angostas, un título de hasta 18
+   letras va a 26 px y se parte («HEDGEHO G», «FIGHTE R II») por `word-break: break-word`. Así lo hace
+   el prototipo y se reprodujo tal cual; si se ajusta, lo decide el usuario.
 
 ## Reglas del proyecto
 

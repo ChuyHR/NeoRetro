@@ -1,0 +1,12 @@
+Píxeles distintos por zona (umbral 40 por canal)
+  0.0 %  cabecera, sin el reloj
+  0.0 %  reloj y fecha (cambian con la hora)
+  0.0 %  barra de sistemas
+  0.0 %  carrusel
+  0.0 %  reflejos bajo las portadas
+  9.2 %  ficha del juego (cambio aprobado: texto a 24 px)
+  0.0 %  menú de acciones
+  0.0 %  vista previa
+  0.0 %  INSERT COIN
+  9.6 %  pie (cambio aprobado: teclas del teclado)
+  0.0 %  pie, lema de la derecha
