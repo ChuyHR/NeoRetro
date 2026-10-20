@@ -1,0 +1,6 @@
+# Juegos y medios del usuario: nunca van al repositorio
+roms/
+media/
+
+node_modules/
+dist/

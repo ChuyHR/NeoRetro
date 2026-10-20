@@ -1,0 +1,407 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Neo Arcade, pantalla principal</title>
+<script src="./vendor/react.js"></script>
+<script src="./vendor/react-dom.js"></script>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bungee&amp;family=Pixelify+Sans:wght@500;600;700&amp;family=Share+Tech+Mono&amp;family=Kaushan+Script&amp;family=Press+Start+2P&amp;display=swap">
+<style>
+body{margin:0;background:#050914}
+a{color:#00BFFF}a:hover{color:#7FDFFF}
+button{cursor:pointer}
+.reflect{-webkit-box-reflect:below 8px linear-gradient(transparent 86%, rgba(255,255,255,0.22))}
+.blink{animation:blink 1s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+</style>
+</helmet>
+<div style="position: relative; width: 1920px; height: 1080px; overflow: hidden; background: #050914; color: #F5F7FF; font-family: 'Pixelify Sans', 'Courier New', monospace">
+
+  <div aria-hidden="true" style="position: absolute; left: 0; top: 230px; width: 70px; height: 560px; display: flex; flex-direction: column; gap: 16px; opacity: 0.35">
+    <div style="height: 150px; background: #3A1030; border-right: 3px solid #FF168C"></div>
+    <div style="height: 120px; background: #10204A; border-right: 3px solid #1769FF"></div>
+    <div style="height: 180px; background: #3A2410; border-right: 3px solid #FFB020"></div>
+  </div>
+  <div aria-hidden="true" style="position: absolute; right: 0; top: 230px; width: 60px; height: 560px; display: flex; flex-direction: column; gap: 16px; opacity: 0.35">
+    <div style="height: 130px; background: #3A1030; border-left: 3px solid #FF168C"></div>
+    <div style="height: 200px; background: #10204A; border-left: 3px solid #00BFFF"></div>
+    <div style="height: 140px; background: #2A1040; border-left: 3px solid #8B5CF6"></div>
+  </div>
+
+  <header style="position: absolute; left: 0; top: 0; width: 1920px; height: 232px">
+    <div style="position: absolute; left: 0; top: 0; width: 712px; height: 232px; background: #080D1F; clip-path: polygon(0 0, 712px 0, 712px 190px, 670px 232px, 0 232px); display: flex; align-items: center; gap: 22px; padding-left: 64px; box-sizing: border-box">
+      <svg width="132" height="132" viewBox="0 0 64 64" role="img" aria-label="Logo Neo Arcade">
+        <rect x="6" y="38" width="52" height="20" rx="5" fill="none" stroke="#00BFFF" stroke-width="4"></rect>
+        <rect x="29" y="16" width="6" height="24" fill="#F5F7FF"></rect>
+        <rect x="22" y="4" width="20" height="16" rx="3" fill="#FF168C"></rect>
+        <rect x="14" y="45" width="8" height="6" fill="#FF168C"></rect>
+        <rect x="42" y="45" width="8" height="6" fill="#00BFFF"></rect>
+      </svg>
+      <div style="display: flex; flex-direction: column; gap: 10px">
+        <div style="font-family: 'Bungee', 'Arial Black', sans-serif; font-size: 70px; line-height: 1; color: #F5F7FF; text-shadow: 0 5px 0 #1769FF66">NEO ARCADE</div>
+        <div style="display: flex; align-items: center; gap: 14px; font-family: 'Pixelify Sans', monospace; font-weight: 700; font-size: 40px; color: #FF168C; text-shadow: 0 0 14px #FF168C">
+          <span style="width: 42px; height: 8px; border-top: 3px solid #FF168C; border-bottom: 3px solid #FF168C"></span>
+          PLAY AGAIN
+          <span style="width: 42px; height: 8px; border-top: 3px solid #FF168C; border-bottom: 3px solid #FF168C"></span>
+        </div>
+      </div>
+    </div>
+
+    <div style="position: absolute; left: 712px; top: 0; width: 520px; height: 232px; background: #0A0F2E">
+      <div style="position: absolute; left: 40px; right: 40px; top: 18px; height: 12px; background: #FF168C; box-shadow: 0 0 18px #FF168C"></div>
+      <div style="position: absolute; left: 22px; top: 0; width: 14px; height: 232px; background: #1769FF; opacity: 0.6"></div>
+      <div style="position: absolute; right: 22px; top: 0; width: 14px; height: 232px; background: #FF168C; opacity: 0.6"></div>
+      <div style="position: absolute; left: 76px; top: 56px; width: 368px; height: 150px; border-radius: 12px; background: #040A1C; border: 3px solid #1769FF; box-shadow: 0 0 22px #1769FF88, inset 0 0 30px #00BFFF22; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; font-family: 'Pixelify Sans', monospace; font-weight: 600; font-size: 24px; line-height: 1.15; color: #00BFFF; text-shadow: 0 0 10px #00BFFF">
+        <span>RETRO GAMES</span>
+        <span>MODERN FEEL</span>
+        <span>NEO ARCADE</span>
+        <svg width="40" height="28" viewBox="0 0 10 7" aria-hidden="true" style="margin-top: 6px"><rect x="4" y="0" width="2" height="2" fill="#00BFFF"></rect><rect x="4.5" y="2" width="1" height="2" fill="#00BFFF"></rect><rect x="1" y="4" width="8" height="3" fill="#00BFFF"></rect></svg>
+      </div>
+      <div style="position: absolute; left: 84px; bottom: 8px; width: 26px; height: 26px; border-radius: 50%; background: #FF168C; box-shadow: 0 0 12px #FF168C"></div>
+      <div style="position: absolute; right: 84px; bottom: 8px; width: 26px; height: 26px; border-radius: 50%; background: #FF168C; box-shadow: 0 0 12px #FF168C"></div>
+    </div>
+
+    <div style="position: absolute; left: 1232px; top: 0; width: 440px; height: 232px; overflow: hidden; background: #1A0B3A">
+      <div style="position: absolute; inset: 0; background: linear-gradient(180deg, #0B0F2A 0%, #3A1260 70%, #6A1A6A 100%)"></div>
+      <div aria-hidden="true" style="position: absolute; left: 100px; top: 18px; width: 150px; height: 150px; border-radius: 50%; background: linear-gradient(180deg, #FFD23F 0%, #FF8A3D 45%, #FF168C 100%); box-shadow: 0 0 40px #FF168C88"></div>
+      <div aria-hidden="true" style="position: absolute; left: 90px; top: 100px; width: 170px; display: flex; flex-direction: column; gap: 9px">
+        <div style="height: 3px; background: #2A1050"></div>
+        <div style="height: 4px; background: #2A1050"></div>
+        <div style="height: 5px; background: #2A1050"></div>
+        <div style="height: 6px; background: #2A1050"></div>
+      </div>
+      <div aria-hidden="true" style="position: absolute; left: 0; right: 0; bottom: 0; height: 120px; display: flex; align-items: flex-end; gap: 3px">
+        <sc-for list="{{city}}" as="b" hint-placeholder-count="14">
+          <div style="flex: 1; height: {{b.h}}; background: #140A30; border-top: 2px solid #3A1A6A; background-image: {{b.win}}"></div>
+        </sc-for>
+      </div>
+      <div style="position: absolute; right: 8px; top: 122px; text-align: right; font-family: 'Kaushan Script', cursive; font-size: 34px; line-height: 1.15; color: #7FE3FF; text-shadow: 0 0 12px #00BFFF, 2px 2px 0 #000">Same games.<br>New adventures.</div>
+    </div>
+
+    <div style="position: absolute; right: 0; top: 0; width: 252px; height: 210px; background: #080D1F; clip-path: polygon(34px 0, 252px 0, 252px 210px, 34px 210px, 0 176px, 0 0); border-left: 2px solid #FF168C; box-sizing: border-box; padding: 24px 24px 0 46px; display: flex; flex-direction: column; gap: 8px">
+      <div style="display: flex; align-items: center; justify-content: space-between">
+        <span style="font-family: 'Pixelify Sans', monospace; font-weight: 600; font-size: 46px">{{time}}</span>
+        <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#F5F7FF" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M2 8.5a15 15 0 0 1 20 0M5 12a10.5 10.5 0 0 1 14 0M8.5 15.5a5.5 5.5 0 0 1 7 0"></path><circle cx="12" cy="19" r="1.3" fill="#F5F7FF"></circle></svg>
+      </div>
+      <span style="font-family: 'Pixelify Sans', monospace; font-weight: 500; font-size: 22px; color: #D6DCF0">{{date}}</span>
+      <div style="display: flex; align-items: center; gap: 12px; margin-top: 18px">
+        <svg width="42" height="42" viewBox="0 0 24 24" fill="none" stroke="#8FA8E8" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><rect x="2" y="7.5" width="20" height="9.5" rx="4.75"></rect><path d="M7 10v5M4.5 12.5h5"></path><circle cx="16" cy="11" r="1"></circle><circle cx="18.5" cy="13.5" r="1"></circle></svg>
+        <div style="display: flex; flex-direction: column; font-family: 'Share Tech Mono', monospace; font-size: 16px; line-height: 1.25; color: #8FA8E8"><span>NEO ARCADE V1</span><span>LINUX 6.1</span></div>
+      </div>
+    </div>
+  </header>
+
+  <nav aria-label="Sistemas" style="position: absolute; left: 30px; top: 238px; width: 1860px; height: 128px; box-sizing: border-box; padding: 10px; border-radius: 16px; background: #0A1020; border: 2px solid #1A2648; box-shadow: 0 10px 30px #0008; display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 0">
+    <sc-for list="{{systems}}" as="s" hint-placeholder-count="12">
+      <button onClick="{{s.pick}}" aria-pressed="{{s.on}}" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; border-radius: 14px; border: 4px solid {{s.border}}; background: {{s.bg}}; box-shadow: {{s.glow}}; color: {{s.color}}; font-family: 'Pixelify Sans', monospace; font-weight: 600; font-size: 21px; letter-spacing: 0.5px; border-left-color: {{s.border}}; padding: 0">
+        <sc-if value="{{s.i_all}}" hint-placeholder-val="{{ false }}"><svg width="52" height="52" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="15" width="18" height="6.5" rx="2.5" fill="#E9EEFF"></rect><rect x="10.8" y="7" width="2.4" height="9" fill="#E9EEFF"></rect><circle cx="12" cy="6" r="3.6" fill="#FF3B3B"></circle><circle cx="17" cy="18.2" r="1.2" fill="#FF3B3B"></circle></svg></sc-if>
+        <sc-if value="{{s.i_arcade}}" hint-placeholder-val="{{ false }}"><svg width="52" height="52" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 2h10l1.5 4v16h-13V6z" fill="#E53935"></path><rect x="8" y="6.5" width="8" height="6" fill="#1A0A0A"></rect><rect x="7.5" y="14.5" width="9" height="2" fill="#7A1010"></rect></svg></sc-if>
+        <sc-if value="{{s.i_atari}}" hint-placeholder-val="{{ false }}"><svg width="52" height="52" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="15.5" width="16" height="6" rx="1.5" fill="#5A6175"></rect><rect x="11" y="6.5" width="2" height="10" fill="#C9D2E8"></rect><circle cx="12" cy="6" r="3" fill="#FF8A3D"></circle></svg></sc-if>
+        <sc-if value="{{s.i_nes}}" hint-placeholder-val="{{ false }}"><svg width="52" height="52" viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="7" width="20" height="10" rx="1" fill="#C9D2E8"></rect><rect x="2" y="12" width="20" height="5" fill="#7A8299"></rect><rect x="5" y="9" width="14" height="2" fill="#3A4055"></rect><rect x="15" y="13.5" width="3" height="1.5" fill="#E53935"></rect></svg></sc-if>
+        <sc-if value="{{s.i_snes}}" hint-placeholder-val="{{ false }}"><svg width="52" height="52" viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="7.5" width="20" height="9.5" rx="4.75" fill="#C9D2E8"></rect><path d="M6 10v5M3.5 12.5h5" stroke="#3A4055" stroke-width="1.8"></path><circle cx="16" cy="11" r="1.2" fill="#8B5CF6"></circle><circle cx="18.5" cy="13.5" r="1.2" fill="#6A4BC0"></circle><circle cx="14" cy="13.5" r="1.2" fill="#6A4BC0"></circle></svg></sc-if>
+        <sc-if value="{{s.i_genesis}}" hint-placeholder-val="{{ false }}"><svg width="52" height="52" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 9.5C3 7.5 5 6.5 7 7.5h10c2-1 4 0 4 2v4c0 3-3 4.5-5 3l-1-1H9l-1 1c-2 1.5-5 0-5-3z" fill="#3A4055" stroke="#C9D2E8" stroke-width="1"></path><path d="M7 10v4M5 12h4" stroke="#C9D2E8" stroke-width="1.6"></path><circle cx="14.5" cy="11" r=".9" fill="#C9D2E8"></circle><circle cx="16.8" cy="11" r=".9" fill="#C9D2E8"></circle><circle cx="14.5" cy="13.4" r=".9" fill="#C9D2E8"></circle><circle cx="16.8" cy="13.4" r=".9" fill="#C9D2E8"></circle></svg></sc-if>
+        <sc-if value="{{s.i_gb}}" hint-placeholder-val="{{ false }}"><svg width="52" height="52" viewBox="0 0 24 24" aria-hidden="true"><rect x="5.5" y="2" width="13" height="20" rx="2" fill="#C9D2E8"></rect><rect x="7.5" y="4" width="9" height="7.5" fill="#7FA06A"></rect><path d="M9 14.5v3.5M7.3 16.2h3.4" stroke="#3A4055" stroke-width="1.6"></path><circle cx="15.5" cy="15.5" r="1" fill="#A0306A"></circle><circle cx="14" cy="17.8" r="1" fill="#A0306A"></circle></svg></sc-if>
+        <sc-if value="{{s.i_ps}}" hint-placeholder-val="{{ false }}"><svg width="52" height="52" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9.5" fill="#C9D2E8"></circle><circle cx="12" cy="12" r="6" fill="none" stroke="#8FA8E8" stroke-width="1.5"></circle><circle cx="12" cy="12" r="2.4" fill="#050914"></circle></svg></sc-if>
+        <sc-if value="{{s.i_n64}}" hint-placeholder-val="{{ false }}"><svg width="52" height="52" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 8.5h18l-2.5 8h-3L14 13h-4l-1.5 3.5h-3z" fill="#7A8299"></path><rect x="11" y="13" width="2" height="7" fill="#7A8299"></rect><path d="M5.5 10.6h3M7 9.1v3" stroke="#E9EEFF" stroke-width="1.4"></path><circle cx="16.5" cy="10.6" r="1" fill="#FFD23F"></circle></svg></sc-if>
+        <sc-if value="{{s.i_dc}}" hint-placeholder-val="{{ false }}"><svg width="52" height="52" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9.5" fill="none" stroke="#C9D2E8" stroke-width="2"></circle><path d="M12 5a7 7 0 0 1 7 7" fill="none" stroke="#FF8A3D" stroke-width="2.4" stroke-linecap="round"></path><circle cx="12" cy="12" r="2.5" fill="#C9D2E8"></circle></svg></sc-if>
+        <sc-if value="{{s.i_psp}}" hint-placeholder-val="{{ false }}"><svg width="52" height="52" viewBox="0 0 24 24" aria-hidden="true"><rect x="1" y="7" width="22" height="10" rx="5" fill="#2A3048" stroke="#C9D2E8" stroke-width="1"></rect><rect x="6.5" y="9" width="11" height="6" fill="#8FA8E8"></rect></svg></sc-if>
+        <sc-if value="{{s.i_ports}}" hint-placeholder-val="{{ false }}"><svg width="52" height="52" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5l1.6 2.6 3-.6.6 3 2.6 1.6-1.2 2.9 1.2 2.9-2.6 1.6-.6 3-3-.6L12 21.5l-1.6-2.6-3 .6-.6-3L4.2 14.9l1.2-2.9-1.2-2.9 2.6-1.6.6-3 3 .6z" fill="#A9B3CC"></path><circle cx="12" cy="12" r="3.4" fill="#0A1020"></circle></svg></sc-if>
+        <span>{{s.name}}</span>
+      </button>
+    </sc-for>
+  </nav>
+
+  <section aria-label="Juegos" style="position: absolute; left: 0; top: 452px; width: 1920px; height: 400px">
+    <sc-for list="{{cards}}" as="c" hint-placeholder-count="8">
+      <button class="reflect" onClick="{{c.pick}}" aria-label="{{c.label}}" style="position: absolute; left: {{c.left}}; top: {{c.top}}; width: {{c.w}}; height: {{c.h}}; padding: 0; border-radius: 12px; border: {{c.border}}; background: #050914; box-shadow: {{c.glow}}; transform: {{c.tf}}; opacity: {{c.op}}; z-index: {{c.z}}; overflow: hidden; transition: left .3s, top .3s, width .3s, height .3s, transform .3s, opacity .3s; display: flex; flex-direction: column">
+        <span style="position: relative; flex: 1; display: block; background: {{c.art}}">
+          <span style="position: absolute; inset: 0; background: linear-gradient(180deg, transparent 45%, rgba(0,0,0,0.75) 100%)"></span>
+          <span style="position: absolute; left: 8%; right: 8%; bottom: 10%; font-family: 'Bungee', 'Arial Black', sans-serif; font-size: {{c.fs}}; line-height: 0.95; color: #FFFFFF; text-shadow: 3px 3px 0 {{c.c1}}, 0 0 16px #000; text-transform: uppercase; text-align: center; word-break: break-word">{{c.title}}</span>
+        </span>
+        <span style="height: {{c.band}}; display: flex; align-items: center; justify-content: center; background: #08080F; color: {{c.c2}}; font-family: 'Pixelify Sans', monospace; font-weight: 700; font-size: {{c.bandFs}}; letter-spacing: 1px; white-space: nowrap">{{c.sys}}</span>
+      </button>
+    </sc-for>
+    <sc-if value="{{centerOn}}" hint-placeholder-val="{{ true }}">
+      <div aria-hidden="true" style="position: absolute; left: 920px; top: -8px; width: 90px; height: 6px; background: #FF3B3B; z-index: 40"></div>
+    </sc-if>
+    <button onClick="{{prev}}" aria-label="Juego anterior" style="position: absolute; left: 10px; top: 112px; width: 44px; height: 76px; padding: 0; border: 0; background: transparent; z-index: 50">
+      <svg width="34" height="60" viewBox="0 0 34 60" aria-hidden="true"><path d="M30 2 4 30l26 28z" fill="#1E90FF"></path></svg>
+    </button>
+    <button onClick="{{next}}" aria-label="Juego siguiente" style="position: absolute; right: 10px; top: 112px; width: 44px; height: 76px; padding: 0; border: 0; background: transparent; z-index: 50">
+      <svg width="34" height="60" viewBox="0 0 34 60" aria-hidden="true"><path d="M4 2l26 28L4 58z" fill="#1E90FF"></path></svg>
+    </button>
+    <sc-if value="{{empty}}" hint-placeholder-val="{{ false }}">
+      <div style="position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; font-size: 28px">
+        <span>No hay juegos en este sistema</span>
+        <span style="font-family: 'Share Tech Mono', monospace; font-size: 20px; color: #8997B8">Añade juegos a su carpeta y aparecerán aquí</span>
+      </div>
+    </sc-if>
+  </section>
+
+  <section aria-label="Juego seleccionado" style="position: absolute; left: 58px; top: 798px; width: 690px; height: 190px; display: flex; flex-direction: column; gap: 10px">
+    <div style="display: flex; align-items: flex-start; gap: 28px">
+      <svg width="72" height="72" viewBox="0 0 24 24" aria-hidden="true" style="flex-shrink: 0; margin-top: -2px"><rect x="1.5" y="7" width="21" height="11" rx="5.5" fill="#4A5A8F"></rect><path d="M6.5 10v5.5M3.8 12.7h5.4" stroke="#0A1020" stroke-width="2"></path><circle cx="16" cy="11" r="1.3" fill="#0A1020"></circle><circle cx="18.6" cy="13.6" r="1.3" fill="#0A1020"></circle></svg>
+      <div style="display: flex; flex-direction: column; gap: 8px">
+        <span style="font-family: 'Pixelify Sans', monospace; font-weight: 700; font-size: 40px; letter-spacing: 2px; line-height: 1">{{sel.titleUpper}}</span>
+        <span style="font-family: 'Pixelify Sans', monospace; font-weight: 500; font-size: 22px; letter-spacing: 1px; color: #8FA8E8">{{sel.meta}}</span>
+      </div>
+    </div>
+    <p style="margin: 6px 0 0; max-width: 620px; font-family: 'Share Tech Mono', monospace; font-size: 20px; line-height: 1.3; color: #D6DCF0">{{sel.desc}}</p>
+  </section>
+
+  <div aria-hidden="true" style="position: absolute; left: 746px; top: 800px; width: 2px; height: 182px; background: #1A2648"></div>
+  <div aria-hidden="true" style="position: absolute; left: 1120px; top: 800px; width: 2px; height: 182px; background: #1A2648"></div>
+
+  <div role="menu" aria-label="Acciones" style="position: absolute; left: 774px; top: 808px; width: 320px; display: flex; flex-direction: column; gap: 6px">
+    <sc-for list="{{actions}}" as="a" hint-placeholder-count="4">
+      <button role="menuitem" onClick="{{a.run}}" style="height: 42px; display: flex; align-items: center; gap: 18px; padding: 0 14px; border-radius: 10px; border: 3px solid {{a.border}}; background: {{a.bg}}; box-shadow: {{a.glow}}; color: #F5F7FF; font-family: 'Pixelify Sans', monospace; font-weight: 600; font-size: 23px; letter-spacing: 1px; text-align: left">
+        <sc-if value="{{a.i_play}}" hint-placeholder-val="{{ false }}"><svg width="30" height="30" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="#F5F7FF"></circle><path d="M10 8v8l6-4z" fill="#0A1020"></path></svg></sc-if>
+        <sc-if value="{{a.i_fav}}" hint-placeholder-val="{{ false }}"><svg width="30" height="30" viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z" fill="{{a.starFill}}"></path></svg></sc-if>
+        <sc-if value="{{a.i_info}}" hint-placeholder-val="{{ false }}"><svg width="30" height="30" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="#A9B3CC"></circle><path d="M12 11v6M12 7.2v.6" stroke="#0A1020" stroke-width="2.4" stroke-linecap="round"></path></svg></sc-if>
+        <sc-if value="{{a.i_cfg}}" hint-placeholder-val="{{ false }}"><svg width="30" height="30" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5l1.6 2.6 3-.6.6 3 2.6 1.6-1.2 2.9 1.2 2.9-2.6 1.6-.6 3-3-.6L12 21.5l-1.6-2.6-3 .6-.6-3L4.2 14.9l1.2-2.9-1.2-2.9 2.6-1.6.6-3 3 .6z" fill="#A9B3CC"></path><circle cx="12" cy="12" r="3.4" fill="#0A1020"></circle></svg></sc-if>
+        <span>{{a.label}}</span>
+      </button>
+    </sc-for>
+  </div>
+
+  <section aria-label="Vista previa" style="position: absolute; left: 1146px; top: 790px; width: 514px; height: 202px; box-sizing: border-box; padding: 10px; border-radius: 18px; background: #0A1330; border: 2px solid #23346A; box-shadow: 0 0 24px #1769FF44">
+    <div style="position: relative; width: 100%; height: 100%; border-radius: 8px; overflow: hidden; background: {{sel.sky}}">
+      <div aria-hidden="true" style="position: absolute; left: 0; right: 0; bottom: 34px; height: 70px; display: flex; align-items: flex-end; gap: 6px; padding: 0 12px">
+        <div style="width: 60px; height: 40px; background: #0E0A20"></div>
+        <div style="width: 110px; height: 66px; background: #0E0A20; clip-path: polygon(0 30%, 50% 0, 100% 30%, 100% 100%, 0 100%)"></div>
+        <div style="width: 70px; height: 52px; background: #0E0A20"></div>
+        <div style="flex: 1"></div>
+        <div style="width: 90px; height: 58px; background: #0E0A20"></div>
+      </div>
+      <div aria-hidden="true" style="position: absolute; left: 0; right: 0; bottom: 0; height: 36px; background: {{sel.ground}}"></div>
+      <div aria-hidden="true" style="position: absolute; left: 130px; bottom: 30px; width: 22px; height: 54px; background: #F5F7FF"></div>
+      <div aria-hidden="true" style="position: absolute; left: 126px; bottom: 80px; width: 30px; height: 18px; background: #F5F7FF"></div>
+      <div aria-hidden="true" style="position: absolute; right: 150px; bottom: 30px; width: 22px; height: 54px; background: {{sel.c2}}"></div>
+      <div aria-hidden="true" style="position: absolute; right: 146px; bottom: 80px; width: 30px; height: 18px; background: {{sel.c2}}"></div>
+      <div style="position: absolute; left: 8px; right: 8px; top: 6px; display: flex; justify-content: space-between; font-family: 'Press Start 2P', monospace; font-size: 11px; color: #FFFFFF; text-shadow: 2px 2px 0 #000">
+        <span>1P <span style="color: #FFD23F">{{sel.score}}</span></span>
+        <span>HI <span style="color: #FFD23F">{{sel.hi}}</span></span>
+        <span>2P <span style="color: #FFD23F">000000</span></span>
+      </div>
+      <div aria-hidden="true" style="position: absolute; left: 8px; right: 8px; top: 24px; display: flex; align-items: center; gap: 10px">
+        <div style="flex: 1; height: 10px; background: #FFD23F; border: 2px solid #000"></div>
+        <span style="font-family: 'Press Start 2P', monospace; font-size: 12px; color: #FFFFFF; text-shadow: 2px 2px 0 #000">99</span>
+        <div style="flex: 1; height: 10px; background: #FFD23F; border: 2px solid #000"></div>
+      </div>
+      <sc-if value="{{scan}}" hint-placeholder-val="{{ true }}">
+        <div aria-hidden="true" style="position: absolute; inset: 0; background: repeating-linear-gradient(to bottom, rgba(0,0,0,0) 0px, rgba(0,0,0,0) 2px, rgba(0,0,0,0.22) 2px, rgba(0,0,0,0.22) 3px); pointer-events: none"></div>
+      </sc-if>
+    </div>
+  </section>
+
+  <div aria-hidden="true" style="position: absolute; left: 1700px; top: 784px; width: 200px; height: 210px">
+    <div style="position: absolute; left: 10px; top: 4px; transform: rotate(-12deg); font-family: 'Kaushan Script', cursive; font-size: 44px; line-height: 0.9; color: #FF168C; text-shadow: 0 0 14px #FF168C; text-align: center">INSERT<br>COIN</div>
+    <svg width="26" height="22" viewBox="0 0 24 22" style="position: absolute; left: 80px; top: 104px"><path d="M12 21 2.5 11.5a5.5 5.5 0 0 1 9.5-6 5.5 5.5 0 0 1 9.5 6z" fill="none" stroke="#FF168C" stroke-width="2.6"></path></svg>
+    <svg width="92" height="130" viewBox="0 0 46 65" style="position: absolute; left: 100px; top: 74px; filter: drop-shadow(0 0 6px #00BFFF)"><path d="M10 2h22l6 8v53H8V20l-4-4V8z" fill="none" stroke="#00BFFF" stroke-width="2.2" stroke-linejoin="round"></path><rect x="12" y="12" width="20" height="16" fill="none" stroke="#00BFFF" stroke-width="2"></rect><path d="M8 34h30M14 40h6M26 40h4M12 50h22" stroke="#00BFFF" stroke-width="2"></path></svg>
+  </div>
+
+  <footer style="position: absolute; left: 0; top: 1002px; width: 1920px; height: 2px; background: #1A2648"></footer>
+  <div style="position: absolute; left: 46px; top: 1016px; display: flex; align-items: center; gap: 46px; font-family: 'Pixelify Sans', monospace; font-weight: 600; font-size: 23px; letter-spacing: 1px; color: #C9D2E8">
+    <span style="display: flex; align-items: center; gap: 22px"><svg width="46" height="46" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 2h6v7h7v6h-7v7H9v-7H2V9h7z" fill="#5A6A96"></path></svg>NAVEGAR</span>
+    <span style="display: flex; align-items: center; gap: 18px"><span style="width: 38px; height: 38px; border-radius: 50%; border: 3px solid #8FA8E8; display: flex; align-items: center; justify-content: center; color: #F5F7FF">A</span>SELECCIONAR</span>
+    <span style="display: flex; align-items: center; gap: 18px"><span style="width: 38px; height: 38px; border-radius: 50%; border: 3px solid #8FA8E8; display: flex; align-items: center; justify-content: center; color: #F5F7FF">B</span>VOLVER</span>
+    <span style="display: flex; align-items: center; gap: 18px"><span style="width: 38px; height: 38px; border-radius: 50%; border: 3px solid #8FA8E8; display: flex; align-items: center; justify-content: center"><svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16" stroke="#F5F7FF" stroke-width="3" stroke-linecap="round"></path></svg></span>MENÚ</span>
+  </div>
+  <div style="position: absolute; right: 30px; top: 1018px; display: flex; align-items: center; gap: 20px">
+    <div aria-hidden="true" style="display: flex; flex-direction: column; gap: 4px; width: 116px"><div style="height: 3px; background: #FF168C"></div><div style="height: 3px; background: #8B5CF6"></div><div style="height: 3px; background: #1769FF"></div><div style="height: 3px; background: #FFB020"></div></div>
+    <div style="font-family: 'Pixelify Sans', monospace; font-weight: 500; font-size: 20px; line-height: 1.2; letter-spacing: 1.5px; color: #8FA8E8; text-align: center">RETRO IS NOT A STYLE<br>IT’S A LIFESTYLE</div>
+    <div aria-hidden="true" style="display: flex; flex-direction: column; gap: 4px; width: 116px"><div style="height: 3px; background: #FF168C"></div><div style="height: 3px; background: #8B5CF6"></div><div style="height: 3px; background: #1769FF"></div><div style="height: 3px; background: #FFB020"></div></div>
+  </div>
+
+  <sc-if value="{{showDetails}}" hint-placeholder-val="{{ false }}">
+    <div style="position: absolute; inset: 0; z-index: 100; background: rgba(2,4,10,0.82); display: flex; align-items: center; justify-content: center">
+      <div role="dialog" aria-label="Detalles del juego" style="position: relative; width: 900px; padding: 40px; border-radius: 22px; background: #0A1020; border: 2px solid #1E90FF; box-shadow: 0 0 50px #1769FF55; display: flex; gap: 36px">
+        <div style="width: 240px; height: 320px; flex-shrink: 0; border-radius: 12px; border: 3px solid {{sel.c1}}; overflow: hidden; display: flex; flex-direction: column">
+          <div style="position: relative; flex: 1; background: {{sel.art}}"><div style="position: absolute; left: 8%; right: 8%; bottom: 10%; font-family: 'Bungee', sans-serif; font-size: 28px; line-height: 0.95; text-align: center; color: #fff; text-shadow: 3px 3px 0 {{sel.c1}}">{{sel.titleUpper}}</div></div>
+          <div style="height: 40px; display: flex; align-items: center; justify-content: center; background: #08080F; color: {{sel.c2}}; font-weight: 700; font-size: 16px">{{sel.sys}}</div>
+        </div>
+        <div style="flex: 1; display: flex; flex-direction: column; gap: 12px; font-family: 'Share Tech Mono', monospace; font-size: 21px">
+          <span style="font-family: 'Pixelify Sans', monospace; font-weight: 700; font-size: 38px">{{sel.titleUpper}}</span>
+          <span style="color: #8FA8E8">{{sel.meta}}</span>
+          <span>Plataforma: {{sel.sys}}</span>
+          <span>Jugadores: {{sel.players}}</span>
+          <span>Controles: {{sel.ctrl}}</span>
+          <span>Emulador: {{sel.emu}}</span>
+          <div style="display: flex; gap: 12px; margin-top: auto">
+            <button onClick="{{play}}" style="height: 52px; padding: 0 26px; border-radius: 10px; border: 3px solid #1E90FF; background: #0B2350; color: #F5F7FF; font-family: 'Pixelify Sans', monospace; font-weight: 700; font-size: 22px">JUGAR</button>
+            <button onClick="{{closeAll}}" style="height: 52px; padding: 0 26px; border-radius: 10px; border: 2px solid #2A3B70; background: #0E1730; color: #F5F7FF; font-family: 'Pixelify Sans', monospace; font-weight: 600; font-size: 22px">VOLVER AL INICIO</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{showConfig}}" hint-placeholder-val="{{ false }}">
+    <div style="position: absolute; inset: 0; z-index: 100; background: rgba(2,4,10,0.82); display: flex; align-items: center; justify-content: center">
+      <div role="dialog" aria-label="Configuración" style="width: 720px; padding: 40px; border-radius: 22px; background: #0A1020; border: 2px solid #1E90FF; box-shadow: 0 0 50px #1769FF55; display: flex; flex-direction: column; gap: 24px; font-family: 'Pixelify Sans', monospace">
+        <span style="font-weight: 700; font-size: 38px">CONFIGURACIÓN</span>
+        <div style="display: flex; align-items: center; justify-content: space-between; font-size: 24px">
+          <span>Efecto CRT</span>
+          <div style="display: flex; gap: 10px">
+            <button onClick="{{scanOn}}" style="height: 48px; padding: 0 22px; border-radius: 10px; border: 3px solid {{scanOnBorder}}; background: #0E1730; color: #F5F7FF; font-family: 'Pixelify Sans', monospace; font-size: 20px">ACTIVADO</button>
+            <button onClick="{{scanOff}}" style="height: 48px; padding: 0 22px; border-radius: 10px; border: 3px solid {{scanOffBorder}}; background: #0E1730; color: #F5F7FF; font-family: 'Pixelify Sans', monospace; font-size: 20px">DESACTIVADO</button>
+          </div>
+        </div>
+        <button onClick="{{closeAll}}" style="align-self: flex-start; height: 52px; padding: 0 26px; border-radius: 10px; border: 3px solid #1E90FF; background: #0B2350; color: #F5F7FF; font-family: 'Pixelify Sans', monospace; font-weight: 700; font-size: 22px">VOLVER AL INICIO</button>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{showLaunch}}" hint-placeholder-val="{{ false }}">
+    <div style="position: absolute; inset: 0; z-index: 120; background: #000000; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 30px">
+      <span style="font-family: 'Share Tech Mono', monospace; font-size: 22px; color: #8997B8">Abriendo {{sel.emu}}…</span>
+      <span style="font-family: 'Bungee', sans-serif; font-size: 80px; color: #FFFFFF; text-shadow: 0 0 30px #1E90FF">{{sel.titleUpper}}</span>
+      <span class="blink" style="font-family: 'Press Start 2P', monospace; font-size: 22px; color: #FFD23F">PRESS START</span>
+      <button onClick="{{closeAll}}" style="height: 56px; padding: 0 30px; border-radius: 10px; border: 3px solid #1E90FF; background: #0B2350; color: #F5F7FF; font-family: 'Pixelify Sans', monospace; font-weight: 700; font-size: 24px">VOLVER AL LAUNCHER</button>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1920,"height":1080}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { sys: 'all', sel: 'sf2', favs: { sf2: true }, overlay: '', scan: true, act: 0 };
+  }
+  games() {
+    return [
+      { id: 'pacman', title: 'Pac-Man', sys: 'arcade', sysName: 'ARCADE', year: 1980, dev: 'NAMCO', genre: 'LABERINTO', players: '1-2 alternos', ctrl: 'Palanca de 4 direcciones', emu: 'MAME', c1: '#E53935', c2: '#FFD23F', c3: '#0A0A2A', motif: 'grid', desc: 'Recorre el laberinto, come todos los puntos y esquiva a los fantasmas. Las píldoras grandes cambian las tornas.' },
+      { id: 'zelda', title: 'Zelda: A Link to the Past', sys: 'snes', sysName: 'SUPER NINTENDO', year: 1991, dev: 'NINTENDO', genre: 'AVENTURA', players: '1', ctrl: 'Mando', emu: 'Snes9x', c1: '#C8A43A', c2: '#E53935', c3: '#2A2410', motif: 'diamond', desc: 'Explora dos mundos paralelos, supera mazmorras y reúne los objetos que te harán más fuerte.' },
+      { id: 'sonic', title: 'Sonic the Hedgehog', sys: 'genesis', sysName: 'SEGA GENESIS', year: 1991, dev: 'SEGA', genre: 'PLATAFORMAS', players: '1', ctrl: 'Mando de 3 botones', emu: 'Genesis Plus GX', c1: '#1769FF', c2: '#C9D2E8', c3: '#0A1A4A', motif: 'zigzag', desc: 'Corre a toda velocidad por bucles y rampas, recoge anillos y libera a los animales atrapados.' },
+      { id: 'sf2', title: 'Street Fighter II', sys: 'snes', sysName: 'SUPER NINTENDO', year: 1991, dev: 'CAPCOM', genre: 'LUCHA / FIGHTING', players: '1-2', ctrl: '6 botones', emu: 'Snes9x', c1: '#FF3B3B', c2: '#FF3B3B', c3: '#2A0A3A', motif: 'rays', desc: 'El clásico que definió el género de lucha. Elige a tu luchador, enfréntate a los mejores y demuestra quién es el verdadero campeón.' },
+      { id: 'mgs', title: 'Metal Gear Solid', sys: 'ps', sysName: 'PLAYSTATION', year: 1998, dev: 'KONAMI', genre: 'SIGILO', players: '1', ctrl: 'Mando', emu: 'DuckStation', c1: '#5A6A7A', c2: '#C9D2E8', c3: '#0B1116', motif: 'stripes', desc: 'Infíltrate en una base tomada por terroristas sin ser descubierto, en una aventura de sigilo cinematográfica.' },
+      { id: 'sm64', title: 'Super Mario 64', sys: 'n64', sysName: 'NINTENDO 64', year: 1996, dev: 'NINTENDO', genre: 'PLATAFORMAS 3D', players: '1', ctrl: 'Mando con stick analógico', emu: 'Mupen64Plus', c1: '#1769FF', c2: '#F5F7FF', c3: '#1A1040', motif: 'circles', desc: 'Salta dentro de cuadros mágicos y explora mundos en 3D para recuperar las estrellas.' },
+      { id: 'tetris', title: 'Tetris', sys: 'gb', sysName: 'GAME BOY', year: 1989, dev: 'NINTENDO', genre: 'PUZLE', players: '1-2', ctrl: 'Cruceta + 2 botones', emu: 'mGBA', c1: '#8B5CF6', c2: '#C9D2E8', c3: '#120A2E', motif: 'stripes', desc: 'Encaja las piezas que caen para completar líneas. Fácil de aprender, imposible de soltar.' },
+      { id: 'doom', title: 'DOOM', sys: 'ports', sysName: 'PORTS', year: 1993, dev: 'ID SOFTWARE', genre: 'DISPAROS', players: '1-4', ctrl: 'Mando o teclado', emu: 'PrBoom', c1: '#B91C1C', c2: '#FFB020', c3: '#1A0505', motif: 'rays', desc: 'Abre fuego contra hordas de demonios en una base marciana. Velocidad y tensión sin descanso.' },
+      { id: 'castlevania', title: 'Castlevania', sys: 'nes', sysName: 'NES', year: 1986, dev: 'KONAMI', genre: 'ACCIÓN', players: '1', ctrl: 'Cruceta + 2 botones', emu: 'Mesen', c1: '#7F1D1D', c2: '#C084FC', c3: '#12051A', motif: 'diamond', desc: 'Arma en mano, recorre un castillo encantado hasta enfrentarte a su temible señor.' },
+      { id: 'megaman', title: 'Mega Man', sys: 'nes', sysName: 'NES', year: 1987, dev: 'CAPCOM', genre: 'ACCIÓN', players: '1', ctrl: 'Cruceta + 2 botones', emu: 'Mesen', c1: '#00BFFF', c2: '#F5F7FF', c3: '#06142E', motif: 'grid', desc: 'Derrota a seis robots en el orden que prefieras y quédate con sus armas.' },
+      { id: 'pitfall', title: 'Pitfall!', sys: 'atari', sysName: 'ATARI', year: 1982, dev: 'ACTIVISION', genre: 'PLATAFORMAS', players: '1', ctrl: 'Palanca + 1 botón', emu: 'Stella', c1: '#16A34A', c2: '#FACC15', c3: '#0A1F10', motif: 'zigzag', desc: 'Cruza la jungla saltando fosos y cocodrilos para reunir tesoros antes de que acabe el tiempo.' },
+      { id: 'galaga', title: 'Galaga', sys: 'arcade', sysName: 'ARCADE', year: 1981, dev: 'NAMCO', genre: 'DISPAROS', players: '1-2 alternos', ctrl: 'Palanca + 1 botón', emu: 'MAME', c1: '#00BFFF', c2: '#FF168C', c3: '#050914', motif: 'rays', desc: 'Defiende tu nave de oleadas alienígenas que atacan en formación.' },
+      { id: 'crazytaxi', title: 'Crazy Taxi', sys: 'dc', sysName: 'DREAMCAST', year: 1999, dev: 'HITMAKER', genre: 'CONDUCCIÓN', players: '1', ctrl: 'Mando con gatillos', emu: 'Flycast', c1: '#FACC15', c2: '#FF8A3D', c3: '#1A1405', motif: 'stripes', desc: 'Recoge pasajeros y llévalos a su destino lo más rápido posible, por cualquier atajo.' },
+      { id: 'lumines', title: 'Lumines', sys: 'psp', sysName: 'PSP', year: 2004, dev: 'Q ENTERTAINMENT', genre: 'PUZLE MUSICAL', players: '1-2', ctrl: 'Cruceta + botones', emu: 'PPSSPP', c1: '#8B5CF6', c2: '#FF168C', c3: '#0A0620', motif: 'circles', desc: 'Agrupa bloques del mismo color mientras una línea barre la pantalla al ritmo de la música.' }
+    ];
+  }
+  art(g) {
+    const a = g.c1, b = g.c2, c = g.c3;
+    if (g.motif === 'rays') return 'repeating-conic-gradient(from 0deg at 50% 55%, ' + a + ' 0deg 12deg, ' + c + ' 12deg 24deg)';
+    if (g.motif === 'grid') return 'linear-gradient(' + b + '55 2px, transparent 2px) 0 0/100% 26px, linear-gradient(90deg, ' + b + '55 2px, transparent 2px) 0 0/26px 100%, radial-gradient(circle at 50% 35%, ' + a + ' 0 24%, ' + c + ' 25%)';
+    if (g.motif === 'circles') return 'repeating-radial-gradient(circle at 60% 38%, ' + a + ' 0 10px, ' + c + ' 10px 20px, ' + b + ' 20px 24px, ' + c + ' 24px 34px)';
+    if (g.motif === 'stripes') return 'repeating-linear-gradient(115deg, ' + a + ' 0 14px, ' + c + ' 14px 30px, ' + b + '99 30px 36px, ' + c + ' 36px 50px)';
+    if (g.motif === 'diamond') return 'repeating-conic-gradient(from 45deg at 50% 50%, ' + a + ' 0 25%, ' + c + ' 0 50%) 0 0/44px 44px';
+    return 'linear-gradient(135deg, ' + a + ' 25%, transparent 25%) -22px 0/44px 44px, linear-gradient(225deg, ' + a + ' 25%, transparent 25%) -22px 0/44px 44px, linear-gradient(315deg, ' + b + '88 25%, transparent 25%) 0 0/44px 44px, linear-gradient(45deg, ' + b + '88 25%, transparent 25%) 0 0/44px 44px, ' + c;
+  }
+  renderVals() {
+    const st = this.state;
+    const all = this.games();
+    const list = st.sys === 'all' ? all : all.filter((g) => g.sys === st.sys);
+    let idx = list.findIndex((g) => g.id === st.sel);
+    if (idx < 0) idx = 0;
+    const cur = list[idx] || all[3];
+    const slots = {
+      '-4': [-200, 474, 154, 238, 'perspective(900px) rotateY(10deg)', 0],
+      '-3': [79, 464, 194, 250, 'perspective(900px) rotateY(10deg)', 1],
+      '-2': [290, 450, 206, 267, 'perspective(900px) rotateY(8deg)', 1],
+      '-1': [512, 436, 188, 284, 'perspective(900px) rotateY(16deg)', 1],
+      '0': [719, 382, 427, 375, 'none', 1],
+      '1': [1162, 436, 190, 284, 'perspective(900px) rotateY(-16deg)', 1],
+      '2': [1366, 450, 178, 267, 'perspective(900px) rotateY(-12deg)', 1],
+      '3': [1556, 464, 140, 250, 'perspective(900px) rotateY(-14deg)', 1],
+      '4': [1709, 474, 154, 238, 'perspective(900px) rotateY(-10deg)', 1],
+      '5': [1960, 474, 154, 238, 'perspective(900px) rotateY(-10deg)', 0]
+    };
+    const cards = [];
+    list.forEach((g, i) => {
+      const off = i - idx;
+      const s = slots[String(off)];
+      if (!s) return;
+      const center = off === 0;
+      cards.push({
+        title: g.title, sys: g.sysName, c1: g.c1, c2: g.c2, art: this.art(g),
+        label: g.title + (center ? ', seleccionado' : ''),
+        left: s[0] + 'px', top: (s[1] - 452) + 'px', w: s[2] + 'px', h: s[3] + 'px', tf: s[4], op: s[5],
+        z: 20 - Math.abs(off),
+        border: center ? '5px solid #1E90FF' : '3px solid ' + g.c1 + 'AA',
+        glow: center ? '0 0 34px #1E90FFCC, 0 0 80px #1769FF66' : '0 14px 30px rgba(0,0,0,0.6)',
+        fs: center ? (g.title.length > 18 ? '40px' : '58px') : (g.title.length > 18 ? '18px' : '26px'),
+        band: center ? '62px' : '36px',
+        bandFs: center ? '30px' : (s[2] < 170 ? '14px' : '17px'),
+        pick: () => center ? this.setState({ overlay: 'play' }) : this.setState({ sel: g.id })
+      });
+    });
+    const sysDefs = [['all', 'ALL GAMES'], ['arcade', 'ARCADE'], ['atari', 'ATARI'], ['nes', 'NES'], ['snes', 'SNES'], ['genesis', 'SEGA GENESIS'], ['gb', 'GAME BOY'], ['ps', 'PLAYSTATION'], ['n64', 'NINTENDO 64'], ['dc', 'DREAMCAST'], ['psp', 'PSP'], ['ports', 'PORTS']];
+    const systems = sysDefs.map(([id, name]) => {
+      const on = st.sys === id;
+      const o = { name, on, pick: () => this.setState({ sys: id, sel: id === 'all' ? 'sf2' : st.sel }),
+        border: on ? '#1E90FF' : 'transparent', bg: on ? '#0B1A3A' : 'transparent',
+        glow: on ? '0 0 22px #1E90FFAA, inset 0 0 16px #1E90FF33' : 'none', color: on ? '#FFFFFF' : '#C9D2E8' };
+      sysDefs.forEach(([k]) => { o['i_' + k] = k === id; });
+      return o;
+    });
+    const isFav = !!st.favs[cur.id];
+    const acts = [['play', 'JUGAR'], ['fav', 'FAVORITOS'], ['info', 'DETALLES'], ['cfg', 'CONFIGURACIÓN']];
+    const actions = acts.map(([id, label], i) => ({
+      label, i_play: id === 'play', i_fav: id === 'fav', i_info: id === 'info', i_cfg: id === 'cfg',
+      starFill: isFav ? '#FFD23F' : '#A9B3CC',
+      border: i === st.act ? '#1E90FF' : 'transparent',
+      bg: i === st.act ? '#0B1A3A' : 'transparent',
+      glow: i === st.act ? '0 0 16px #1E90FF88' : 'none',
+      run: () => {
+        if (id === 'play') this.setState({ act: i, overlay: 'play' });
+        if (id === 'fav') { const favs = { ...st.favs }; if (favs[cur.id]) delete favs[cur.id]; else favs[cur.id] = true; this.setState({ act: i, favs }); }
+        if (id === 'info') this.setState({ act: i, overlay: 'details' });
+        if (id === 'cfg') this.setState({ act: i, overlay: 'config' });
+      }
+    }));
+    const h = cur.id.split('').reduce((s, ch) => s + ch.charCodeAt(0), 0);
+    const now = new Date();
+    const dias = ['DOM.', 'LUN.', 'MAR.', 'MIÉ.', 'JUE.', 'VIE.', 'SÁB.'];
+    const meses = ['ENE.', 'FEB.', 'MAR.', 'ABR.', 'MAY.', 'JUN.', 'JUL.', 'AGO.', 'SEP.', 'OCT.', 'NOV.', 'DIC.'];
+    const city = [60, 95, 70, 110, 80, 50, 100, 75, 115, 65, 90, 55, 105, 85].map((v, i) => ({
+      h: v + 'px',
+      win: i % 2 ? 'linear-gradient(#FF168C 0 0) 30% 30%/4px 4px no-repeat, linear-gradient(#00BFFF 0 0) 65% 55%/4px 4px no-repeat' : 'linear-gradient(#00BFFF 0 0) 40% 25%/4px 4px no-repeat, linear-gradient(#FFD23F 0 0) 60% 60%/4px 4px no-repeat'
+    }));
+    return {
+      cards, systems, actions, city,
+      centerOn: list.length > 0,
+      empty: list.length === 0,
+      scan: st.scan,
+      time: String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0'),
+      date: dias[now.getDay()] + ' ' + now.getDate() + ' ' + meses[now.getMonth()] + ' ' + now.getFullYear(),
+      sel: {
+        titleUpper: cur.title.toUpperCase(),
+        meta: cur.dev + ' • ' + cur.year + ' • ' + cur.genre,
+        desc: cur.desc, sys: cur.sysName, players: cur.players, ctrl: cur.ctrl, emu: cur.emu,
+        c1: cur.c1, c2: cur.c2, art: this.art(cur),
+        sky: 'linear-gradient(180deg, ' + cur.c3 + ' 0%, ' + cur.c1 + ' 100%)',
+        ground: 'repeating-linear-gradient(90deg, #3A2A1A 0 38px, #4A3620 38px 40px)',
+        score: String((h * 37) % 9000 + 1000).padStart(5, ' '),
+        hi: String((h * 211) % 90000 + 10000)
+      },
+      prev: () => list.length && this.setState({ sel: list[(idx - 1 + list.length) % list.length].id }),
+      next: () => list.length && this.setState({ sel: list[(idx + 1) % list.length].id }),
+      play: () => this.setState({ overlay: 'play' }),
+      closeAll: () => this.setState({ overlay: '' }),
+      showDetails: st.overlay === 'details',
+      showConfig: st.overlay === 'config',
+      showLaunch: st.overlay === 'play',
+      scanOn: () => this.setState({ scan: true }),
+      scanOff: () => this.setState({ scan: false }),
+      scanOnBorder: st.scan ? '#1E90FF' : '#2A3B70',
+      scanOffBorder: st.scan ? '#2A3B70' : '#1E90FF'
+    };
+  }
+}
+</script>
+</body>
+</html>
