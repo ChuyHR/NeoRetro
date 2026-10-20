@@ -56,6 +56,28 @@ MP80 desde ella.
 - Versión final: `npm run empaquetar` (10 s, 283 MB) y el ejecutable reportó «versión final», donde
   Esc no hace nada. La carpeta `dist/` se borró después para no ocupar C:.
 
+## La MP80, al cierre del día
+
+- **La primera instalación quedó solo con el sistema base.** El instalador eligió el cable hacia la
+  laptop (que aún no compartía internet), no consiguió dirección y no pudo bajar escritorio ni SSH.
+  Además pidió contraseña de usuario, porque el campo vacío del preseed cuenta como pregunta sin
+  contestar; el usuario puso una con «ñ» que la consola, sin `console-setup` y por tanto en
+  teclado inglés, no podía escribir. Se quitó con `init=/bin/bash` y `passwd -d arcade` desde GRUB.
+- **Se completó sin reinstalar.** El usuario activó en la laptop «compartir conexión» (ICS) por el
+  cable (la laptop queda en `192.168.137.1`, la MP80 en `192.168.137.165`), corrigió
+  `/etc/apt/sources.list` e instaló `ssh` a mano. Desde ahí, por SSH, `scripts/instalador/completar-mp80.sh`
+  (servicio `neoarcade-completar`, 5 minutos) instaló Xfce, NetworkManager, teclado latam, avahi,
+  Windows en GRUB y puso Debian primero en el orden de arranque del firmware.
+- **Wi-Fi funcionando.** Tarjeta Realtek RTL8821CE (`rtw_8821ce`), conectada por NetworkManager a
+  `Totalplay-66AE_5G` en 5 GHz; la MP80 queda en `192.168.100.94`. La contraseña se pasó por la
+  entrada estándar desde `credenciales/wifi.txt`, que se borró después. La imagen armada que la
+  contenía también se borró; **la memoria USB todavía la tiene: el usuario debe formatearla.**
+- **Pendiente: el firmware arranca Windows primero** aunque `efibootmgr` ya decía `BootOrder:
+  0000,0002`. Al reiniciar (el usuario rechazó el comando, pero se ejecutó) arrancó Windows directo.
+  Se le indicó cambiar «Boot Option #1» a «debian» en el BIOS, entrando desde Windows por «Inicio
+  avanzado → Configuración del firmware UEFI». Falta confirmar que el escritorio abre solo.
+- La laptop puede apagar el uso compartido del cable cuando ya no haga falta; la MP80 tiene Wi-Fi.
+
 ## Lo que falta, en orden
 
 1. **El usuario revisa la fase 0** con `npm start` (en una terminal de WSL, dentro del repositorio) y

@@ -1,17 +1,17 @@
 #!/usr/bin/env bash
 # Arma la imagen de instalación automática de Debian 13 para la MP80 a partir de la imagen oficial.
-# Uso: bash scripts/instalador/armar-iso.sh <imagen oficial .iso> <red Wi-Fi> <llave pública .pub> \
-#        <imagen de salida .iso> [archivo con la contraseña del Wi-Fi]
-# Sin el archivo de contraseña, el instalador la pide en pantalla. Con él, la contraseña queda escrita
-# dentro de la imagen y de la memoria USB: bórralas después de instalar.
+# Uso: bash scripts/instalador/armar-iso.sh <imagen oficial .iso> <llave pública .pub> \
+#        <imagen de salida .iso> [red Wi-Fi] [archivo con la contraseña del Wi-Fi]
+# Lo normal es instalar por cable con internet y no dar red Wi-Fi. Si se da, la contraseña queda
+# escrita dentro de la imagen y de la memoria USB: bórralas después de instalar.
 set -euo pipefail
 
-if [[ $# -lt 4 ]]; then
+if [[ $# -lt 3 ]]; then
   sed -n '3,6p' "$0" >&2
   exit 2
 fi
 aqui="$(cd "$(dirname "$0")" && pwd)"
-original="$1" red="$2" llave="$3" salida="$4" archivo_clave="${5:-}"
+original="$1" llave="$2" salida="$3" red="${4:-}" archivo_clave="${5:-}"
 trabajo="$(mktemp -d)"
 trap 'rm -rf "$trabajo"' EXIT
 
@@ -21,11 +21,17 @@ import sys
 
 origen, destino, red, archivo_clave = sys.argv[1:5]
 with open(origen, encoding="utf-8") as archivo:
-    texto = archivo.read().replace("@RED_WIFI@", red)
-if archivo_clave:
-    with open(archivo_clave, encoding="utf-8") as archivo:
-        clave = archivo.read().strip()
-    texto += f"d-i netcfg/wireless_wpa string {clave}\n"
+    texto = archivo.read()
+if red:
+    texto += (
+        f"d-i netcfg/wireless_essid string {red}\n"
+        f"d-i netcfg/wireless_essid_again string {red}\n"
+        "d-i netcfg/wireless_security_type select wpa\n"
+    )
+    if archivo_clave:
+        with open(archivo_clave, encoding="utf-8") as archivo:
+            clave = archivo.read().strip()
+        texto += f"d-i netcfg/wireless_wpa string {clave}\n"
 with open(destino, "w", encoding="utf-8") as archivo:
     archivo.write(texto)
 PY
