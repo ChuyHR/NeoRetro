@@ -19,7 +19,10 @@ SALIDA=/tmp/prueba-tv
 BIOS=$HOME/.var/app/org.libretro.RetroArch/config/retroarch/system
 rm -rf "$SALIDA" "$BASE" && mkdir -p "$SALIDA" "$BASE/roms/snes"
 node scripts/juego-de-prueba-snes.mjs "$BASE/roms/snes" >/dev/null
-printf 'esto no es un juego' >"$BASE/roms/snes/Archivo dañado (prueba).sfc"
+# Vacío y no con basura: Snes9x abre cualquier contenido y deja la pantalla en negro, pero un archivo
+# vacío lo rechaza y RetroArch se cierra con código 1. Va en la carpeta personal porque /tmp no existe
+# para los emuladores de Flathub (es privado dentro de su caja).
+: >"$BASE/roms/snes/Archivo dañado (prueba).sfc"
 if ! ls "$BIOS"/scph550[012].bin >/dev/null 2>&1; then
   mkdir -p "$BASE/roms/psx/Disco sin BIOS"
   printf 'FILE "disco.bin" BINARY\n  TRACK 01 MODE2/2352\n    INDEX 01 00:00:00\n' >"$BASE/roms/psx/Disco sin BIOS/Disco sin BIOS (prueba).cue"
@@ -46,10 +49,20 @@ captura 1-inicio
 informe "Al abrir, foco en: $(foco)"
 
 # Los juegos van por orden alfabético: Archivo dañado, Disco sin BIOS (si se armó), Prueba de control.
-tecla Return; sleep 3; captura 2-archivo-danado; tecla Return; sleep 0.6
+# Si un caso de error abre RetroArch y no se cierra solo, se cierra aquí para que el resto no se desfase.
+cerrar_si_quedo() {
+  if ra_abierto; then
+    informe "FALLA: $1"
+    tecla Escape 0.3; esperar 10 ra_cerrado; esperar 10 neo_visible
+  fi
+}
+tecla Return
+esperar 4 ra_abierto && esperar 8 ra_cerrado
+cerrar_si_quedo "con el archivo dañado RetroArch no se cerró solo"
+esperar 5 neo_visible; sleep 1; captura 2-archivo-danado; tecla Return; sleep 0.6
 if [ -d "$BASE/roms/psx" ]; then
-  tecla Right; sleep 0.5; tecla Return; sleep 1; captura 3-disco-sin-bios
-  ra_abierto && informe "FALLA: con el disco sin BIOS se abrió RetroArch"
+  tecla Right; sleep 0.5; tecla Return; sleep 2; captura 3-disco-sin-bios
+  cerrar_si_quedo "con el disco sin BIOS se abrió RetroArch"
   tecla Return; sleep 0.6
 fi
 tecla Right; sleep 0.5
