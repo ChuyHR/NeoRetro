@@ -23,6 +23,9 @@ const CAPTURA = DESARROLLO
   ? process.argv.find((arg) => arg.startsWith('--captura='))?.slice('--captura='.length)
   : undefined;
 
+// Solo en desarrollo: NEO_ARCADE_DEPURAR=1 escribe en la terminal cada acción que llega del mando.
+const DEPURAR = DESARROLLO && Boolean(process.env.NEO_ARCADE_DEPURAR);
+
 // Tiempo mínimo de «Abriendo…» en pantalla antes de ocultar la ventana, para que alcance a leerse.
 const PANTALLA_LANZAMIENTO_MS = 1200;
 
@@ -137,6 +140,12 @@ function crearVentana() {
   ventana.webContents.on('before-input-event', (_evento, entrada) => {
     if (DESARROLLO && entrada.type === 'keyDown' && entrada.key === 'Escape') app.quit();
   });
+  // En desarrollo, lo que la página escribe en su consola (errores incluidos) sale en la terminal.
+  if (DESARROLLO) {
+    ventana.webContents.on('console-message', ({ level, message, lineNumber, sourceId }) => {
+      console.log(`[página ${level}] ${message} (${path.basename(sourceId ?? '')}:${lineNumber})`);
+    });
+  }
 
   // Al abrir también se fuerza el foco: el gestor de ventanas de un escritorio puede negárselo a una
   // ventana nueva si otra estaba en uso, y en una consola el teclado y el mando tienen que llegar aquí.
@@ -158,7 +167,10 @@ app.whenReady().then(() => {
   mandos = iniciarMandos({
     mapa: configuracion.mapaMando,
     perfilGuardado: (clave) => mapeos[clave] ?? null,
-    alAccion: (accion) => enJuego || enviar('mando-accion', accion),
+    alAccion: (accion) => {
+      if (DEPURAR) console.log(`[mando] ${accion}${enJuego ? ' (ignorada: hay un juego abierto)' : ''}`);
+      if (!enJuego) enviar('mando-accion', accion);
+    },
     alControl: (cambio) => enJuego || enviar('mando-control', cambio),
     alCrudo: (suceso) => enJuego || enviar('mando-crudo', suceso),
     alCambio: (lista) => enviar('mandos', lista),
