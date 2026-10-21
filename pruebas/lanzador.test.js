@@ -5,7 +5,7 @@ import path from 'node:path';
 import { after, test } from 'node:test';
 
 import { cargarConfiguracion } from '../core/configuracion.js';
-import { armarComando, comandoLegible, ejecutar, ErrorLanzamiento, rutaNucleo, verificar } from '../core/lanzador/lanzador.js';
+import { armarComando, comandoLegible, ejecutar, ErrorLanzamiento, falloAlAbrir, rutaNucleo, verificar } from '../core/lanzador/lanzador.js';
 
 const temporales = [];
 after(() => Promise.all(temporales.map((carpeta) => rm(carpeta, { recursive: true, force: true }))));
@@ -53,6 +53,26 @@ test('verificar avisa si falta el juego, el programa o el núcleo', async () => 
   await assert.rejects(verificar(armarComando(snes, juego, conBash), snes, juego), /Falta el núcleo Snes9x de RetroArch/);
   await writeFile(path.join(carpeta, 'snes9x_libretro.so'), '');
   await verificar(armarComando(snes, juego, conBash), snes, juego);
+});
+
+test('sin ninguna de sus BIOS, PlayStation avisa cuáles faltan y dónde van', async () => {
+  const carpeta = await carpetaTemporal();
+  const juego = path.join(carpeta, 'juego.cue');
+  await writeFile(juego, '');
+  await writeFile(path.join(carpeta, 'swanstation_libretro.so'), '');
+  const emuladores = { retroarch: { nombre: 'RetroArch', comando: ['bash'], carpetaNucleos: carpeta, carpetaBios: carpeta } };
+  const psx = sistema('psx');
+  await assert.rejects(verificar(armarComando(psx, juego, emuladores), psx, juego),
+    /Falta la BIOS de PLAYSTATION\. Copia scph5501\.bin, scph5500\.bin o scph5502\.bin en la carpeta/);
+  await writeFile(path.join(carpeta, 'scph5502.bin'), '');
+  await verificar(armarComando(psx, juego, emuladores), psx, juego);
+});
+
+test('un emulador que sale con error en los primeros segundos no abrió el juego', () => {
+  assert.equal(falloAlAbrir({ codigo: 1, duracionMs: 312 }), true);
+  assert.equal(falloAlAbrir({ codigo: 0, duracionMs: 312 }), false);
+  assert.equal(falloAlAbrir({ codigo: 1, duracionMs: 20 * 60 * 1000 }), false);
+  assert.equal(falloAlAbrir({ codigo: null, senal: 'SIGTERM', duracionMs: 300 }), false);
 });
 
 test('ejecutar espera a que el emulador cierre y devuelve su código de salida', async () => {

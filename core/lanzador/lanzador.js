@@ -59,6 +59,24 @@ export async function verificar({ programa, emulador }, sistema, rutaJuego, ento
   if (sistema.nucleo && !(await existe(rutaNucleo(emulador, sistema.nucleo)))) {
     throw new ErrorLanzamiento(`Falta el núcleo ${sistema.nombreEmulador} de ${emulador.nombre}.`);
   }
+  // Sin BIOS el emulador no se cierra: deja la pantalla en negro. Por eso se revisa antes de abrirlo.
+  if (sistema.bios?.length && emulador.carpetaBios) {
+    const carpeta = expandirRuta(emulador.carpetaBios);
+    const hallados = await Promise.all(sistema.bios.map((archivo) => existe(path.join(carpeta, archivo))));
+    if (!hallados.includes(true)) {
+      throw new ErrorLanzamiento(`Falta la BIOS de ${sistema.nombreLargo}. Copia ${listaLegible(sistema.bios)} en la carpeta ${emulador.carpetaBios}.`);
+    }
+  }
+}
+
+const listaLegible = (archivos) => (archivos.length === 1 ? archivos[0] : `${archivos.slice(0, -1).join(', ')} o ${archivos.at(-1)}`);
+
+// Un emulador que sale con error en los primeros segundos no llegó a abrir el juego. Más tarde, un
+// código distinto de cero puede ser solo la forma de cerrar de ese emulador, y no se avisa.
+export const CIERRE_TEMPRANO_MS = 8000;
+
+export function falloAlAbrir({ codigo, duracionMs }) {
+  return codigo !== 0 && codigo !== null && duracionMs < CIERRE_TEMPRANO_MS;
 }
 
 // Ejecuta el emulador y espera a que se cierre. Devuelve el código de salida y cuánto duró.

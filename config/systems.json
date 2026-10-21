@@ -1,5 +1,5 @@
 {
-  "_nota": "Un sistema por carpeta de roms/. comando: plantilla con {emulador} (el comando de emulators.json), {nucleo} (ruta del núcleo de RetroArch) y {juego} (ruta del archivo). nombre va en la barra; nombreLargo, en la banda de la portada. colores y motivo arman la portada de reemplazo cuando falta la carátula.",
+  "_nota": "Un sistema por carpeta de roms/. comando: plantilla con {emulador} (el comando de emulators.json), {nucleo} (ruta del núcleo de RetroArch) y {juego} (ruta del archivo). nombre va en la barra; nombreLargo, en la banda de la portada. colores y motivo arman la portada de reemplazo cuando falta la carátula. bios: archivos de los que el núcleo necesita al menos uno en carpetaBios de su emulador; sin ninguno, el juego no arranca y se avisa antes de abrirlo.",
   "sistemas": [
     {
       "id": "arcade", "nombre": "ARCADE", "nombreLargo": "ARCADE", "carpeta": "arcade",
@@ -89,6 +89,7 @@
       "id": "segacd", "nombre": "SEGA CD", "nombreLargo": "SEGA CD", "carpeta": "segacd",
       "extensiones": [".cue", ".chd", ".iso", ".m3u"],
       "emulador": "retroarch", "nucleo": "genesis_plus_gx", "nombreEmulador": "Genesis Plus GX",
+      "bios": ["bios_CD_U.bin", "bios_CD_E.bin", "bios_CD_J.bin"],
       "comando": ["{emulador}", "-f", "-L", "{nucleo}", "{juego}"],
       "controles": "Mando de 3 o 6 botones", "colores": ["#00BFFF", "#C9D2E8", "#06142E"], "motivo": "circles"
     },
@@ -117,6 +118,7 @@
       "id": "psx", "nombre": "PLAYSTATION", "nombreLargo": "PLAYSTATION", "carpeta": "psx",
       "extensiones": [".cue", ".chd", ".pbp", ".m3u"],
       "emulador": "retroarch", "nucleo": "swanstation", "nombreEmulador": "SwanStation",
+      "bios": ["scph5501.bin", "scph5500.bin", "scph5502.bin"],
       "comando": ["{emulador}", "-f", "-L", "{nucleo}", "{juego}"],
       "controles": "Mando", "colores": ["#5A6A7A", "#C9D2E8", "#0B1116"], "motivo": "stripes"
     },

@@ -7,7 +7,7 @@ import path from 'node:path';
 import { conteoPorSistema, datosParaInterfaz, ubicarJuego } from './biblioteca.js';
 import { cargarConfiguracion, expandirRuta, RAIZ } from './configuracion.js';
 import { escanearBiblioteca } from './escaner/escaner.js';
-import { armarComando, comandoLegible, ejecutar, ErrorLanzamiento, verificar } from './lanzador/lanzador.js';
+import { armarComando, comandoLegible, ejecutar, ErrorLanzamiento, falloAlAbrir, verificar } from './lanzador/lanzador.js';
 import { crearRegistro } from './registro.js';
 
 // Empaquetada con scripts/empaquetar.sh, el ejecutable se llama neo-arcade y Electron la da por
@@ -54,8 +54,12 @@ ipcMain.handle('jugar', async (_evento, id) => {
     await verificar(comando, ubicado.sistema, ubicado.ruta);
     await esperar(PANTALLA_LANZAMIENTO_MS);
     ventana.hide();
-    const { codigo, senal, duracionMs } = await ejecutar(comando);
+    const resultado = await ejecutar(comando);
+    const { codigo, senal, duracionMs } = resultado;
     await registro.anotar('lanzamiento', comandoLegible(comando), `salida ${codigo ?? senal}`, `${duracionMs} ms`);
+    if (falloAlAbrir(resultado)) {
+      return { ok: false, mensaje: `${ubicado.sistema.nombreEmulador} se cerró al abrir el juego. Puede que el archivo esté dañado o que no sea de ${ubicado.sistema.nombreLargo}.` };
+    }
     return { ok: true, codigo };
   } catch (error) {
     const conocido = error instanceof ErrorLanzamiento;
@@ -102,8 +106,11 @@ function crearVentana() {
     if (DESARROLLO && entrada.type === 'keyDown' && entrada.key === 'Escape') app.quit();
   });
 
+  // Al abrir también se fuerza el foco: el gestor de ventanas de un escritorio puede negárselo a una
+  // ventana nueva si otra estaba en uso, y en una consola el teclado y el mando tienen que llegar aquí.
   ventana.once('ready-to-show', () => {
     ventana.show();
+    volverAlFrente();
     if (CAPTURA) capturar(CAPTURA);
   });
 
