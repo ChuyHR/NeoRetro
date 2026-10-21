@@ -6,13 +6,14 @@
 import os from 'node:os';
 import path from 'node:path';
 
-import { cargarConfiguracion, expandirRuta } from '../core/configuracion.js';
+import { cargarConfiguracion, carpetasDelUsuario, expandirRuta } from '../core/configuracion.js';
 import { diagnosticar } from '../core/diagnostico.js';
 
 const configuracion = await cargarConfiguracion();
 // La carpeta de datos de Electron para esta app; NEO_ARCADE_DATOS la cambia, como en la app.
 const carpetaDatos = process.env.NEO_ARCADE_DATOS ? expandirRuta(process.env.NEO_ARCADE_DATOS) : path.join(os.homedir(), '.config', 'neo-arcade');
-const informe = await diagnosticar(configuracion, carpetaDatos, { revisar: process.argv.includes('--juegos') });
+const carpetas = carpetasDelUsuario(configuracion, carpetaDatos);
+const informe = await diagnosticar(configuracion, carpetaDatos, { revisar: process.argv.includes('--juegos'), carpetaRecordado: carpetas.datos });
 if (process.argv.includes('--json')) {
   console.log(JSON.stringify(informe, null, 2));
   process.exit(0);
@@ -63,4 +64,5 @@ if (informe.revision) {
 console.log(`MEDIOS: ${casa(informe.medios.carpeta)} ${informe.medios.existe ? '' : '(no existe)'}`);
 console.log(`MANDOS CONECTADOS: ${informe.mandos.length ? informe.mandos.map(({ nombre }) => nombre).join(', ') : 'ninguno'}`);
 console.log(`LO QUE SE RECUERDA: ${casa(informe.datos)}`);
+console.log(`REGISTRO: ${casa(path.join(carpetas.registros, 'neo-arcade.log'))}`);
 process.exit(grave ? 1 : 0);

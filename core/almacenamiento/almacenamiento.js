@@ -5,7 +5,8 @@
 // La interfaz es la dueña de estos datos y los manda completos cada vez que cambian; aquí se limpian
 // (nada que no sea de la forma esperada se guarda) y se escriben juntando los cambios seguidos, porque
 // al recorrer el carrusel la selección cambia varias veces por segundo.
-import { readFile, rename, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, rename, writeFile } from 'node:fs/promises';
+import path from 'node:path';
 
 export const MAX_RECIENTES = 50;
 
@@ -85,6 +86,7 @@ export function crearAlmacen(archivo, { esperaMs = 800 } = {}) {
     pendiente = null;
     // Se escribe aparte y se renombra: un corte de luz a la mitad no deja el archivo roto.
     escribiendo = escribiendo
+      .then(() => mkdir(path.dirname(archivo), { recursive: true }))
       .then(() => writeFile(`${archivo}.nuevo`, texto))
       .then(() => rename(`${archivo}.nuevo`, archivo));
     await escribiendo;

@@ -50,6 +50,14 @@ for grupo in input video render audio; do
   getent group "$grupo" >/dev/null && usermod -aG "$grupo" "$USUARIO"
 done
 CASA=$(getent passwd "$USUARIO" | cut -d: -f6)
+# Todo lo del usuario va en ~/NeoRetro (decidido con el usuario el 2026-10-20, como pide su skill). Si
+# ahí hay una copia de desarrollo de Neo Arcade, sus carpetas se mezclarían con las de la consola.
+NEORETRO="$CASA/NeoRetro"
+if [ -d "$NEORETRO/.git" ]; then
+  echo "En $NEORETRO hay una copia de desarrollo de Neo Arcade (un repositorio de git). La consola usa" >&2
+  echo "esa carpeta para los juegos y los datos: mueve la copia a otro lugar y vuelve a correr esto." >&2
+  exit 1
+fi
 
 echo "== La app en /opt/neo-arcade"
 if [ ! -x "$REPO/dist/neo-arcade/neo-arcade" ]; then
@@ -63,24 +71,38 @@ mv /opt/neo-arcade.nueva /opt/neo-arcade
 # El ayudante de aislamiento de Chromium necesita ser de root y con setuid.
 chown root:root /opt/neo-arcade/chrome-sandbox
 chmod 4755 /opt/neo-arcade/chrome-sandbox
-# En la consola, los juegos y los medios van en la carpeta del usuario, fáciles de copiar.
-printf '{\n  "_nota": "Escrito por instalar-neo-arcade.sh: en la consola, juegos y medios van en la carpeta del usuario.",\n  "roms": "~/roms",\n  "medios": "~/media"\n}\n' \
-  >/opt/neo-arcade/resources/app/config/biblioteca.json
-python3 - "$REPO/config/systems.json" "$CASA" <<'PY'
+echo "== Carpetas del usuario en $NEORETRO"
+# roms y media por sistema; saves y states para las partidas de RetroArch; logs para el registro de Neo
+# Arcade; config para lo que se recuerda, los mapeos de mandos y cualquier archivo de config/ que se
+# quiera cambiar (se lee antes que el de la app); metadata y backups quedan listas para lo que venga.
+BIBLIOTECA='{
+  "_nota": "Escrito por instalar-neo-arcade.sh. Todo lo del usuario va en ~/NeoRetro. Para cambiar otro archivo de configuración de Neo Arcade, copia aquí el de /opt/neo-arcade/resources/app/config y edítalo.",
+  "roms": "~/NeoRetro/roms",
+  "medios": "~/NeoRetro/media",
+  "datos": "~/NeoRetro/config",
+  "registros": "~/NeoRetro/logs"
+}'
+python3 - "$REPO/config/systems.json" "$NEORETRO" <<'PY'
 import json, os, sys
 sistemas = json.load(open(sys.argv[1], encoding="utf-8"))["sistemas"]
 for raiz in ("roms", "media"):
     for sistema in sistemas:
         os.makedirs(os.path.join(sys.argv[2], raiz, sistema["carpeta"]), exist_ok=True)
+for carpeta in ("saves", "states", "metadata", "logs", "backups", "config"):
+    os.makedirs(os.path.join(sys.argv[2], carpeta), exist_ok=True)
 PY
-chown -R "$USUARIO:$USUARIO" "$CASA/roms" "$CASA/media"
+# La de la app también apunta ahí, por si la sesión arranca sin NEO_ARCADE_CONFIG. La del usuario no se
+# pisa al volver a instalar: puede tener cambios suyos.
+printf '%s\n' "$BIBLIOTECA" >/opt/neo-arcade/resources/app/config/biblioteca.json
+[ -e "$NEORETRO/config/biblioteca.json" ] || printf '%s\n' "$BIBLIOTECA" >"$NEORETRO/config/biblioteca.json"
+chown -R "$USUARIO:$USUARIO" "$NEORETRO"
 
 if $CON_EMULADORES; then
   echo "== Emuladores de Flathub, núcleos y ajustes de RetroArch"
   flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
   flatpak install -y --noninteractive flathub org.libretro.RetroArch org.DolphinEmu.dolphin-emu org.ppsspp.PPSSPP
   sudo -u "$USUARIO" -H bash "$REPO/scripts/instalar-nucleos.sh"
-  sudo -u "$USUARIO" -H bash "$REPO/scripts/configurar-retroarch.sh"
+  sudo -u "$USUARIO" -H bash "$REPO/scripts/configurar-retroarch.sh" --partidas "~/NeoRetro/saves" --estados "~/NeoRetro/states"
 fi
 
 echo "== Siempre encendida"
@@ -116,6 +138,7 @@ StandardOutput=journal
 UtmpIdentifier=tty1
 UtmpMode=user
 Environment=XDG_SESSION_TYPE=wayland
+Environment=NEO_ARCADE_CONFIG=$NEORETRO/config
 # Sin -s: Cage no deja cambiar de consola con Ctrl + Alt + F1…F12 (ajuste 5).
 ExecStart=/usr/bin/cage -- /opt/neo-arcade/neo-arcade --ozone-platform-hint=auto
 Restart=always
@@ -163,4 +186,4 @@ update-grub
 [ -x /usr/local/sbin/neoarcade-copiar-grub ] && /usr/local/sbin/neoarcade-copiar-grub || true
 
 echo "== Listo. Al reiniciar, el equipo enciende directo en Neo Arcade."
-echo "   Juegos en $CASA/roms/<sistema>/, medios en $CASA/media/<sistema>/."
+echo "   Juegos en $NEORETRO/roms/<sistema>/, medios en $NEORETRO/media/<sistema>/."

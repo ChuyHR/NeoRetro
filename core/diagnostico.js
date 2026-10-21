@@ -149,7 +149,8 @@ async function mandos() {
 }
 
 // revisar: también revisa cada juego (core/revision-juegos.js). Lee los archivos, así que tarda más.
-export async function diagnosticar(configuracion, carpetaDatos, { revisar = false } = {}) {
+// carpetaRecordado: dónde está datos-usuario.json, si no es la carpeta de datos (carpetasDelUsuario).
+export async function diagnosticar(configuracion, carpetaDatos, { revisar = false, carpetaRecordado = carpetaDatos } = {}) {
   const lista = await detectarEmuladores(configuracion);
   const retroarch = lista.find(({ id }) => id === 'retroarch');
   const flatpakRA = retroarch?.carpetas ?? [];
@@ -166,6 +167,6 @@ export async function diagnosticar(configuracion, carpetaDatos, { revisar = fals
     alcanceFlatpak: retroarch?.instalado ? flatpakAlcanza(flatpakRA, configuracion.carpetaRoms) : null,
     medios: { carpeta: configuracion.carpetaMedios, existe: await existe(configuracion.carpetaMedios) },
     mandos: await mandos(),
-    datos: await stat(path.join(carpetaDatos, 'datos-usuario.json')).then(() => path.join(carpetaDatos, 'datos-usuario.json'), () => null),
+    datos: await stat(path.join(carpetaRecordado, 'datos-usuario.json')).then(() => path.join(carpetaRecordado, 'datos-usuario.json'), () => null),
   };
 }

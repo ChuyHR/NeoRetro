@@ -3,12 +3,12 @@
 // guardar el mapeo de un mando.
 import { app, BrowserWindow, contentTracing, ipcMain, Menu, protocol } from 'electron';
 import { spawn } from 'node:child_process';
-import { readFile, rename, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, rename, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
 import { crearAlmacen } from './almacenamiento/almacenamiento.js';
 import { conteoPorSistema, datosParaInterfaz, ubicarJuego } from './biblioteca.js';
-import { cargarConfiguracion, expandirRuta, RAIZ } from './configuracion.js';
+import { cargarConfiguracion, carpetasDelUsuario, expandirRuta, RAIZ } from './configuracion.js';
 import { detectarEmuladores } from './diagnostico.js';
 import { listaDeDiscos } from './discos.js';
 import { iniciarMandos } from './entrada/mandos.js';
@@ -53,11 +53,16 @@ function medirMemoria() {
 // Tiempo mínimo de «Abriendo…» en pantalla antes de ocultar la ventana, para que alcance a leerse.
 const PANTALLA_LANZAMIENTO_MS = 1200;
 
-// En las pruebas, NEO_ARCADE_DATOS aparta la carpeta de datos (caché y registros) de la real.
+// En las pruebas, NEO_ARCADE_DATOS aparta la carpeta de datos (caché, registros y lo que se recuerda)
+// de la real.
 if (process.env.NEO_ARCADE_DATOS) app.setPath('userData', expandirRuta(process.env.NEO_ARCADE_DATOS));
 
 const configuracion = await cargarConfiguracion();
-const registro = crearRegistro(app.getPath('userData'));
+// Lo que se recuerda y el registro pueden ir fuera de la carpeta de datos de Electron: en la consola
+// instalada, en ~/NeoRetro/config y ~/NeoRetro/logs (config/biblioteca.json). La caché y las listas de
+// discos se quedan en la de Electron.
+const CARPETAS = carpetasDelUsuario(configuracion, app.getPath('userData'));
+const registro = crearRegistro(CARPETAS.registros);
 const esperar = (ms) => new Promise((listo) => setTimeout(listo, ms));
 let ventana = null;
 let enJuego = false;
@@ -65,11 +70,11 @@ let mandos = null;
 let discosPorJuego = new Map(); // id → archivos de sus discos, de la última lectura de la biblioteca
 
 // Mapeos hechos en «Configurar control», uno por modelo de mando, en un JSON legible.
-const ARCHIVO_MAPEOS = path.join(app.getPath('userData'), 'mandos.json');
+const ARCHIVO_MAPEOS = path.join(CARPETAS.datos, 'mandos.json');
 const mapeos = await readFile(ARCHIVO_MAPEOS, 'utf8').then(JSON.parse, () => ({}));
 
-// Favoritos, recientes, último juego por sistema y ajustes (core/almacenamiento/).
-const almacen = crearAlmacen(path.join(app.getPath('userData'), 'datos-usuario.json'));
+// Favoritos, recientes, partidas, último juego por sistema y ajustes (core/almacenamiento/).
+const almacen = crearAlmacen(path.join(CARPETAS.datos, 'datos-usuario.json'));
 ipcMain.handle('datos-usuario', () => almacen.cargar());
 ipcMain.handle('guardar-datos-usuario', (_evento, datos) => {
   almacen.guardar(datos);
@@ -86,6 +91,7 @@ ipcMain.handle('guardar-mapeo', async (_evento, clave, perfil) => {
   if (typeof clave !== 'string' || clave.length > 300) return false;
   mapeos[clave] = limpiarPerfil(perfil);
   // Se escribe aparte y se renombra: un corte de luz a la mitad no deja el archivo roto.
+  await mkdir(CARPETAS.datos, { recursive: true });
   await writeFile(`${ARCHIVO_MAPEOS}.nuevo`, `${JSON.stringify(mapeos, null, 2)}\n`);
   await rename(`${ARCHIVO_MAPEOS}.nuevo`, ARCHIVO_MAPEOS);
   await registro.anotar('mando', 'mapeo guardado', clave);

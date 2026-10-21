@@ -1,7 +1,10 @@
 // Lee config/systems.json, config/emulators.json, config/biblioteca.json, config/gamepad-map.json y
 // config/sistema.json.
-// En desarrollo y en las pruebas, NEO_ARCADE_CONFIG cambia la carpeta de configuración, NEO_ARCADE_ROMS
-// la de juegos y NEO_ARCADE_MEDIOS la de medios, sin tocar los archivos ni las carpetas del usuario.
+// NEO_ARCADE_CONFIG señala una carpeta de configuración propia: en la consola instalada es
+// ~/NeoRetro/config, y en las pruebas una carpeta aparte. Cada archivo se busca primero ahí y, si no
+// está, en la de la app; así basta con copiar ahí el que se quiera cambiar, y los demás siguen al día
+// con la app. NEO_ARCADE_ROMS, NEO_ARCADE_MEDIOS y NEO_ARCADE_DATOS cambian, en desarrollo y en las
+// pruebas, las carpetas de juegos, de medios y de datos sin tocar las del usuario.
 import { readFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
@@ -20,16 +23,17 @@ async function leerJson(carpeta, nombre) {
 }
 
 export async function cargarConfiguracion(entorno = process.env) {
-  const carpeta = entorno.NEO_ARCADE_CONFIG ? expandirRuta(entorno.NEO_ARCADE_CONFIG) : path.join(RAIZ, 'config');
-  // Una configuración de prueba puede no traer el mapa del mando ni los comandos del sistema: se usan
-  // los del repositorio.
-  const deRepositorio = (nombre) => leerJson(carpeta, nombre).catch(() => leerJson(path.join(RAIZ, 'config'), nombre));
+  const deLaApp = path.join(RAIZ, 'config');
+  const carpeta = entorno.NEO_ARCADE_CONFIG ? expandirRuta(entorno.NEO_ARCADE_CONFIG) : deLaApp;
+  // Solo si el archivo no está: uno con un error se avisa, no se cambia en silencio por el de la app.
+  const leer = (nombre) => leerJson(carpeta, nombre)
+    .catch((error) => (error.code === 'ENOENT' && carpeta !== deLaApp ? leerJson(deLaApp, nombre) : Promise.reject(error)));
   const [{ sistemas }, { emuladores }, biblioteca, mapaMando, sistema] = await Promise.all([
-    leerJson(carpeta, 'systems.json'),
-    leerJson(carpeta, 'emulators.json'),
-    leerJson(carpeta, 'biblioteca.json'),
-    deRepositorio('gamepad-map.json'),
-    deRepositorio('sistema.json'),
+    leer('systems.json'),
+    leer('emulators.json'),
+    leer('biblioteca.json'),
+    leer('gamepad-map.json'),
+    leer('sistema.json'),
   ]);
   return {
     sistemas,
@@ -38,5 +42,22 @@ export async function cargarConfiguracion(entorno = process.env) {
     sistema,
     carpetaRoms: expandirRuta(entorno.NEO_ARCADE_ROMS ?? biblioteca.roms),
     carpetaMedios: expandirRuta(entorno.NEO_ARCADE_MEDIOS ?? biblioteca.medios),
+    // Opcionales: dónde va lo que se recuerda (datos-usuario.json, mandos.json) y el registro. Sin
+    // ellas, en la carpeta de datos de la app (carpetasDelUsuario).
+    carpetaDatos: biblioteca.datos ? expandirRuta(biblioteca.datos) : null,
+    carpetaRegistros: biblioteca.registros ? expandirRuta(biblioteca.registros) : null,
+  };
+}
+
+// Dónde se guarda lo que se recuerda y dónde va el registro. carpetaApp es la carpeta de datos de
+// Electron. Con NEO_ARCADE_DATOS (las pruebas) todo va ahí, aunque la configuración diga otra cosa.
+export function carpetasDelUsuario(configuracion, carpetaApp, entorno = process.env) {
+  if (entorno.NEO_ARCADE_DATOS) {
+    const datos = expandirRuta(entorno.NEO_ARCADE_DATOS);
+    return { datos, registros: path.join(datos, 'registros') };
+  }
+  return {
+    datos: configuracion.carpetaDatos ?? carpetaApp,
+    registros: configuracion.carpetaRegistros ?? path.join(carpetaApp, 'registros'),
   };
 }

@@ -4,10 +4,12 @@
 #     fábrica pide dos);
 #   - buscar los perfiles de mando en una carpeta donde Neo Arcade pueda escribir. La versión de Flathub
 #     los trae en una carpeta de solo lectura; se copian una vez a la de su configuración, y ahí Neo
-#     Arcade agrega los de los mandos que se configuran en Ajustes.
+#     Arcade agrega los de los mandos que se configuran en Ajustes;
+#   - con --partidas y --estados, guardar las partidas y los estados en esas carpetas y no junto a los
+#     juegos (la consola instalada usa ~/NeoRetro/saves y ~/NeoRetro/states).
 # Solo toca esas claves de retroarch.cfg; si el archivo aún no existe, lo crea con ellas y RetroArch
 # completa el resto. Se puede correr otra vez sin romper nada.
-# Uso: bash scripts/configurar-retroarch.sh
+# Uso: bash scripts/configurar-retroarch.sh [--partidas CARPETA] [--estados CARPETA]
 set -euo pipefail
 
 # Es la configuración de la versión de Flathub, la misma carpeta de carpetaNucleos en emulators.json.
@@ -18,6 +20,14 @@ declare -A AJUSTES=(
   [quit_press_twice]=false
   [joypad_autoconfig_dir]="~/.var/app/org.libretro.RetroArch/config/retroarch/autoconfig"
 )
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --partidas) AJUSTES[savefile_directory]="$2"; AJUSTES[savefiles_in_content_dir]=false; shift ;;
+    --estados) AJUSTES[savestate_directory]="$2"; AJUSTES[savestates_in_content_dir]=false; shift ;;
+    *) echo "Opción desconocida: $1" >&2; exit 2 ;;
+  esac
+  shift
+done
 
 # RetroArch guarda su configuración al cerrarse: si está abierto, borraría estos cambios. Se pregunta a
 # Flatpak y no a pgrep -f, que también encuentra cualquier comando que mencione la ruta.
