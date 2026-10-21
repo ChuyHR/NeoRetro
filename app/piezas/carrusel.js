@@ -121,9 +121,16 @@ export function crearCarrusel(lienzo, { despachar }) {
     const dy = antes.top + antes.alto / 2 - (despues.top + despues.alto / 2);
     const giro = (valor) => (valor === 'none' ? SIN_GIRO : valor);
     for (const animacion of carta.boton.getAnimations()) animacion.cancel();
+    // En los pasos rápidos la portada toma de una vez su tamaño y su giro y solo se desliza: animar la
+    // escala obliga a volver a dibujar cada portada en cada paso, y en la MP80 eso costaba cuadros
+    // (docs/pruebas-fase7/). En un paso suelto, la transición completa del prototipo.
+    const desde = curva === 'linear'
+      ? `translate(${dx}px, ${dy}px) ${giro(despues.giro)}`
+      : `translate(${dx}px, ${dy}px) scale(${antes.ancho / despues.ancho}, ${antes.alto / despues.alto}) ${giro(antes.giro)}`;
+    const hasta = curva === 'linear' ? `translate(0px, 0px) ${giro(despues.giro)}` : `translate(0px, 0px) scale(1, 1) ${giro(despues.giro)}`;
     carta.boton.animate([
-      { transform: `translate(${dx}px, ${dy}px) scale(${antes.ancho / despues.ancho}, ${antes.alto / despues.alto}) ${giro(antes.giro)}`, opacity: antes.opacidad },
-      { transform: `translate(0px, 0px) scale(1, 1) ${giro(despues.giro)}`, opacity: despues.opacidad },
+      { transform: desde, opacity: antes.opacidad },
+      { transform: hasta, opacity: despues.opacidad },
     ], { duration: duracion, easing: curva });
   }
 
