@@ -5,6 +5,7 @@
 import { app, BrowserWindow } from 'electron';
 import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 // Dibuja en una ventana oculta. Cada pedido: { tipo: 'imagen' | 'video', ancho, alto, titulo, colores,
 // segundos }. Devuelve los archivos en base64 (PNG o WebM).
@@ -99,7 +100,10 @@ export async function escribirGamelist(destino, juegos) {
 }
 
 // Uso suelto: medios de ejemplo para el programa de prueba de SNES (scripts/juego-de-prueba-snes.mjs).
-if (process.argv[1] && import.meta.url === `file://${process.argv[1]}`) {
+// Electron deja la ruta del script tal como se escribió y puede poner opciones antes, así que se busca
+// este archivo entre todos los argumentos.
+const ESTE_ARCHIVO = fileURLToPath(import.meta.url);
+if (process.argv.slice(1).some((argumento) => path.resolve(argumento) === ESTE_ARCHIVO)) {
   app.on('window-all-closed', () => {});
   app.whenReady().then(async () => {
     const medios = path.join(process.argv.at(-1), 'snes');
