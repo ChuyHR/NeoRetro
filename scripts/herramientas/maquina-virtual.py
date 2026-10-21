@@ -8,6 +8,8 @@ Lo usa scripts/instalador/probar-en-maquina-virtual.sh:
         clasifica cada captura (negro, texto, color), escribe la línea de tiempo y guarda en
         <carpeta>/png/ la primera captura de cada tramo distinto
   png <entrada.ppm> <salida.png>
+  captura <socket> <salida.png>
+        una captura suelta, en PNG reducido a la mitad
   teclas <socket> <tecla> [<tecla>…]
         pulsa teclas en la máquina (nombres de QEMU: down, up, tab, ret, spc, esc…)
 """
@@ -143,6 +145,11 @@ if __name__ == "__main__":
         analizar(sys.argv[2])
     elif orden == "png":
         png(sys.argv[2], sys.argv[3])
+    elif orden == "captura":
+        temporal = os.path.abspath(sys.argv[3] + ".ppm")
+        qmp(sys.argv[2], "screendump", {"filename": temporal})
+        png(temporal, sys.argv[3])
+        os.remove(temporal)
     elif orden == "teclas":
         for tecla in sys.argv[3:]:
             qmp(sys.argv[2], "send-key", {"keys": [{"type": "qcode", "data": tecla}]})
