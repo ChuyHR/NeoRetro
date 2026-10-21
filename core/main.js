@@ -1,7 +1,7 @@
 // Proceso principal de Neo Arcade: abre la ventana de la interfaz, lee los mandos y atiende lo que la
 // interfaz le pide por el puente de core/preload.cjs: la biblioteca de juegos, abrir un juego y
 // guardar el mapeo de un mando.
-import { app, BrowserWindow, ipcMain, Menu, protocol } from 'electron';
+import { app, BrowserWindow, contentTracing, ipcMain, Menu, protocol } from 'electron';
 import { readFile, rename, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
@@ -216,6 +216,11 @@ app.whenReady().then(() => {
   protocol.handle('medio', crearServidorDeMedios(configuracion));
   crearVentana();
   if (MEDIR) setInterval(medirMemoria, 60000);
+  // Solo al medir: NEO_ARCADE_TRAZA=archivo.json graba 6 s de traza de Chromium, de los 12 a los 18 s.
+  if (MEDIR && process.env.NEO_ARCADE_TRAZA) {
+    setTimeout(() => contentTracing.startRecording({ included_categories: ['cc', 'viz', 'gpu', 'blink', 'v8', 'devtools.timeline', 'toplevel', 'disabled-by-default-devtools.timeline'] }), 12000);
+    setTimeout(async () => console.log(`[medir] traza en ${await contentTracing.stopRecording(process.env.NEO_ARCADE_TRAZA)}`), 18000);
+  }
   // Con un emulador abierto el mando es del juego: Neo Arcade no reacciona hasta que se cierre.
   mandos = iniciarMandos({
     mapa: configuracion.mapaMando,
