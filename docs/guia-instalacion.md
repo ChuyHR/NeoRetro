@@ -98,7 +98,11 @@ Neo Arcade lee los juegos nuevos al volver a abrirse (o al reiniciar la consola)
 - **Para volver a configurar** un mando: Configuración → Control → Configurar. Probar muestra en
   pantalla cada botón que aprietas.
 - **Para salir de un juego**: Select + Start (en Configuración puedes cambiarlo a mantener Start o a
-  LB + RB + Select + Start), o Esc en el teclado.
+  LB + RB + Select + Start), o Esc en el teclado. En el mando de Xbox son View + Menú; en un tablero,
+  moneda + Start. Mantén el primero y aprieta el segundo.
+- **Si un mando deja de responder a ratos**, revisa el cable: uno dañado o que solo sirve para cargar
+  hace que el equipo lo pierda y lo vuelva a encontrar cada pocos segundos. Prueba otro cable u otro
+  puerto.
 
 ## 6. Mantenimiento
 
