@@ -88,6 +88,7 @@ fi
 
 # El arranque de la consola: capturas cada medio segundo y, después, revisión por SSH.
 informe "== consola: empieza a las $(date +%T)"
+rm -rf "$DIR/capturas/consola"
 t0=$(ms)
 python3 "$AYUDANTE" serie "$QMP" "$DIR/capturas/consola" "$t0" 120 0.5 &
 capturas=$!
