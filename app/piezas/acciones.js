@@ -27,9 +27,9 @@ export function crearAcciones(lienzo, { despachar, menu }) {
       botones.forEach((boton, indice) => {
         const activo = indice === estado.accion;
         Object.assign(boton.style, {
-          borderColor: activo ? '#1E90FF' : 'transparent',
+          borderColor: activo ? 'var(--acento)' : 'transparent',
           background: activo ? '#0B1A3A' : 'transparent',
-          boxShadow: activo ? '0 0 16px #1E90FF88' : 'none',
+          boxShadow: activo ? '0 0 16px color-mix(in srgb, var(--acento) 53.33%, transparent)' : 'none',
         });
       });
       estrella.setAttribute('fill', esFavorito ? ESTRELLA.si : ESTRELLA.no);

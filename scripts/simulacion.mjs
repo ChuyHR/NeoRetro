@@ -19,6 +19,7 @@ const RAIZ = path.resolve(import.meta.dirname, '..');
 const FASE2 = path.join(RAIZ, 'docs', 'pruebas-fase2');
 const FASE3 = path.join(RAIZ, 'docs', 'pruebas-fase3');
 const FASE5 = path.join(RAIZ, 'docs', 'pruebas-fase5');
+const FASE6 = path.join(RAIZ, 'docs', 'pruebas-fase6');
 const esperar = (ms) => new Promise((listo) => setTimeout(listo, ms));
 // Medios de la fase 5, de las tres formas que acepta core/medios/medios.js:
 //   - SNES: gamelist.xml en media/snes/ con nombre, datos, caja vertical, captura y vídeo; el otro juego
@@ -65,7 +66,7 @@ async function principal() {
   await app.whenReady();
   const ventana = await ventanaDeLaApp();
   const neo = await controlar(ventana);
-  await Promise.all([FASE2, FASE3, FASE5].map((carpeta) => mkdir(carpeta, { recursive: true })));
+  await Promise.all([FASE2, FASE3, FASE5, FASE6].map((carpeta) => mkdir(carpeta, { recursive: true })));
   const leer = (js) => ventana.webContents.executeJavaScript(js);
   const tituloElegido = () => leer(`document.querySelector('[aria-label="Juego seleccionado"] [data-ref="titulo"]').textContent`);
   const sistemaActivo = () => leer(`document.querySelector('nav [aria-pressed="true"] span')?.textContent ?? ''`);
@@ -77,7 +78,8 @@ async function principal() {
   };
 
   async function irA(nombreSistema) {
-    for (let vuelta = 0; vuelta < entorno.sistemas.length + 1; vuelta += 1) {
+    // La barra tiene los sistemas, «todos» y hasta tres filtros al final.
+    for (let vuelta = 0; vuelta < entorno.sistemas.length + 4; vuelta += 1) {
       if ((await sistemaActivo()) === nombreSistema) return;
       await neo.tecla('PageDown', 250);
     }
@@ -178,6 +180,61 @@ async function principal() {
   anotar5(`PLAYSTATION (gamelist en roms/, solo <image>): «${await tituloElegido()}», ${await caratulasVisibles()} carátulas cargadas`);
   await guardar(FASE5, '07-gamelist-en-roms');
   await writeFile(path.join(FASE5, 'resultado.txt'), `${lineas5.join('\n')}\n`);
+
+  // Fase 6: favoritos, recientes, búsqueda, Configuración y lo que se recuerda al volver a abrir.
+  const lineas6 = [];
+  const anotar6 = (linea) => {
+    lineas6.push(linea);
+    console.log(linea);
+  };
+  const acento = () => leer(`getComputedStyle(document.getElementById('lienzo')).getPropertyValue('--acento').trim()`);
+  const cartas = () => leer(`document.querySelectorAll('[aria-label="Juegos"] .reflect').length`);
+  const teclas = async (...lista) => { for (const tecla of lista) await neo.tecla(tecla, 250); };
+  await irA('SNES');
+  await neo.tecla('Left'); // SNES recuerda a Zelda (la fase 5 terminó ahí); Super Mario World es el que se abrió
+  await teclas('Down', 'Down', 'Enter');
+  anotar6(`Detalles de «${await tituloElegido()}»: «${await leer(`document.querySelector('[data-ref="ultima"]').textContent`)}» (se abrió en la prueba de la fase 3)`);
+  await guardar(FASE6, '01-detalles-con-ultima-partida');
+  await teclas('Backspace', 'Up', 'Enter'); // Favoritos sobre Super Mario World
+  await teclas('Right', 'Enter', 'Up'); // y sobre Zelda
+  await irA('FAVORITOS');
+  anotar6(`Filtro Favoritos: ${await cartas()} juegos`);
+  await guardar(FASE6, '02-filtro-favoritos');
+  await irA('RECIENTES');
+  anotar6(`Filtro Recientes: «${await tituloElegido()}» primero`);
+  await teclas('M', 'E', 'T');
+  anotar6(`Buscar con el teclado físico: «${await leer(`document.querySelector('[aria-label="Buscar"] [data-ref="texto"]').textContent`)}», ${await leer(`document.querySelector('[aria-label="Buscar"] [data-ref="resultados"]').textContent`)}`);
+  await guardar(FASE6, '03-buscar-escribiendo');
+  await neo.tecla('Enter', 600);
+  anotar6(`Tras Enter: barra en «${await sistemaActivo()}», elegido «${await tituloElegido()}»`);
+  await guardar(FASE6, '04-resultado-de-la-busqueda');
+  await teclas('Down', 'Down', 'Down', 'Enter');
+  await guardar(FASE6, '05-configuracion');
+  await teclas('Down', 'Down', 'Down', 'Down', 'Right', 'Enter'); // Color del tema: magenta
+  await teclas('Up', 'Up', 'Up', 'Right', 'Enter'); // Brillo neón: bajo
+  await guardar(FASE6, '06-configuracion-cambiada');
+  await neo.tecla('Backspace', 400);
+  anotar6(`Con tema magenta y neón bajo: --acento = ${await acento()}`);
+  await guardar(FASE6, '07-tema-magenta-neon-bajo');
+  await irA('SNES');
+  await neo.tecla('Right');
+  const antesDeReabrir = await tituloElegido();
+  await esperar(1500); // el núcleo junta los cambios seguidos antes de escribirlos
+  ventana.webContents.reload();
+  await cuando(ventana.webContents, 'did-finish-load');
+  await leer('document.fonts.ready.then(() => true)');
+  await esperar(1500);
+  anotar6(`Al volver a abrir: barra en «${await sistemaActivo()}», elegido «${await tituloElegido()}» (antes: «${antesDeReabrir}»), --acento = ${await acento()}`);
+  await guardar(FASE6, '08-al-volver-a-abrir');
+  await teclas('Down', 'Down', 'Down', 'Enter', 'Down', 'Down', 'Down', 'Down', 'Down', 'Down', 'Down', 'Enter');
+  await guardar(FASE6, '09-restablecer-pide-confirmar');
+  await neo.tecla('Enter', 400);
+  await neo.tecla('Backspace', 400);
+  anotar6(`Tras RESTABLECER: --acento = ${await acento()}`);
+  await esperar(1500);
+  const guardados = JSON.parse(await readFile(path.join(entorno.carpeta('datos'), 'datos-usuario.json'), 'utf8'));
+  anotar6(`datos-usuario.json: ${guardados.favoritos.length} favoritos, ${guardados.recientes.length} recientes, último sistema «${guardados.ultimoSistema}», ajustes ${JSON.stringify(guardados.ajustes)}`);
+  await writeFile(path.join(FASE6, 'resultado.txt'), `${lineas6.join('\n').replaceAll(entorno.base, '<temporal>')}\n`);
 
   // Fase 2 otra vez: sin ningún juego.
   for (const sistema of entorno.sistemas) {

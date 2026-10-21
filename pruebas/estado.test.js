@@ -1,8 +1,9 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 
+import { AJUSTES_INICIALES } from '../app/ajustes.js';
 import { DATOS } from '../app/datos-ejemplo.js';
-import { aplicar, estadoInicial, juegosDelSistema } from '../app/estado.js';
+import { aplicar, estadoInicial, juegosDeLaVista, juegosDelSistema, sistemasDeLaBarra } from '../app/estado.js';
 
 // El estado con que arranca la demostración del prototipo.
 const DEMO = { seleccion: 'sf2', favoritos: ['sf2'] };
@@ -54,10 +55,33 @@ test('en Configuración se apaga y se enciende el efecto CRT', () => {
   assert.equal(configuracion.ventana, 'configuracion');
   assert.equal(configuracion.foco, 0);
   const apagado = pasos(['derecha', 'aceptar'], configuracion);
-  assert.equal(apagado.crt, false);
-  assert.equal(pasos(['izquierda', 'aceptar'], apagado).crt, true);
-  assert.equal(pasos(['abajo', 'abajo', 'aceptar'], configuracion).ventana, 'prueba-control');
-  assert.equal(pasos(['abajo', 'abajo', 'abajo', 'abajo', 'aceptar'], configuracion).ventana, null);
+  assert.equal(apagado.ajustes.crt, false);
+  assert.equal(pasos(['izquierda', 'aceptar'], apagado).ajustes.crt, true);
+});
+
+test('Configuración va por filas: arriba y abajo cambian de ajuste, izquierda y derecha de opción', () => {
+  const configuracion = pasos(['ajustes']);
+  const abajo = (veces) => Array(veces).fill('abajo');
+  assert.equal(pasos([...abajo(1), 'derecha', 'aceptar'], configuracion).ajustes.neon, 'bajo');
+  assert.equal(pasos([...abajo(2), 'derecha', 'aceptar'], configuracion).ajustes.animaciones, false);
+  assert.equal(pasos([...abajo(3), 'aceptar'], configuracion).ajustes.volumen, 60);
+  assert.equal(pasos([...abajo(3), 'derecha', 'aceptar', 'aceptar'], configuracion).ajustes.volumen, 90);
+  assert.equal(pasos([...abajo(4), 'derecha', 'derecha', 'aceptar'], configuracion).ajustes.tema, 'violeta');
+  assert.equal(pasos([...abajo(5), 'derecha', 'aceptar'], configuracion).ajustes.salir, 'mantener-start');
+  assert.equal(pasos([...abajo(6), 'aceptar'], configuracion).ventana, 'prueba-control');
+  assert.equal(pasos([...abajo(8), 'aceptar'], configuracion).ventana, null);
+});
+
+test('Restablecer pide una segunda pulsación y devuelve los ajustes de fábrica', () => {
+  const cambiados = pasos(['ajustes', 'derecha', 'aceptar', 'abajo', 'derecha', 'aceptar']);
+  assert.equal(cambiados.ajustes.crt, false);
+  assert.equal(cambiados.ajustes.neon, 'bajo');
+  const una = pasos(['abajo', 'abajo', 'abajo', 'abajo', 'abajo', 'abajo', 'aceptar'], cambiados);
+  assert.equal(una.confirmar, 'restablecer');
+  assert.equal(una.ajustes.neon, 'bajo');
+  const dos = pasos(['aceptar'], una);
+  assert.deepEqual(dos.ajustes, AJUSTES_INICIALES);
+  assert.equal(dos.confirmar, null);
 });
 
 test('al cambiar de sistema, si el juego no está ahí se elige el primero de ese sistema', () => {
@@ -66,7 +90,9 @@ test('al cambiar de sistema, si el juego no está ahí se elige el primero de es
   assert.equal(arcade.seleccion, 'pacman');
   const snes = pasos([{ tipo: 'elegir-sistema', valor: 'snes' }]);
   assert.equal(snes.seleccion, 'sf2');
-  assert.equal(pasos(['sistema-anterior']).sistema, 'ports');
+  // Desde «todos», el anterior es el último de la barra: Favoritos (en la demostración, sf2 lo es).
+  assert.equal(pasos(['sistema-anterior']).sistema, 'favoritos');
+  assert.equal(pasos(['sistema-anterior', 'sistema-anterior']).sistema, 'ports');
 });
 
 test('las acciones de la pantalla principal no hacen nada con una ventana abierta', () => {
@@ -134,7 +160,7 @@ test('un mando sin configurar abre «Configurar control» la primera vez que se 
 });
 
 test('«Probar control» enciende lo que se mantiene pulsado y anota el último código', () => {
-  const prueba = pasos(['ajustes', 'derecha', 'derecha', 'aceptar']);
+  const prueba = pasos(['ajustes', 'abajo', 'abajo', 'abajo', 'abajo', 'abajo', 'abajo', 'aceptar']);
   assert.equal(prueba.ventana, 'prueba-control');
   const pulsado = pasos([{ tipo: 'control', valor: { mando: 'x', control: 'a', pulsado: true } }, { tipo: 'crudo', valor: { mando: 'x', tipo: 'boton', codigo: 304, valor: 1 } }], prueba);
   assert.deepEqual(pulsado.prueba.pulsados, ['a']);
@@ -145,4 +171,61 @@ test('«Probar control» enciende lo que se mantiene pulsado y anota el último 
 test('el pie sigue a la última entrada usada', () => {
   assert.equal(estadoInicial().entrada, 'teclado');
   assert.equal(pasos([{ tipo: 'entrada', valor: 'mando' }]).entrada, 'mando');
+});
+
+test('Favoritos aparece al final de la barra cuando hay alguno y se va al quitar el último', () => {
+  const barra = (estado) => sistemasDeLaBarra(DATOS, estado).map(({ id }) => id);
+  assert.equal(barra(estadoInicial()).includes('favoritos'), false);
+  const demo = estadoInicial(DEMO);
+  assert.equal(barra(demo).at(-1), 'favoritos');
+  assert.equal(barra(demo).slice(0, 12).join(), DATOS.sistemas.map(({ id }) => id).join()); // los sistemas no se mueven
+  const enFavoritos = pasos([{ tipo: 'elegir-sistema', valor: 'favoritos' }]);
+  assert.deepEqual(juegosDeLaVista(DATOS, enFavoritos).map(({ id }) => id), ['sf2']);
+  const sinFavoritos = pasos(['favorito'], enFavoritos);
+  assert.equal(sinFavoritos.sistema, 'todos');
+});
+
+test('al quitar un favorito desde Favoritos se elige el que quedó en su lugar', () => {
+  const tres = pasos(['derecha', 'favorito', 'derecha', 'favorito', { tipo: 'elegir-sistema', valor: 'favoritos' }]);
+  const lista = juegosDeLaVista(DATOS, tres).map(({ id }) => id);
+  assert.equal(lista.length, 3);
+  const quitado = pasos([{ tipo: 'seleccionar', valor: lista[1] }, 'favorito'], tres);
+  assert.equal(juegosDeLaVista(DATOS, quitado).length, 2);
+  assert.equal(quitado.seleccion, lista[2]);
+});
+
+test('Recientes guarda el último primero, sin repetir, y View recorre los filtros', () => {
+  const jugado = (id, fecha) => ({ tipo: 'jugado', valor: { id, fecha } });
+  const estado = pasos([jugado('mgs', '2026-10-20T10:00:00Z'), jugado('zelda', '2026-10-20T11:00:00Z'), jugado('mgs', '2026-10-20T12:00:00Z')]);
+  assert.deepEqual(estado.recientes.map(({ id }) => id), ['mgs', 'zelda']);
+  const filtro = pasos(['filtro'], estado);
+  assert.equal(filtro.sistema, 'favoritos');
+  const recientes = pasos(['filtro'], filtro);
+  assert.equal(recientes.sistema, 'recientes');
+  assert.deepEqual(juegosDeLaVista(DATOS, recientes).map(({ id }) => id), ['mgs', 'zelda']);
+  assert.equal(pasos(['filtro'], recientes).sistema, 'todos');
+  const desdeSnes = pasos([{ tipo: 'elegir-sistema', valor: 'snes' }, 'filtro'], estado);
+  assert.equal(desdeSnes.sistema, 'favoritos');
+});
+
+test('Buscar: con el teclado físico se escribe y Enter busca; con el mando, A pulsa la tecla marcada', () => {
+  const abierto = pasos([{ tipo: 'escribir', valor: 'M' }]);
+  assert.equal(abierto.ventana, 'buscar');
+  const escrito = pasos([{ tipo: 'escribir', valor: 'E' }, { tipo: 'escribir', valor: 'G' }, 'aceptar'], abierto);
+  assert.equal(escrito.ventana, null);
+  assert.equal(escrito.busqueda, 'MEG');
+  assert.equal(escrito.sistema, 'busqueda');
+  assert.deepEqual(juegosDeLaVista(DATOS, escrito).map(({ id }) => id), ['megaman']);
+  assert.equal(pasos(['volver'], escrito).sistema, 'todos');
+  const conMando = pasos([{ tipo: 'entrada', valor: 'mando' }, 'buscar', 'abajo', 'aceptar']);
+  assert.equal(conMando.escribiendo, 'Q');
+  assert.equal(pasos(['volver'], conMando).escribiendo, '');
+  assert.equal(pasos(['volver', 'volver'], conMando).ventana, null);
+});
+
+test('al volver a un sistema se recupera el juego que quedó elegido en él', () => {
+  const nes = pasos([{ tipo: 'elegir-sistema', valor: 'nes' }, 'derecha']);
+  assert.equal(nes.seleccion, 'megaman');
+  const otra = pasos([{ tipo: 'elegir-sistema', valor: 'snes' }, { tipo: 'elegir-sistema', valor: 'nes' }], nes);
+  assert.equal(otra.seleccion, 'megaman');
 });

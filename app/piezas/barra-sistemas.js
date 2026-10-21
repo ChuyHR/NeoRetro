@@ -3,7 +3,7 @@ import { ICONOS_SISTEMA } from '../iconos.js';
 import { montar } from './dom.js';
 
 const ESTILO_BOTON = "display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; border-radius: 14px; border: 4px solid transparent; font-family: 'Pixelify Sans', monospace; font-weight: 600; font-size: 21px; letter-spacing: 0.5px; padding: 0";
-const ACTIVO = { borde: '#1E90FF', fondo: '#0B1A3A', brillo: '0 0 22px #1E90FFAA, inset 0 0 16px #1E90FF33', color: '#FFFFFF' };
+const ACTIVO = { borde: 'var(--acento)', fondo: '#0B1A3A', brillo: '0 0 22px color-mix(in srgb, var(--acento) 66.67%, transparent), inset 0 0 16px color-mix(in srgb, var(--acento) 20%, transparent)', color: '#FFFFFF' };
 const INACTIVO = { borde: 'transparent', fondo: 'transparent', brillo: 'none', color: '#C9D2E8' };
 
 export function crearBarraSistemas(lienzo, { despachar }) {
@@ -28,9 +28,11 @@ export function crearBarraSistemas(lienzo, { despachar }) {
 
   return {
     actualizar({ sistemas, ventanaSistemas: { inicio, fin }, estado }) {
-      if (`${inicio}-${fin}` !== ventanaPintada) {
+      // Se vuelve a dibujar al desplazarse y también cuando aparece un filtro o cambia la búsqueda.
+      const clave = sistemas.slice(inicio, fin).map(({ id, nombre }) => `${id}:${nombre}`).join('|');
+      if (clave !== ventanaPintada) {
         pintarVentana(sistemas, inicio, fin);
-        ventanaPintada = `${inicio}-${fin}`;
+        ventanaPintada = clave;
       }
       for (const [id, boton] of botones) {
         const activo = id === estado.sistema;

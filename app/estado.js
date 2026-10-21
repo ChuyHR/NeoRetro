@@ -1,30 +1,64 @@
 // Estado de la pantalla y cómo cambia con cada acción (mover, aceptar, volver…). Son funciones puras:
 // no tocan la página, para poder probarlas con Node y para que el teclado y el mando produzcan
-// exactamente las mismas acciones.
+// exactamente las mismas acciones. Lo que se guarda entre sesiones (favoritos, recientes, último juego
+// de cada sistema, ajustes) también vive aquí; app/inicio.js lo manda a guardar cuando cambia.
+import { AJUSTES_INICIALES, PASO_VOLUMEN } from './ajustes.js';
 import { asignar, esMovimiento, mapeoTerminado, nuevoMapeo, omitir } from './mapeo.js';
 
 export const MENU = ['jugar', 'favorito', 'detalles', 'configuracion'];
+export const MAX_RECIENTES = 50;
+export const LARGO_BUSQUEDA = 24;
 
-// Botones de cada ventana, en el orden en que los recorren las flechas.
-export const BOTONES = {
-  detalles: ['jugar', 'cerrar'],
-  configuracion: ['crt-activado', 'crt-desactivado', 'probar-control', 'configurar-control', 'cerrar'],
-  lanzamiento: ['cerrar'],
-  'prueba-control': ['cerrar'],
-  'configurar-control': ['cerrar'],
+// Configuración en filas: arriba y abajo cambian de fila; izquierda y derecha, de opción.
+export const FILAS_CONFIGURACION = [
+  ['crt-activado', 'crt-desactivado'],
+  ['neon-alto', 'neon-bajo'],
+  ['animaciones-si', 'animaciones-no'],
+  ['volumen-menos', 'volumen-mas'],
+  ['tema-azul', 'tema-magenta', 'tema-violeta', 'tema-naranja'],
+  ['salir-select-start', 'salir-mantener-start', 'salir-lr-select-start'],
+  ['probar-control', 'configurar-control'],
+  ['restablecer'],
+  ['cerrar'],
+];
+
+// Teclado en pantalla de «Buscar».
+export const FILAS_TECLADO = [
+  [...'1234567890'],
+  [...'QWERTYUIOP'],
+  [...'ASDFGHJKLÑ'],
+  [...'ZXCVBNM-:.'],
+  ['ESPACIO', 'BORRAR', 'LISTO'],
+];
+
+// Botones de cada ventana en filas, y en el orden en que los recorren las flechas.
+const FILAS = {
+  detalles: [['jugar', 'cerrar']],
+  configuracion: FILAS_CONFIGURACION,
+  lanzamiento: [['cerrar']],
+  'prueba-control': [['cerrar']],
+  'configurar-control': [['cerrar']],
+  buscar: FILAS_TECLADO,
 };
+export const BOTONES = Object.fromEntries(Object.entries(FILAS).map(([ventana, filas]) => [ventana, filas.flat()]));
 
-// Sin selección se muestra el primer juego de la lista. La demostración del prototipo arranca con
+// guardados: lo que devuelve el núcleo de la sesión anterior (core/almacenamiento/). Sin selección se
+// muestra el primer juego de la lista. La demostración del prototipo arranca con
 // { seleccion: 'sf2', favoritos: ['sf2'] }.
-export function estadoInicial({ seleccion = null, favoritos = [] } = {}) {
+export function estadoInicial({ seleccion = null, favoritos = [], recientes = [], ultimoPorSistema = {}, sistema = 'todos', ajustes = {} } = {}) {
   return {
-    sistema: 'todos',
+    sistema,
     seleccion,
     favoritos,
+    recientes, // [{ id, fecha }], el más reciente primero
+    ultimoPorSistema, // sistema → id del último juego elegido en él
+    busqueda: '', // texto confirmado en «Buscar»; mientras hay uno, la barra muestra la búsqueda
+    escribiendo: '', // lo que se lleva escrito en el teclado de «Buscar»
     accion: 0,
     ventana: null,
     foco: 0,
-    crt: true,
+    confirmar: null, // 'restablecer' tras la primera pulsación de RESTABLECER
+    ajustes: { ...AJUSTES_INICIALES, ...ajustes },
     error: null, // mensaje para el usuario si un juego no se pudo abrir
     entrada: 'teclado', // lo último que se usó: el pie muestra sus teclas o sus botones
     mandos: [], // conectados, como los describe core/entrada/mandos.js
@@ -38,16 +72,61 @@ export function juegosDelSistema(juegos, sistema) {
   return sistema === 'todos' ? juegos : juegos.filter((juego) => juego.sistema === sistema);
 }
 
+// Índice por id de cada biblioteca, para no recorrer 3.000 juegos en cada pulsación.
+const indices = new WeakMap();
+function porId(datos) {
+  let indice = indices.get(datos);
+  if (!indice) {
+    indice = new Map(datos.juegos.map((juego) => [juego.id, juego]));
+    indices.set(datos, indice);
+  }
+  return indice;
+}
+
+const sinAcentos = (texto) => texto.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+export const coincide = (titulo, busqueda) => sinAcentos(titulo).includes(sinAcentos(busqueda.trim()));
+
+// La barra: «todos», los sistemas con juegos y, al final, los filtros que tienen algo (Favoritos,
+// Recientes y la búsqueda activa). Al final y no al principio para no mover los sistemas de lugar.
+export function sistemasDeLaBarra(datos, estado) {
+  if (!datos.sistemas.length) return [];
+  const ids = porId(datos);
+  const filtros = [];
+  if (estado.favoritos.some((id) => ids.has(id))) filtros.push({ id: 'favoritos', nombre: 'FAVORITOS' });
+  if (estado.recientes.some(({ id }) => ids.has(id))) filtros.push({ id: 'recientes', nombre: 'RECIENTES' });
+  if (estado.busqueda) filtros.push({ id: 'busqueda', nombre: `«${estado.busqueda}»` });
+  return [...datos.sistemas, ...filtros];
+}
+
+// Los juegos de lo que está elegido en la barra: un sistema, «todos» o un filtro.
+export function juegosDeLaVista(datos, estado, sistema = estado.sistema) {
+  switch (sistema) {
+    case 'favoritos': {
+      const favoritos = new Set(estado.favoritos);
+      return datos.juegos.filter((juego) => favoritos.has(juego.id));
+    }
+    case 'recientes': {
+      const ids = porId(datos);
+      return estado.recientes.map(({ id }) => ids.get(id)).filter(Boolean);
+    }
+    case 'busqueda':
+      return estado.busqueda ? datos.juegos.filter((juego) => coincide(juego.titulo, estado.busqueda)) : [];
+    default:
+      return juegosDelSistema(datos.juegos, sistema);
+  }
+}
+
 // Una acción es un texto ('derecha') o un objeto con valor ({ tipo: 'seleccionar', valor: 'zelda' }).
 export function aplicar(estado, accion, datos) {
   const { tipo, valor } = typeof accion === 'string' ? { tipo: accion } : accion;
-  const comun = deLosMandos(estado, tipo, valor);
+  const comun = deCualquierPantalla(estado, tipo, valor);
   if (comun) return comun;
-  return estado.ventana ? enVentana(estado, tipo, valor) : enPantalla(estado, tipo, valor, datos);
+  const siguiente = estado.ventana ? enVentana(estado, tipo, valor, datos) : enPantalla(estado, tipo, valor, datos);
+  return siguiente === estado ? estado : ajustarVista(siguiente, datos, estado);
 }
 
-// Lo que avisan los mandos vale en cualquier pantalla.
-function deLosMandos(estado, tipo, valor) {
+// Lo que avisan los mandos y el lanzador vale en cualquier pantalla.
+function deCualquierPantalla(estado, tipo, valor) {
   switch (tipo) {
     case 'entrada':
       return estado.entrada === valor ? estado : { ...estado, entrada: valor };
@@ -61,6 +140,11 @@ function deLosMandos(estado, tipo, valor) {
     }
     case 'crudo':
       return conCrudo(estado, valor);
+    case 'jugado': {
+      // Un juego que se abrió de verdad pasa al frente de Recientes.
+      const recientes = [{ id: valor.id, fecha: valor.fecha }, ...estado.recientes.filter(({ id }) => id !== valor.id)];
+      return { ...estado, recientes: recientes.slice(0, MAX_RECIENTES) };
+    }
     default:
       return null;
   }
@@ -83,8 +167,22 @@ function conCrudo(estado, crudo) {
   return conMando;
 }
 
+// Tras cada cambio: si lo elegido en la barra ya no existe (se quitó el último favorito), se vuelve a
+// «todos»; si el juego elegido ya no está en la lista, se elige el que quedó en su lugar.
+function ajustarVista(estado, datos, anterior) {
+  const barra = sistemasDeLaBarra(datos, estado);
+  const sistema = !barra.length || barra.some(({ id }) => id === estado.sistema) ? estado.sistema : 'todos';
+  const lista = juegosDeLaVista(datos, estado, sistema);
+  let { seleccion } = estado;
+  if (lista.length && !lista.some(({ id }) => id === seleccion)) {
+    const antes = juegosDeLaVista(datos, anterior, anterior.sistema).findIndex(({ id }) => id === estado.seleccion);
+    seleccion = lista[Math.min(Math.max(0, antes), lista.length - 1)].id;
+  }
+  return sistema === estado.sistema && seleccion === estado.seleccion ? estado : { ...estado, sistema, seleccion };
+}
+
 function enPantalla(estado, tipo, valor, datos) {
-  const lista = juegosDelSistema(datos.juegos, estado.sistema);
+  const lista = juegosDeLaVista(datos, estado);
   switch (tipo) {
     case 'izquierda':
     case 'derecha': {
@@ -105,6 +203,14 @@ function enPantalla(estado, tipo, valor, datos) {
       return ejecutar(estado, 'favorito', lista);
     case 'ajustes':
       return ejecutar(estado, 'configuracion', lista);
+    case 'buscar':
+      return datos.juegos.length ? { ...estado, ventana: 'buscar', foco: 0, escribiendo: estado.busqueda } : estado;
+    case 'escribir': // con el teclado físico, escribir en la pantalla principal abre «Buscar»
+      return datos.juegos.length && valor.trim() ? { ...estado, ventana: 'buscar', foco: 0, escribiendo: valor } : estado;
+    case 'volver': // con una búsqueda a la vista, volver la quita
+      return estado.sistema === 'busqueda' ? { ...estado, busqueda: '', sistema: 'todos' } : estado;
+    case 'filtro':
+      return siguienteFiltro(estado, datos);
     case 'letra-anterior':
     case 'letra-siguiente':
       return saltarLetra(estado, lista, tipo === 'letra-siguiente');
@@ -112,17 +218,27 @@ function enPantalla(estado, tipo, valor, datos) {
       return lista.some((juego) => juego.id === valor) ? { ...estado, seleccion: valor } : estado;
     case 'sistema-anterior':
     case 'sistema-siguiente': {
-      const total = datos.sistemas.length;
-      if (total === 0) return estado;
-      const actual = datos.sistemas.findIndex((sistema) => sistema.id === estado.sistema);
+      const barra = sistemasDeLaBarra(datos, estado);
+      if (barra.length === 0) return estado;
+      const actual = barra.findIndex((sistema) => sistema.id === estado.sistema);
       const paso = tipo === 'sistema-siguiente' ? 1 : -1;
-      return elegirSistema(estado, datos.sistemas[(actual + paso + total) % total].id, datos);
+      return elegirSistema(estado, barra[(actual + paso + barra.length) % barra.length].id, datos);
     }
     case 'elegir-sistema':
       return elegirSistema(estado, valor, datos);
     default:
       return estado;
   }
+}
+
+// View: todos → Favoritos → Recientes → todos, saltando los filtros vacíos. Desde un sistema o una
+// búsqueda, va al primer filtro.
+function siguienteFiltro(estado, datos) {
+  const filtros = sistemasDeLaBarra(datos, estado).map(({ id }) => id).filter((id) => id === 'favoritos' || id === 'recientes');
+  if (!filtros.length) return estado;
+  const ciclo = ['todos', ...filtros];
+  const actual = ciclo.indexOf(estado.sistema);
+  return elegirSistema(estado, actual < 0 ? filtros[0] : ciclo[(actual + 1) % ciclo.length], datos);
 }
 
 const indiceDe = (lista, id) => Math.max(0, lista.findIndex((juego) => juego.id === id));
@@ -172,35 +288,70 @@ function ejecutar(estado, nombre, lista) {
     case 'detalles':
       return { ...estado, ventana: 'detalles', foco: 0 };
     case 'configuracion':
-      return { ...estado, ventana: 'configuracion', foco: estado.crt ? 0 : 1 };
+      return { ...estado, ventana: 'configuracion', foco: estado.ajustes.crt ? 0 : 1, confirmar: null };
     default:
       return estado;
   }
 }
 
-// Si el juego elegido no está en el sistema nuevo, se pasa al primero de ese sistema.
+// Al cambiar de sistema se recuerda el juego que quedó elegido en el anterior. En el nuevo se vuelve al
+// que se recordaba; si no hay, se queda el actual si está ahí, y si no, el primero.
 function elegirSistema(estado, id, datos) {
-  const lista = juegosDelSistema(datos.juegos, id);
-  const sigue = lista.some((juego) => juego.id === estado.seleccion);
-  return { ...estado, sistema: id, seleccion: sigue ? estado.seleccion : (lista[0]?.id ?? estado.seleccion) };
+  const ultimoPorSistema = { ...estado.ultimoPorSistema, [estado.sistema]: estado.seleccion };
+  const lista = juegosDeLaVista(datos, estado, id);
+  const esta = (candidato) => lista.some((juego) => juego.id === candidato);
+  const seleccion = [ultimoPorSistema[id], estado.seleccion].find(esta) ?? lista[0]?.id ?? estado.seleccion;
+  return { ...estado, sistema: id, seleccion, ultimoPorSistema };
 }
 
-function enVentana(estado, tipo, valor) {
+// Movimiento dentro de una ventana. Con una sola fila, las cuatro flechas avanzan y retroceden; con
+// varias, arriba y abajo cambian de fila en la misma proporción de columna (la primera sigue siendo la
+// primera; en el teclado, de la «M» se baja a LISTO).
+function moverFoco(filas, foco, tipo) {
+  const plano = filas.flat();
+  if (filas.length === 1) {
+    const paso = tipo === 'derecha' || tipo === 'abajo' ? 1 : -1;
+    return Math.min(plano.length - 1, Math.max(0, foco + paso));
+  }
+  let fila = 0;
+  let columna = foco;
+  while (columna >= filas[fila].length) {
+    columna -= filas[fila].length;
+    fila += 1;
+  }
+  if (tipo === 'izquierda' || tipo === 'derecha') {
+    columna = Math.min(filas[fila].length - 1, Math.max(0, columna + (tipo === 'derecha' ? 1 : -1)));
+  } else {
+    const nueva = Math.min(filas.length - 1, Math.max(0, fila + (tipo === 'abajo' ? 1 : -1)));
+    if (nueva !== fila) {
+      columna = Math.min(filas[nueva].length - 1, Math.floor((columna * filas[nueva].length) / filas[fila].length));
+      fila = nueva;
+    }
+  }
+  return filas.slice(0, fila).reduce((suma, actual) => suma + actual.length, 0) + columna;
+}
+
+function enVentana(estado, tipo, valor, datos) {
   const botones = BOTONES[estado.ventana];
   switch (tipo) {
     case 'izquierda':
-    case 'arriba':
-      return { ...estado, foco: Math.max(0, estado.foco - 1) };
     case 'derecha':
+    case 'arriba':
     case 'abajo':
-      return { ...estado, foco: Math.min(botones.length - 1, estado.foco + 1) };
+      return { ...estado, foco: moverFoco(FILAS[estado.ventana], estado.foco, tipo), confirmar: null };
     case 'aceptar':
       // En «Configurar control», Enter salta un paso que se puede saltar; al terminar, cierra.
       if (estado.ventana === 'configurar-control' && estado.mapeo && !mapeoTerminado(estado.mapeo)) return omitirPaso(estado);
-      return pulsar(estado, botones[estado.foco]);
+      // En «Buscar», Enter del teclado físico confirma lo escrito; A del mando pulsa la tecla marcada.
+      if (estado.ventana === 'buscar' && estado.entrada === 'teclado') return confirmarBusqueda(estado, datos);
+      return pulsar(estado, botones[estado.foco], datos);
     case 'boton':
-      return botones.includes(valor) ? pulsar({ ...estado, foco: botones.indexOf(valor) }, valor) : estado;
+      return botones.includes(valor) ? pulsar({ ...estado, foco: botones.indexOf(valor) }, valor, datos) : estado;
+    case 'escribir':
+      return estado.ventana === 'buscar' ? escribir(estado, valor) : estado;
     case 'volver':
+      // En «Buscar», volver borra una letra; sin nada escrito, cierra.
+      if (estado.ventana === 'buscar' && estado.escribiendo) return { ...estado, escribiendo: estado.escribiendo.slice(0, -1) };
       return cerrar(estado);
     case 'ajustes':
       return estado.ventana === 'configuracion' ? cerrar(estado) : estado;
@@ -216,22 +367,58 @@ function enVentana(estado, tipo, valor) {
   }
 }
 
+function escribir(estado, texto) {
+  const escribiendo = `${estado.escribiendo}${texto}`.slice(0, LARGO_BUSQUEDA);
+  return escribiendo === estado.escribiendo ? estado : { ...estado, escribiendo };
+}
+
+// LISTO: la búsqueda pasa a la barra con sus resultados. Sin texto, se quita la que hubiera.
+function confirmarBusqueda(estado, datos) {
+  const busqueda = estado.escribiendo.trim().replace(/\s+/g, ' ');
+  if (!busqueda) return { ...cerrar(estado), busqueda: '', sistema: estado.sistema === 'busqueda' ? 'todos' : estado.sistema };
+  const resultados = datos.juegos.filter((juego) => coincide(juego.titulo, busqueda));
+  return { ...cerrar(estado), busqueda, sistema: 'busqueda', seleccion: resultados[0]?.id ?? estado.seleccion };
+}
+
 function omitirPaso(estado) {
   return estado.ventana === 'configurar-control' && estado.mapeo ? { ...estado, mapeo: omitir(estado.mapeo) } : estado;
 }
 
 function cerrar(estado) {
-  return { ...estado, ventana: null, foco: 0, error: null, mapeo: null, prueba: { pulsados: [], ultimo: null } };
+  return { ...estado, ventana: null, foco: 0, error: null, mapeo: null, confirmar: null, prueba: { pulsados: [], ultimo: null } };
 }
 
-function pulsar(estado, boton) {
+const conAjuste = (estado, cambio) => ({ ...estado, ajustes: { ...estado.ajustes, ...cambio }, confirmar: null });
+
+function pulsar(estado, boton, datos) {
+  if (estado.ventana === 'buscar') {
+    if (boton === 'LISTO') return confirmarBusqueda(estado, datos);
+    if (boton === 'BORRAR') return { ...estado, escribiendo: estado.escribiendo.slice(0, -1) };
+    return escribir(estado, boton === 'ESPACIO' ? ' ' : boton);
+  }
+  const [grupo, ...resto] = boton.split('-');
+  const opcion = resto.join('-');
+  switch (grupo) {
+    case 'crt':
+      return conAjuste(estado, { crt: opcion === 'activado' });
+    case 'neon':
+      return conAjuste(estado, { neon: opcion });
+    case 'animaciones':
+      return conAjuste(estado, { animaciones: opcion === 'si' });
+    case 'volumen': {
+      const paso = opcion === 'mas' ? PASO_VOLUMEN : -PASO_VOLUMEN;
+      return conAjuste(estado, { volumen: Math.min(100, Math.max(0, estado.ajustes.volumen + paso)) });
+    }
+    case 'tema':
+      return conAjuste(estado, { tema: opcion });
+    case 'salir':
+      return conAjuste(estado, { salir: opcion });
+    default:
+      break;
+  }
   switch (boton) {
     case 'jugar':
       return { ...estado, ventana: 'lanzamiento', foco: 0 };
-    case 'crt-activado':
-      return { ...estado, crt: true };
-    case 'crt-desactivado':
-      return { ...estado, crt: false };
     case 'probar-control':
       return { ...estado, ventana: 'prueba-control', foco: 0, prueba: { pulsados: [], ultimo: null } };
     case 'configurar-control': {
@@ -239,6 +426,11 @@ function pulsar(estado, boton) {
       const mando = estado.mandos.find(({ clave }) => clave === estado.ultimoMando) ?? estado.mandos[0];
       return { ...estado, ventana: 'configurar-control', foco: 0, mapeo: mando ? nuevoMapeo(mando) : null };
     }
+    case 'restablecer':
+      // Dos pulsaciones: la primera pide confirmar, la segunda devuelve los ajustes de fábrica.
+      return estado.confirmar === 'restablecer'
+        ? { ...estado, ajustes: { ...AJUSTES_INICIALES }, confirmar: null }
+        : { ...estado, confirmar: 'restablecer' };
     case 'cerrar':
       return cerrar(estado);
     default:

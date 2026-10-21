@@ -18,10 +18,10 @@ export function crearCarrusel(lienzo, { despachar }) {
   <section data-ref="seccion" aria-label="Juegos" style="position: absolute; left: 0; top: 452px; width: 1920px; height: 400px">
     <div data-ref="marca" aria-hidden="true" style="position: absolute; left: 920px; top: -8px; width: 90px; height: 6px; background: #FF3B3B; z-index: 40"></div>
     <button data-ref="anterior" aria-label="Juego anterior" style="position: absolute; left: 10px; top: 112px; width: 44px; height: 76px; padding: 0; border: 0; background: transparent; z-index: 50">
-      <svg width="34" height="60" viewBox="0 0 34 60" aria-hidden="true"><path d="M30 2 4 30l26 28z" fill="#1E90FF"></path></svg>
+      <svg width="34" height="60" viewBox="0 0 34 60" aria-hidden="true"><path d="M30 2 4 30l26 28z" fill="var(--acento)"></path></svg>
     </button>
     <button data-ref="siguiente" aria-label="Juego siguiente" style="position: absolute; right: 10px; top: 112px; width: 44px; height: 76px; padding: 0; border: 0; background: transparent; z-index: 50">
-      <svg width="34" height="60" viewBox="0 0 34 60" aria-hidden="true"><path d="M4 2l26 28L4 58z" fill="#1E90FF"></path></svg>
+      <svg width="34" height="60" viewBox="0 0 34 60" aria-hidden="true"><path d="M4 2l26 28L4 58z" fill="var(--acento)"></path></svg>
     </button>
     <div data-ref="vacio" style="position: absolute; inset: 0; display: none; flex-direction: column; align-items: center; justify-content: center; gap: 10px; font-size: 28px">
       <span>No hay juegos en este sistema</span>
@@ -30,6 +30,10 @@ export function crearCarrusel(lienzo, { despachar }) {
     <div data-ref="sinJuegos" style="position: absolute; inset: 0; display: none; flex-direction: column; align-items: center; justify-content: center; gap: 10px; font-size: 28px">
       <span>Todavía no hay juegos</span>
       <span style="max-width: 1200px; text-align: center; font-family: 'Share Tech Mono', monospace; font-size: 24px; line-height: 1.3; color: #8997B8">Copia tus juegos en la carpeta roms, cada sistema en su propia carpeta (arcade, snes, psx…), y vuelve a abrir Neo Arcade.</span>
+    </div>
+    <div data-ref="sinResultados" style="position: absolute; inset: 0; display: none; flex-direction: column; align-items: center; justify-content: center; gap: 10px; font-size: 28px">
+      <span data-ref="sinResultadosTitulo"></span>
+      <span style="font-family: 'Share Tech Mono', monospace; font-size: 24px; color: #8997B8">Pulsa B o Retroceso para quitar la búsqueda, o Y para buscar otra cosa.</span>
     </div>
   </section>`);
   refs.anterior.addEventListener('click', () => despachar('izquierda'));
@@ -80,8 +84,8 @@ export function crearCarrusel(lienzo, { despachar }) {
       transform: ranura.giro,
       opacity: String(ranura.opacidad),
       zIndex: String(ranura.z),
-      border: central ? '5px solid #1E90FF' : `3px solid ${juego.colores[0]}AA`,
-      boxShadow: central ? '0 0 34px #1E90FFCC, 0 0 80px #1769FF66' : '0 14px 30px rgba(0,0,0,0.6)',
+      border: central ? '5px solid var(--acento)' : `3px solid ${juego.colores[0]}AA`,
+      boxShadow: central ? '0 0 34px color-mix(in srgb, var(--acento) 80%, transparent), 0 0 80px #1769FF66' : '0 14px 30px rgba(0,0,0,0.6)',
     });
     carta.titulo.style.fontSize = central ? (largo ? '40px' : '58px') : (largo ? '18px' : '26px');
     carta.banda.style.height = central ? '62px' : '36px';
@@ -103,7 +107,8 @@ export function crearCarrusel(lienzo, { despachar }) {
   }
 
   return {
-    actualizar({ ranuras, lista, indice, sistemas }) {
+    actualizar({ ranuras, lista, indice, sistemas, estado }) {
+      const animado = estado.ajustes.animaciones; // con las animaciones apagadas, el paso es instantáneo
       if (lista.length > ranuras.length) {
         const vecinos = [];
         for (let paso = 1; paso <= VECINOS_PRECARGA; paso += 1) {
@@ -119,7 +124,7 @@ export function crearCarrusel(lienzo, { despachar }) {
         const antes = carta.caja;
         colocar(carta, ranura);
         carta.caja = { left: ranura.left, top: ranura.top, ancho: ranura.ancho, alto: ranura.alto, giro: ranura.giro, opacidad: ranura.opacidad };
-        if (antes) animar(carta, antes, carta.caja);
+        if (antes && animado) animar(carta, antes, carta.caja);
       }
       for (const [id, carta] of cartas) {
         if (presentes.has(id)) continue;
@@ -130,8 +135,11 @@ export function crearCarrusel(lienzo, { despachar }) {
       // Sin ningún sistema en la barra, la biblioteca entera está vacía y se explica dónde van los juegos.
       // Este aviso no existe en el prototipo; el de un sistema vacío es el suyo, tal cual.
       const bibliotecaVacia = sistemas.length === 0;
-      refs.vacio.style.display = lista.length || bibliotecaVacia ? 'none' : 'flex';
+      const busquedaVacia = !lista.length && estado.sistema === 'busqueda';
+      refs.vacio.style.display = lista.length || bibliotecaVacia || busquedaVacia ? 'none' : 'flex';
       refs.sinJuegos.style.display = bibliotecaVacia ? 'flex' : 'none';
+      refs.sinResultados.style.display = busquedaVacia ? 'flex' : 'none';
+      refs.sinResultadosTitulo.textContent = busquedaVacia ? `Ningún juego coincide con «${estado.busqueda}»` : '';
     },
   };
 }

@@ -10,13 +10,13 @@ export const ESPERA_OMITIR_MS = 6000; // un paso opcional se salta solo si no ll
 export function crearConfigurarControl(lienzo, { despachar }) {
   const refs = montar(lienzo, `
   <div data-ref="capa" style="position: absolute; inset: 0; z-index: 110; background: rgba(2,4,10,0.82); display: none; align-items: center; justify-content: center">
-    <div role="dialog" aria-label="Configurar control" style="width: 900px; padding: 40px; border-radius: 22px; background: #0A1020; border: 2px solid #1E90FF; box-shadow: 0 0 50px #1769FF55; display: flex; flex-direction: column; gap: 22px; font-family: 'Pixelify Sans', monospace">
+    <div role="dialog" aria-label="Configurar control" style="width: 900px; padding: 40px; border-radius: 22px; background: #0A1020; border: 2px solid var(--acento); box-shadow: 0 0 50px #1769FF55; display: flex; flex-direction: column; gap: 22px; font-family: 'Pixelify Sans', monospace">
       <span style="font-weight: 700; font-size: 38px">CONFIGURAR CONTROL</span>
       <span data-ref="nombre" style="font-family: 'Share Tech Mono', monospace; font-size: 24px; color: #8FA8E8"></span>
       <span data-ref="paso" style="font-family: 'Share Tech Mono', monospace; font-size: 24px; color: #8997B8"></span>
-      <span data-ref="pedido" style="font-family: 'Bungee', sans-serif; font-size: 52px; color: #FFFFFF; text-shadow: 0 0 24px #1E90FF"></span>
+      <span data-ref="pedido" style="font-family: 'Bungee', sans-serif; font-size: 52px; color: #FFFFFF; text-shadow: 0 0 24px var(--acento)"></span>
       <span data-ref="ayuda" style="font-family: 'Share Tech Mono', monospace; font-size: 24px; line-height: 1.3; color: #D6DCF0"></span>
-      <button data-ref="cerrar" style="align-self: flex-start; height: 52px; padding: 0 26px; border-radius: 10px; border: 3px solid #1E90FF; background: #0B2350; color: #F5F7FF; font-family: 'Pixelify Sans', monospace; font-weight: 700; font-size: 22px">VOLVER AL INICIO</button>
+      <button data-ref="cerrar" style="align-self: flex-start; height: 52px; padding: 0 26px; border-radius: 10px; border: 3px solid var(--acento); background: #0B2350; color: #F5F7FF; font-family: 'Pixelify Sans', monospace; font-weight: 700; font-size: 22px">VOLVER AL INICIO</button>
     </div>
   </div>`);
   refs.cerrar.addEventListener('click', () => despachar({ tipo: 'boton', valor: 'cerrar' }));

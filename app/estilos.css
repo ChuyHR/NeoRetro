@@ -20,6 +20,22 @@ body {
   background: #050914;
   color: #F5F7FF;
   font-family: 'Pixelify Sans', 'Courier New', monospace;
+  /* Color del tema (Configuración). El de fábrica es el azul del prototipo; las piezas lo usan con
+     var(--acento) y sus variantes transparentes con color-mix. */
+  --acento: #1E90FF;
+}
+
+/* Neón bajo (Configuración): sin brillos ni resplandores. El foco se sigue viendo por el borde. */
+#lienzo.neon-bajo,
+#lienzo.neon-bajo * {
+  text-shadow: none !important;
+  box-shadow: none !important;
+  filter: none !important;
+}
+
+/* Sin animaciones (Configuración): nada parpadea. El carrusel tampoco se desliza (piezas/carrusel.js). */
+#lienzo.sin-animaciones .blink {
+  animation: none;
 }
 
 /* Del bloque de estilos del prototipo. */

@@ -1,6 +1,6 @@
 // Lo que cada pieza necesita para dibujarse, calculado a partir del estado. Funciones puras.
 import { fondoPortada } from './arte.js';
-import { juegosDelSistema, MENU } from './estado.js';
+import { coincide, juegosDeLaVista, MENU, sistemasDeLaBarra } from './estado.js';
 
 export const TOP_CARRUSEL = 452;
 
@@ -72,20 +72,40 @@ export function marcador(id) {
   };
 }
 
+// Cuándo se jugó por última vez, para Detalles: «hoy a las 19:05», «ayer a las 9:30» o «12 OCT. 2026».
+export function textoUltimaPartida(fecha, ahora = new Date()) {
+  if (!fecha) return null;
+  const cuando = new Date(fecha);
+  const dosCifras = (numero) => String(numero).padStart(2, '0');
+  const hora = `${cuando.getHours()}:${dosCifras(cuando.getMinutes())}`;
+  const dia = (d) => new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+  const dias = Math.round((dia(ahora) - dia(cuando)) / 86400000);
+  if (dias === 0) return `hoy a las ${hora}`;
+  if (dias === 1) return `ayer a las ${hora}`;
+  return `${cuando.getDate()} ${MESES[cuando.getMonth()]} ${cuando.getFullYear()}`;
+}
+
 export function vistaDe(estado, datos, ahora = new Date()) {
-  const lista = juegosDelSistema(datos.juegos, estado.sistema);
+  const lista = juegosDeLaVista(datos, estado);
   const indice = Math.max(0, lista.findIndex((juego) => juego.id === estado.seleccion));
   const juego = lista[indice] ?? null;
-  const activo = datos.sistemas.findIndex((sistema) => sistema.id === estado.sistema);
+  const sistemas = sistemasDeLaBarra(datos, estado);
+  const activo = sistemas.findIndex((sistema) => sistema.id === estado.sistema);
+  const reciente = juego ? estado.recientes.find(({ id }) => id === juego.id) : null;
   return {
     estado,
-    sistemas: datos.sistemas,
-    ventanaSistemas: ventanaSistemas(datos.sistemas.length, activo),
+    sistemas,
+    ventanaSistemas: ventanaSistemas(sistemas.length, activo),
     lista,
     indice,
     juego,
     ranuras: ranurasCarrusel(lista, indice),
     esFavorito: juego ? estado.favoritos.includes(juego.id) : false,
+    ultimaPartida: textoUltimaPartida(reciente?.fecha, ahora),
+    // «Buscar» muestra cuántos juegos coinciden con lo que se lleva escrito.
+    resultados: estado.ventana === 'buscar' && estado.escribiendo.trim()
+      ? datos.juegos.filter((candidato) => coincide(candidato.titulo, estado.escribiendo)).length
+      : null,
     fondo: juego ? fondoPortada(juego) : '',
     marcador: juego ? marcador(juego.id) : null,
     reloj: textosReloj(ahora),

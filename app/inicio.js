@@ -2,14 +2,16 @@
 // biblioteca, conecta el teclado y el mando, y vuelve a pintar cada vez que una acción cambia el estado.
 // Con el puente del núcleo (core/preload.cjs) usa la biblioteca real, abre los juegos y escucha los
 // mandos; sin él, como en las herramientas de comparación, usa los datos de ejemplo del prototipo.
+import { TEMAS } from './ajustes.js';
 import { DATOS } from './datos-ejemplo.js';
 import { escucharTeclado } from './entrada-teclado.js';
-import { aplicar, estadoInicial, MENU } from './estado.js';
+import { aplicar, estadoInicial, juegosDeLaVista, MENU, sistemasDeLaBarra } from './estado.js';
 import { ajustarLienzo } from './lienzo.js';
 import { esMovimiento, mapeoTerminado, PASOS_MAPEO } from './mapeo.js';
 import { vistaDe } from './modelo.js';
 import { crearAcciones } from './piezas/acciones.js';
 import { crearBarraSistemas } from './piezas/barra-sistemas.js';
+import { crearBuscar } from './piezas/buscar.js';
 import { crearCabecera } from './piezas/cabecera.js';
 import { crearCarrusel } from './piezas/carrusel.js';
 import { crearConfiguracion } from './piezas/configuracion.js';
@@ -48,12 +50,22 @@ const piezas = [
   crearPie(lienzo),
   crearDetalles(lienzo, contexto),
   crearConfiguracion(lienzo, contexto),
+  crearBuscar(lienzo, contexto),
   crearPruebaControl(lienzo, contexto),
   crearConfigurarControl(lienzo, contexto),
   crearLanzamiento(lienzo, contexto),
 ];
 
+// Los ajustes que no son de una sola pieza se aplican al lienzo entero: color del tema, brillo del neón
+// y animaciones (app/estilos.css).
+function aplicarAjustes({ tema, neon, animaciones }) {
+  lienzo.style.setProperty('--acento', TEMAS[tema] ?? TEMAS.azul);
+  lienzo.classList.toggle('neon-bajo', neon === 'bajo');
+  lienzo.classList.toggle('sin-animaciones', !animaciones);
+}
+
 function pintar() {
+  aplicarAjustes(estado.ajustes);
   const vista = vistaDe(estado, datos, new Date());
   for (const pieza of piezas) pieza.actualizar?.(vista);
 }
@@ -66,6 +78,43 @@ function despachar(accion) {
   pintar();
   if (puente && estado.ventana === 'lanzamiento' && anterior.ventana !== 'lanzamiento') jugar();
   efectosDelMapeo(anterior);
+  guardarSiCambio();
+}
+
+// Lo que se recuerda entre sesiones se manda a guardar cuando cambia; el núcleo junta los cambios
+// seguidos. Una búsqueda no se recuerda: al volver a abrir, se está en «todos».
+let guardado = null;
+function guardarSiCambio() {
+  if (!puente) return;
+  const { favoritos, recientes, ajustes, ultimoPorSistema, sistema, seleccion } = estado;
+  const ahora = [favoritos, recientes, ajustes, ultimoPorSistema, sistema, seleccion];
+  if (guardado && ahora.every((valor, indice) => valor === guardado[indice])) return;
+  guardado = ahora;
+  const recordado = sistema === 'busqueda' ? ultimoPorSistema : { ...ultimoPorSistema, [sistema]: seleccion };
+  puente.guardarDatosUsuario({
+    favoritos,
+    recientes,
+    ultimoPorSistema: recordado,
+    ultimoSistema: sistema === 'busqueda' ? 'todos' : sistema,
+    perfil: 'normal',
+    ajustes,
+  });
+}
+
+// Al abrir, se vuelve al último sistema y al último juego elegidos, si siguen en la biblioteca.
+function estadoGuardado(guardados) {
+  const base = estadoInicial({
+    favoritos: guardados.favoritos,
+    recientes: guardados.recientes,
+    ultimoPorSistema: guardados.ultimoPorSistema,
+    ajustes: guardados.ajustes,
+  });
+  const barra = sistemasDeLaBarra(datos, base);
+  const sistema = barra.some(({ id }) => id === guardados.ultimoSistema) ? guardados.ultimoSistema : 'todos';
+  const lista = juegosDeLaVista(datos, base, sistema);
+  const recordado = guardados.ultimoPorSistema?.[sistema];
+  const seleccion = lista.some(({ id }) => id === recordado) ? recordado : (lista[0]?.id ?? null);
+  return { ...base, sistema, seleccion };
 }
 
 async function jugar() {
@@ -73,7 +122,8 @@ async function jugar() {
   if (!juego) return;
   enJuego = true;
   try {
-    const resultado = await puente.jugar(juego.id);
+    const resultado = await puente.jugar(juego.id, { salir: estado.ajustes.salir });
+    if (resultado.ok) despachar({ tipo: 'jugado', valor: { id: juego.id, fecha: new Date().toISOString() } });
     despachar(resultado.ok ? 'juego-terminado' : { tipo: 'error-lanzamiento', valor: resultado.mensaje });
   } finally {
     enJuego = false;
@@ -109,12 +159,16 @@ function vigilarSalidaDePrueba({ control, pulsado }) {
 
 async function arrancar() {
   if (puente) {
-    try {
-      datos = await puente.biblioteca();
-    } catch (error) {
-      console.error('No se pudo leer la biblioteca:', error);
-    }
-    estado = estadoInicial({ seleccion: datos.juegos[0]?.id ?? null });
+    const [biblioteca, guardados] = await Promise.all([
+      puente.biblioteca().catch((error) => {
+        console.error('No se pudo leer la biblioteca:', error);
+        return datos;
+      }),
+      puente.datosUsuario().catch(() => ({})),
+    ]);
+    datos = biblioteca;
+    estado = estadoGuardado(guardados);
+    guardado = [estado.favoritos, estado.recientes, estado.ajustes, estado.ultimoPorSistema, estado.sistema, estado.seleccion];
     escucharMandos();
   } else {
     datos = DATOS;

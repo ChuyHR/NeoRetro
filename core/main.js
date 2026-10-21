@@ -5,6 +5,7 @@ import { app, BrowserWindow, ipcMain, Menu, protocol } from 'electron';
 import { readFile, rename, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
+import { crearAlmacen } from './almacenamiento/almacenamiento.js';
 import { conteoPorSistema, datosParaInterfaz, ubicarJuego } from './biblioteca.js';
 import { cargarConfiguracion, expandirRuta, RAIZ } from './configuracion.js';
 import { iniciarMandos } from './entrada/mandos.js';
@@ -14,6 +15,7 @@ import { escanearBiblioteca } from './escaner/escaner.js';
 import { leerMedios } from './medios/medios.js';
 import { crearServidorDeMedios } from './medios/servidor.js';
 import { armarComando, comandoLegible, ejecutar, ErrorLanzamiento, falloAlAbrir, verificar } from './lanzador/lanzador.js';
+import { ajustarRetroArch, COMBOS_SALIR } from './lanzador/retroarch-cfg.js';
 import { crearRegistro } from './registro.js';
 
 // Los medios llegan a la página por medio://, que el navegador debe tratar como origen seguro y al que
@@ -52,6 +54,14 @@ let mandos = null;
 const ARCHIVO_MAPEOS = path.join(app.getPath('userData'), 'mandos.json');
 const mapeos = await readFile(ARCHIVO_MAPEOS, 'utf8').then(JSON.parse, () => ({}));
 
+// Favoritos, recientes, último juego por sistema y ajustes (core/almacenamiento/).
+const almacen = crearAlmacen(path.join(app.getPath('userData'), 'datos-usuario.json'));
+ipcMain.handle('datos-usuario', () => almacen.cargar());
+ipcMain.handle('guardar-datos-usuario', (_evento, datos) => {
+  almacen.guardar(datos);
+  return true;
+});
+
 function enviar(canal, dato) {
   if (ventana && !ventana.isDestroyed()) ventana.webContents.send(canal, dato);
 }
@@ -87,7 +97,7 @@ ipcMain.handle('biblioteca', async () => {
   return datos;
 });
 
-ipcMain.handle('jugar', async (_evento, id) => {
+ipcMain.handle('jugar', async (_evento, id, opciones = {}) => {
   if (enJuego) return { ok: false, mensaje: 'Ya hay un juego abierto.' };
   const ubicado = ubicarJuego(id, configuracion);
   if (!ubicado) return { ok: false, mensaje: 'No encuentro ese juego en la biblioteca.' };
@@ -100,6 +110,12 @@ ipcMain.handle('jugar', async (_evento, id) => {
       // Un mando configurado aquí debe servir igual dentro del juego. Si falla, el juego abre igual.
       await escribirPerfiles(expandirRuta(comando.emulador.carpetaPerfilesMando), mandos.conectados())
         .catch((error) => registro.anotar('mando', 'no se pudo escribir el perfil de RetroArch', String(error)));
+    }
+    if (comando.emulador.archivoConfiguracion) {
+      // La combinación para salir que se eligió en Configuración. Si falla, el juego abre igual.
+      await ajustarRetroArch(expandirRuta(comando.emulador.archivoConfiguracion), {
+        input_quit_gamepad_combo: COMBOS_SALIR[opciones?.salir] ?? COMBOS_SALIR['select-start'],
+      }).catch((error) => registro.anotar('error', 'no se pudo ajustar retroarch.cfg', String(error)));
     }
     mandos?.soltarTodo();
     await esperar(PANTALLA_LANZAMIENTO_MS);
@@ -195,3 +211,13 @@ app.whenReady().then(() => {
 });
 app.on('window-all-closed', () => app.quit());
 app.on('will-quit', () => mandos?.detener());
+// Antes de salir se escribe lo que haya quedado pendiente de guardar (se juntan los cambios seguidos).
+let guardadoAlSalir = false;
+app.on('before-quit', (evento) => {
+  if (guardadoAlSalir) return;
+  evento.preventDefault();
+  almacen.vaciar().finally(() => {
+    guardadoAlSalir = true;
+    app.quit();
+  });
+});

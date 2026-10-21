@@ -7,7 +7,9 @@ const CANALES = ['mando-accion', 'mando-control', 'mando-crudo', 'mandos'];
 
 contextBridge.exposeInMainWorld('neoArcade', {
   biblioteca: () => ipcRenderer.invoke('biblioteca'),
-  jugar: (id) => ipcRenderer.invoke('jugar', id),
+  jugar: (id, opciones) => ipcRenderer.invoke('jugar', id, opciones),
+  datosUsuario: () => ipcRenderer.invoke('datos-usuario'),
+  guardarDatosUsuario: (datos) => ipcRenderer.invoke('guardar-datos-usuario', datos),
   mandos: () => ipcRenderer.invoke('mandos'),
   guardarMapeo: (clave, perfil) => ipcRenderer.invoke('guardar-mapeo', clave, perfil),
   escuchar(canal, alRecibir) {

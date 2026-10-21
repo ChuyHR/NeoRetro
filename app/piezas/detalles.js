@@ -15,7 +15,7 @@ function rellenar(elemento, etiqueta, valor) {
 export function crearDetalles(lienzo, { despachar }) {
   const refs = montar(lienzo, `
   <div data-ref="capa" style="position: absolute; inset: 0; z-index: 100; background: rgba(2,4,10,0.82); display: none; align-items: center; justify-content: center">
-    <div role="dialog" aria-label="Detalles del juego" style="position: relative; width: 900px; padding: 40px; border-radius: 22px; background: #0A1020; border: 2px solid #1E90FF; box-shadow: 0 0 50px #1769FF55; display: flex; gap: 36px">
+    <div role="dialog" aria-label="Detalles del juego" style="position: relative; width: 900px; padding: 40px; border-radius: 22px; background: #0A1020; border: 2px solid var(--acento); box-shadow: 0 0 50px #1769FF55; display: flex; gap: 36px">
       <div data-ref="portada" style="width: 240px; height: 320px; flex-shrink: 0; border-radius: 12px; border: 3px solid; overflow: hidden; display: flex; flex-direction: column">
         <div data-ref="arte" style="position: relative; flex: 1"><div data-ref="tituloPortada" style="position: absolute; left: 8%; right: 8%; bottom: 10%; font-family: 'Bungee', sans-serif; font-size: 28px; line-height: 0.95; text-align: center; color: #fff"></div></div>
         <div data-ref="banda" style="height: 40px; display: flex; align-items: center; justify-content: center; background: #08080F; font-weight: 700; font-size: 16px"></div>
@@ -27,8 +27,9 @@ export function crearDetalles(lienzo, { despachar }) {
         <span data-ref="jugadores"></span>
         <span data-ref="controles"></span>
         <span data-ref="emulador"></span>
+        <span data-ref="ultima"></span>
         <div style="display: flex; gap: 12px; margin-top: auto">
-          <button data-ref="jugar" style="height: 52px; padding: 0 26px; border-radius: 10px; border: 3px solid #1E90FF; background: #0B2350; color: #F5F7FF; font-family: 'Pixelify Sans', monospace; font-weight: 700; font-size: 22px">JUGAR</button>
+          <button data-ref="jugar" style="height: 52px; padding: 0 26px; border-radius: 10px; border: 3px solid var(--acento); background: #0B2350; color: #F5F7FF; font-family: 'Pixelify Sans', monospace; font-weight: 700; font-size: 22px">JUGAR</button>
           <button data-ref="cerrar" style="height: 52px; padding: 0 26px; border-radius: 10px; border: 2px solid #2A3B70; background: #0E1730; color: #F5F7FF; font-family: 'Pixelify Sans', monospace; font-weight: 600; font-size: 22px">VOLVER AL INICIO</button>
         </div>
       </div>
@@ -38,7 +39,7 @@ export function crearDetalles(lienzo, { despachar }) {
   refs.cerrar.addEventListener('click', () => despachar({ tipo: 'boton', valor: 'cerrar' }));
 
   return {
-    actualizar({ estado, juego, fondo }) {
+    actualizar({ estado, juego, fondo, ultimaPartida }) {
       const visible = estado.ventana === 'detalles' && juego;
       refs.capa.style.display = visible ? 'flex' : 'none';
       if (!visible) return;
@@ -65,6 +66,7 @@ export function crearDetalles(lienzo, { despachar }) {
       rellenar(refs.jugadores, 'Jugadores', juego.jugadores);
       rellenar(refs.controles, 'Controles', juego.controles);
       rellenar(refs.emulador, 'Emulador', juego.emulador);
+      rellenar(refs.ultima, 'Última partida', ultimaPartida);
       const enfocado = BOTONES.detalles[estado.foco];
       marcarFocoAlterno(refs.jugar, enfocado === 'jugar');
       marcarFocoAlterno(refs.cerrar, enfocado === 'cerrar');

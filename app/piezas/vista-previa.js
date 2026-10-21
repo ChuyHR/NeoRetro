@@ -93,7 +93,7 @@ export function crearVistaPrevia(lienzo) {
 
   return {
     actualizar({ juego, marcador, estado }) {
-      refs.crt.style.display = estado.crt ? '' : 'none';
+      refs.crt.style.display = estado.ajustes.crt ? '' : 'none';
       const pausar = estado.ventana === 'lanzamiento';
       const id = juego?.id ?? null;
       if (id !== actual) {
