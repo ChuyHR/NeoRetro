@@ -1,0 +1,10 @@
+Al abrir, foco en: Neo Arcade
+RetroArch arrancó 1435 ms después de Enter; foco en: RetroArch Snes9x 1.63 fae2fea
+Esc → RetroArch cerrado en 360 ms; Neo Arcade visible en 375 ms
+Al volver, foco en: Neo Arcade
+
+Registro de Neo Arcade:
+2026-10-21T00:43:09.122Z	biblioteca	20 ms	21 sistemas leídos del disco	snes=2 psx=1
+2026-10-21T00:43:13.655Z	lanzamiento	flatpak run org.libretro.RetroArch -f -L ~/.var/app/org.libretro.RetroArch/config/retroarch/cores/snes9x_libretro.so '~/juegos-de-prueba/roms/snes/Archivo dañado (prueba).sfc'	salida 1	302 ms
+2026-10-21T00:43:16.542Z	error	flatpak run org.libretro.RetroArch -f -L ~/.var/app/org.libretro.RetroArch/config/retroarch/cores/swanstation_libretro.so '~/juegos-de-prueba/roms/psx/Disco sin BIOS/Disco sin BIOS (prueba).cue'	Falta la BIOS de PLAYSTATION. Copia scph5501.bin, scph5500.bin o scph5502.bin en la carpeta ~/.var/app/org.libretro.RetroArch/config/retroarch/system.	
+2026-10-21T00:43:28.310Z	lanzamiento	flatpak run org.libretro.RetroArch -f -L ~/.var/app/org.libretro.RetroArch/config/retroarch/cores/snes9x_libretro.so '~/juegos-de-prueba/roms/snes/Prueba de control (Neo Arcade).sfc'	salida 0	6592 ms
