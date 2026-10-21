@@ -8,7 +8,6 @@ import { montar } from './dom.js';
 const VECINOS_PRECARGA = 10; // carátulas que se piden por adelantado a cada lado de lo visible
 
 const DURACION_MS = 300; // la misma transición de 0.3 s del prototipo
-const PASO_RAPIDO_MS = 80; // la transición más corta, al mantener una dirección
 const SIN_GIRO = 'perspective(900px) rotateY(0deg)'; // equivale a 'none' y permite interpolar el giro
 
 const ESTILO_CARTA = 'position: absolute; padding: 0; border-radius: 12px; background: #050914; overflow: hidden; display: flex; flex-direction: column';
@@ -100,8 +99,9 @@ export function crearCarrusel(lienzo, { despachar }) {
   }
 
   // Con un paso suelto, la transición del prototipo (0.3 s, suave al final). Si los pasos llegan más
-  // seguido, como al mantener una dirección (cada 90 ms), la transición dura lo que hay entre un paso y
-  // otro y va a ritmo parejo: se ve como un desplazamiento continuo y no se enciman diez animaciones.
+  // seguido que eso, como al mantener una dirección (cada 90 ms), van sin transición: en la MP80, echar
+  // a andar diez animaciones cada 90 ms costaba uno de cada diez cuadros, aunque solo se deslizaran
+  // (docs/pruebas-fase7/fluidez.txt); sin ellas el carrusel sostiene 60 cuadros por segundo.
   let ultimoPaso = 0;
   let ultimaSeleccion = null;
   function duracionDelPaso(seleccion) {
@@ -110,9 +110,7 @@ export function crearCarrusel(lienzo, { despachar }) {
     const intervalo = ahora - ultimoPaso;
     ultimoPaso = ahora;
     ultimaSeleccion = seleccion;
-    return intervalo >= DURACION_MS
-      ? { duracion: DURACION_MS, curva: 'ease' }
-      : { duracion: Math.max(PASO_RAPIDO_MS, intervalo), curva: 'linear' };
+    return intervalo >= DURACION_MS ? { duracion: DURACION_MS, curva: 'ease' } : null;
   }
 
   function animar(carta, antes, despues, { duracion, curva }) {
@@ -121,16 +119,9 @@ export function crearCarrusel(lienzo, { despachar }) {
     const dy = antes.top + antes.alto / 2 - (despues.top + despues.alto / 2);
     const giro = (valor) => (valor === 'none' ? SIN_GIRO : valor);
     for (const animacion of carta.boton.getAnimations()) animacion.cancel();
-    // En los pasos rápidos la portada toma de una vez su tamaño y su giro y solo se desliza: animar la
-    // escala obliga a volver a dibujar cada portada en cada paso, y en la MP80 eso costaba cuadros
-    // (docs/pruebas-fase7/). En un paso suelto, la transición completa del prototipo.
-    const desde = curva === 'linear'
-      ? `translate(${dx}px, ${dy}px) ${giro(despues.giro)}`
-      : `translate(${dx}px, ${dy}px) scale(${antes.ancho / despues.ancho}, ${antes.alto / despues.alto}) ${giro(antes.giro)}`;
-    const hasta = curva === 'linear' ? `translate(0px, 0px) ${giro(despues.giro)}` : `translate(0px, 0px) scale(1, 1) ${giro(despues.giro)}`;
     carta.boton.animate([
-      { transform: desde, opacity: antes.opacidad },
-      { transform: hasta, opacity: despues.opacidad },
+      { transform: `translate(${dx}px, ${dy}px) scale(${antes.ancho / despues.ancho}, ${antes.alto / despues.alto}) ${giro(antes.giro)}`, opacity: antes.opacidad },
+      { transform: `translate(0px, 0px) scale(1, 1) ${giro(despues.giro)}`, opacity: despues.opacidad },
     ], { duration: duracion, easing: curva });
   }
 
@@ -153,7 +144,10 @@ export function crearCarrusel(lienzo, { despachar }) {
         const antes = carta.caja;
         colocar(carta, ranura);
         carta.caja = { left: ranura.left, top: ranura.top, ancho: ranura.ancho, alto: ranura.alto, giro: ranura.giro, opacidad: ranura.opacidad };
-        if (antes && animado) animar(carta, antes, carta.caja, paso);
+        // Un paso sin transición también corta la que quedara del paso anterior: si no, la portada
+        // seguiría deslizándose desde un lugar que ya no es el suyo.
+        if (antes && animado && paso) animar(carta, antes, carta.caja, paso);
+        else if (antes) for (const animacion of carta.boton.getAnimations()) animacion.cancel();
       }
       for (const [id, carta] of cartas) {
         if (presentes.has(id)) continue;
