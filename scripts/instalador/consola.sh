@@ -13,6 +13,10 @@ cat >/target/etc/systemd/system/neo-arcade-primer-arranque.service <<'SERVICIO'
 Description=Neo Arcade: terminar la instalación en el primer arranque
 After=network-online.target
 Wants=network-online.target
+# La pantalla es suya mientras instala: sin esto, el inicio de sesión de texto la tapa (se vio en la
+# máquina virtual el 2026-10-20).
+Before=getty@tty1.service
+Conflicts=getty@tty1.service
 ConditionPathExists=!/var/lib/neo-arcade/instalado
 
 [Service]

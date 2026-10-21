@@ -1,0 +1,99 @@
+# Guía de instalación de la consola Neo Arcade
+
+Esta guía convierte una PC en la consola Neo Arcade: al encenderla aparece directamente la biblioteca
+de juegos, sin escritorio ni textos del sistema. Se instala desde una memoria USB que se arma una vez.
+
+## Lo que hace falta
+
+- Una PC x86-64 con Intel o AMD, 4 núcleos, 8 GB de RAM, gráficos con OpenGL 3.3 o Vulkan, disco SSD y
+  salida HDMI. El equipo de referencia es una Blackview MP80.
+- Al menos 40 GB libres en su disco. Si el disco ya tiene otro sistema (por ejemplo Windows), la
+  instalación usa solo el espacio libre más grande y deja el otro sistema como estaba. Ese espacio se
+  libera antes desde el otro sistema (en Windows, «Administración de discos», «Reducir volumen»).
+- Una memoria USB de 2 GB o más. Se borra al grabarle la imagen.
+- Red con salida a internet durante la instalación: la consola baja Debian y, en su primer arranque,
+  los emuladores y sus núcleos (unos 2.5 GB). Por cable no hay que configurar nada; para Wi-Fi, ver el
+  paso 1.
+- Una PC con Linux (o el Debian de WSL) y una copia del repositorio con `npm install` hecho, para armar
+  la imagen.
+
+## 1. Armar la imagen
+
+Baja la imagen oficial de Debian 13 «netinst» para amd64 de
+`https://cdimage.debian.org/debian-cd/current/amd64/iso-cd/` junto con el archivo `SHA256SUMS`, y
+comprueba que coincidan:
+
+```bash
+grep " debian-13.7.0-amd64-netinst.iso$" SHA256SUMS | sha256sum -c -
+```
+
+Arma la imagen de la consola desde la raíz del repositorio:
+
+```bash
+bash scripts/instalador/armar-iso-consola.sh debian-13.7.0-amd64-netinst.iso consola.iso \
+  --llave ~/.ssh/mi-llave.pub
+```
+
+- `--llave` deja entrar a la consola por SSH con esa llave, para copiar juegos y dar mantenimiento.
+  Sin ella no se puede entrar por la red.
+- `--wifi RED archivo-con-la-contraseña` deja la red Wi-Fi escrita dentro de la imagen. Borra la
+  memoria USB después de instalar, porque la contraseña queda en ella.
+
+La imagen pesa alrededor de 1.1 GB y se arma en segundos.
+
+## 2. Grabarla en la memoria USB
+
+- En Windows, con Rufus: elige la imagen y, cuando pregunte, el modo **imagen DD**.
+- En Linux: `sudo dd if=consola.iso of=/dev/sdX bs=4M status=progress conv=fsync`, con `/dev/sdX` la
+  memoria USB (revísalo dos veces con `lsblk`: `dd` borra lo que haya en el destino).
+
+## 3. Instalar
+
+1. Conecta la memoria USB a la PC de la consola y enciéndela desde ella, en modo UEFI, con la tecla
+   del menú de arranque de su firmware.
+2. El menú muestra «Instalar la consola Neo Arcade» y lo elige solo a los 5 segundos.
+3. La instalación es automática. Solo se detiene una vez, en «Particionado de discos», para preguntar
+   **«¿Desea escribir los cambios en los discos?»**. Revisa que la lista mencione el disco correcto,
+   elige **Sí** y pulsa **Continuar**.
+4. Al terminar, la PC se reinicia sola. Retira la memoria USB.
+5. En el primer arranque se ve texto en la pantalla: es la consola terminando de instalarse y bajando
+   los emuladores. Tarda según la red. Al acabar se reinicia sola.
+6. Desde ese momento, al encender aparece Neo Arcade.
+
+## 4. Dónde van los juegos
+
+Todo lo tuyo vive en la carpeta `NeoRetro` del usuario `arcade` (`/home/arcade/NeoRetro`):
+
+| Carpeta | Qué va ahí |
+| --- | --- |
+| `roms/<sistema>/` | Los juegos, en la carpeta de su sistema (`snes`, `psx`, `arcade`…). |
+| `media/<sistema>/` | Carátulas, capturas, vídeos y el `gamelist.xml` de Skraper (perfil EmulationStation). |
+| `saves/` y `states/` | Partidas y estados guardados de RetroArch. Las crea él. |
+| `config/` | Favoritos, recientes, ajustes y mandos configurados. Para cambiar un archivo de configuración de Neo Arcade, cópialo aquí desde `/opt/neo-arcade/resources/app/config` y edítalo. |
+| `logs/` | El registro de Neo Arcade (`neo-arcade.log`). |
+| `metadata/` y `backups/` | Reservadas; hoy nada las usa. |
+
+Las BIOS no van en `NeoRetro`: van en la carpeta de RetroArch,
+`/home/arcade/.var/app/org.libretro.RetroArch/config/retroarch/system/` (PlayStation:
+`scph5501.bin`, `scph5500.bin` o `scph5502.bin`; Sega CD: `bios_CD_U.bin`, `bios_CD_E.bin` o
+`bios_CD_J.bin`). El `neogeo.zip` de Neo Geo va junto a sus juegos o en esa misma carpeta.
+
+Para copiar desde otra PC de la red, con la llave del paso 1:
+
+```bash
+scp -r "Mis juegos de SNES/." arcade@<ip-de-la-consola>:NeoRetro/roms/snes/
+```
+
+Neo Arcade lee los juegos nuevos al volver a abrirse (o al reiniciar la consola).
+
+## 5. Mantenimiento
+
+- **Terminal**: mantén **Ctrl + Alt + Mayús + M** durante 3 segundos. Al cerrarla, vuelves a Neo
+  Arcade.
+- **Diagnóstico**: PENDIENTE_DIAGNOSTICO
+- **Menú de arranque**: aparece si mantienes Esc o Mayús durante el primer segundo de arranque. Sirve
+  para elegir otro sistema instalado.
+- **Volver al escritorio** (si la PC tenía uno): `sudo bash
+  /opt/neo-arcade-instalador/scripts/instalador/volver-al-escritorio.sh` y reinicia. Para volver a la
+  consola, `sudo bash /opt/neo-arcade-instalador/scripts/instalador/instalar-neo-arcade.sh`.
+- **Apagar y reiniciar**: desde Configuración, en la fila Equipo (pide pulsar dos veces).

@@ -10,22 +10,25 @@
 # La imagen debe armarse con --llave <privada>.pub para poder entrar por SSH (puerto 2222 del equipo).
 #
 # Uso: bash scripts/instalador/probar-en-maquina-virtual.sh <consola.iso> <carpeta> --llave <privada>
-#        [--desde instalar|primer-arranque|consola]
+#        [--desde instalar|primer-arranque|consola] [--dejar-encendida]
+# --dejar-encendida no apaga la consola al final, para seguir probando a mano (SSH en el puerto 2222,
+# teclas y capturas con scripts/herramientas/maquina-virtual.py y el socket <carpeta>/qmp.sock).
 # Todo queda en <carpeta>: disco.qcow2, vars.fd (la memoria UEFI), capturas/ y resultado.txt.
 set -euo pipefail
 
 if [[ $# -lt 4 ]]; then
-  sed -n '12,14p' "$0" >&2
+  sed -n '12,16p' "$0" >&2
   exit 2
 fi
 REPO="$(cd "$(dirname "$0")/../.." && pwd)"
 IMAGEN="$(realpath "$1")" DIR="$(realpath -m "$2")"
 shift 2
-LLAVE="" DESDE=instalar
+LLAVE="" DESDE=instalar ENCENDIDA=false
 while [ $# -gt 0 ]; do
   case "$1" in
     --llave) LLAVE="$(realpath "$2")"; shift ;;
     --desde) DESDE="$2"; shift ;;
+    --dejar-encendida) ENCENDIDA=true ;;
     *) echo "Opción desconocida: $1" >&2; exit 2 ;;
   esac
   shift
@@ -37,8 +40,9 @@ informe() { echo "$*" | tee -a "$DIR/resultado.txt"; }
 ms() { date +%s%3N; }
 
 maquina() {
-  # 4 núcleos y 4 GB, como una PC pequeña. Disco y red virtio; pantalla virtio sin aceleración 3D.
-  qemu-system-x86_64 -machine q35,accel=kvm -cpu host -smp 4 -m 4096 \
+  # 4 núcleos y 4 GB, como una PC pequeña. Disco y red virtio; pantalla virtio sin aceleración 3D. El
+  # reloj del equipo en hora local, como lo deja la instalación (clock-setup/utc false, por Windows).
+  qemu-system-x86_64 -machine q35,accel=kvm -cpu host -smp 4 -m 4096 -rtc base=localtime \
     -drive if=pflash,format=raw,readonly=on,file=/usr/share/OVMF/OVMF_CODE_4M.fd \
     -drive if=pflash,format=raw,file="$DIR/vars.fd" \
     -drive file="$DIR/disco.qcow2",if=virtio,format=qcow2 \
@@ -115,6 +119,10 @@ echo "Arranque del núcleo: $(uptime -s)"
 echo "Errores del arranque (journalctl -p err -b):"
 journalctl -p err -b --no-pager -q | tail -15 | sed 's/^/  /'
 DENTRO
+if $ENCENDIDA; then
+  informe "== La consola sigue encendida (QEMU $qemu): SSH en 127.0.0.1:2222, QMP en $QMP"
+  exit 0
+fi
 ssh_vm 'sudo systemctl poweroff' 2>/dev/null || true
 for _ in $(seq 30); do kill -0 "$qemu" 2>/dev/null || break; sleep 1; done
 kill "$qemu" 2>/dev/null || true

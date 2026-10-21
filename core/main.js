@@ -237,6 +237,11 @@ function crearVentana() {
     if (DESARROLLO && entrada.type === 'keyDown' && entrada.key === 'Escape') app.quit();
     vigilarTerminal(entrada);
   });
+  // En la versión final no se ve el puntero: Cage lo dibuja en medio de la pantalla si hay un ratón (se
+  // vio en la máquina virtual de la fase 8), y en una consola que se usa con mando solo estorba.
+  if (!DESARROLLO) {
+    ventana.webContents.on('did-finish-load', () => ventana.webContents.insertCSS('* { cursor: none !important; }'));
+  }
   // Solo al medir: NEO_ARCADE_CSS agrega reglas a la página, para ver cuánto pesa un efecto apagándolo.
   if (MEDIR && process.env.NEO_ARCADE_CSS) {
     ventana.webContents.on('did-finish-load', () => ventana.webContents.insertCSS(process.env.NEO_ARCADE_CSS));
