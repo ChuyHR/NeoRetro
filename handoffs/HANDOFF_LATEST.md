@@ -64,6 +64,22 @@ y se verificó con el tablero del usuario.
 - **Instalación en la MP80**: se copiaron los dos archivos a `/opt/neo-arcade/resources/app` y se
   reinició `neo-arcade.service`. La imagen USB del instalador no se ha vuelto a armar.
 
+### Sonido en la TV
+
+- El usuario: «no se escucha al conectarla en una TV» y «no tiene sonido ni los juegos ni nuestra
+  interfaz». Esto resuelve el pendiente del sonido del handoff anterior: lo quiere en la TV.
+- La salida predeterminada era «USB Audio and HID», un adaptador de sonido USB de CSCTEK (0573:1573)
+  conectado a la MP80. WirePlumber lo prefería sobre el HDMI.
+- La TV («Union TV») está en el primer HDMI: el jack `HDMI/DP,pcm=3` está encendido y los otros tres
+  apagados. Ese es el sink `alsa_output.pci-0000_00_1f.3.hdmi-stereo`.
+- Se hizo con `wpctl set-default` en la sesión de `arcade`, con el volumen al 100 % y sin silencio,
+  porque la TV controla su propio volumen. WirePlumber lo guarda en
+  `~/.local/state/wireplumber/default-nodes`, así que sobrevive a reinicios.
+- Se movió solo el juego que estaba abierto: RetroArch pasó a sonar en «Union TV». El usuario todavía
+  no confirma que ya se escucha.
+- No se cambió el instalador. En otra PC con un adaptador USB pasaría lo mismo. Una opción para
+  después es una fila «Salida de sonido» en Configuración; decide el usuario.
+
 ## Cómo se verificó
 
 - 105 pruebas en verde en la MP80 (`node --test --test-reporter=tap`). En Windows no hay Python, y la
@@ -92,7 +108,6 @@ y se verificó con el tablero del usuario.
 5. **Observación sin revisar**: la MP80 arrancó seis veces entre las 16:09 y las 17:27, con encendidos
    de 1 a 4 minutos. Puede ser el usuario al cambiar de tablero; no se investigó.
 6. Siguen los pendientes del handoff anterior:
-   - la salida de sonido (USB o HDMI);
    - la revisión de las fases 1 a 8;
    - la skill (§19);
    - juegos de PlayStation, GameCube y PSP;
