@@ -71,17 +71,22 @@ fi
 informe "Registro: $(ssh_vm 'grep lanzamiento ~/NeoRetro/logs/neo-arcade.log | tail -1' | cut -f2- | sed 's#/home/arcade#~#g')"
 
 informe "== 3. Terminal de mantenimiento"
+terminal_abierta() { ssh_vm 'pgrep -x foot' >/dev/null 2>&1; }
+terminal_cerrada() { ! terminal_abierta; }
+t0=$(ms)
 python3 "$AYUDANTE" combinacion "$QMP" 3800 ctrl alt shift m
-sleep 2
-captura 4-terminal
-if ssh_vm 'pgrep -x foot' >/dev/null; then
-  informe "OK: la terminal se abrió"
-  teclas e x i t ret
+# La primera vez tarda: arma la caché de tipografías.
+if esperar 20 terminal_abierta; then
   sleep 2
-  ssh_vm 'pgrep -x foot' >/dev/null && informe "FALLA: la terminal no se cerró" || informe "OK: la terminal se cerró con exit"
+  informe "OK: la terminal se abrió $(( $(ms) - t0 )) ms después de empezar a mantener la combinación"
+  captura 4-terminal
+  teclas e x i t ret
+  esperar 10 terminal_cerrada && informe "OK: la terminal se cerró con exit" || informe "FALLA: la terminal no se cerró"
+  sleep 1.5
   captura 5-tras-cerrar-la-terminal
 else
   informe "FALLA: la terminal no se abrió"
+  captura 4-sin-terminal
 fi
 
 informe "== 4. Diagnóstico dentro de la consola"
