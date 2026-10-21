@@ -23,7 +23,7 @@ Todo lo que se pudo probar sin juegos de terceros pasó en la TV de la MP80. Eso
 - lo que se recuerda al reabrir;
 - 30 minutos de uso sin aumento de memoria.
 
-Las 97 pruebas automáticas pasan en la laptop (WSL) y en la MP80.
+Las 101 pruebas automáticas pasan en la laptop (WSL) y en la MP80.
 
 Para cumplir la skill se agregaron en esta tanda:
 
@@ -112,7 +112,7 @@ en el plan), **Parcial**, **No está** y **Choca con el plan** (el plan manda, s
 | 53–54 | Arranque y quiosco | Parcial | Instalador de la fase 8 escrito (Cage, sin escritorio). Falta probarlo en una máquina virtual. |
 | 55 | Actualizaciones | No está | No se actualiza nada solo; tampoco avisa de versiones nuevas. |
 | 56 | Registros | Cumple | En la consola, `~/NeoRetro/logs/neo-arcade.log`; en desarrollo, en la carpeta de datos de la app. |
-| 57 | Pruebas automáticas | Cumple | 97 pruebas; Dolphin y PPSSPP se prueban por su comando, no abriendo un juego. |
+| 57 | Pruebas automáticas | Cumple | 101 pruebas; Dolphin y PPSSPP se prueban por su comando, no abriendo un juego. |
 | 58 | Fases | Choca con el plan | El proyecto sigue las nueve fases del plan. |
 | 60 | Comandos `/neo-arcade …` | Parcial | `scan`, `detect-emulators`, `verify` y `bios` son `npm run diagnostico [-- --juegos]`; `test` es `npm test`. |
 

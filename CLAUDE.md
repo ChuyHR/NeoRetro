@@ -46,7 +46,9 @@ y verificadas y esperan su revisión.** La fase 8 está escrita y **sin probar**
 - Pruebas finales con la skill del usuario (`docs/pruebas-finales/README.md`): juegos de varios
   discos, avisos de BIOS y de `neogeo.zip`, tiempo jugado, revisión de juegos, reconexión del mando y
   regresión de las fases 3, 4 y 6 en la TV. Ahí está también qué pide la skill que el plan no tiene.
-- `npm test` pasa (97 pruebas) en WSL y en la MP80. En Windows fallan 4 que dependen de Linux.
+- Carpetas de la consola en `~/NeoRetro` (ajuste 10), probadas en la TV sin instalar la consola
+  (`scripts/prueba-carpetas-en-tv.sh`, `docs/pruebas-finales/tv-mp80/carpetas-neoretro.txt`).
+- `npm test` pasa (101 pruebas) en WSL y en la MP80. En Windows fallan 4 que dependen de Linux.
 
 **Fase 8, sin probar.** El instalador de la consola (`scripts/instalador/instalar-neo-arcade.sh`), la
 imagen USB (`armar-iso-consola.sh` con `consola.sh`), la vuelta atrás (`volver-al-escritorio.sh`),

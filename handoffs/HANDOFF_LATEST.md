@@ -20,6 +20,11 @@ para decidir. El informe completo está en `docs/pruebas-finales/README.md`.
 - «De qué se trata mi proyecto, resúmelo para saber cómo buscar y descargar ROMs», «en md para copiar y
   pegar»: se le dio un resumen con carpetas, formatos, BIOS, Skraper y solo fuentes legales.
 - «Quiero que pruebes mi skill para este proyecto para que ejecutes pruebas finales reales».
+- «Puedes hacer esto por mí» (los tres pasos para que la skill cargue): quedó en
+  `.claude/skills/neo-arcade/SKILL.md`, con el texto sin cambios; el original no se tocó.
+- «Usa ese skill». Era ambiguo: cargarla o que mandara sobre el plan. La skill no carga en una sesión
+  abierta en otra carpeta, así que se siguió desde el archivo. Se le preguntaron los dos choques con el
+  plan y eligió **carpetas como la skill** y **botones como el plan** (ajuste 10 del CLAUDE.md).
 
 ## Lo que se hizo
 
@@ -39,12 +44,23 @@ para decidir. El informe completo está en `docs/pruebas-finales/README.md`.
   jugado en Detalles, aviso de `neogeo.zip` antes de abrir (también se busca en la carpeta de BIOS y ya
   no se lista como juego), emuladores en el registro al arrancar y número de proceso de cada
   lanzamiento.
-- Pruebas en la TV nuevas: `scripts/prueba-final-en-tv.sh` y `scripts/prueba-reconexion-en-tv.sh`.
+- **Carpetas de la consola en `~/NeoRetro`** (decisión del usuario): el instalador crea `roms/` y
+  `media/` por sistema, `saves/`, `states/`, `metadata/`, `logs/`, `backups/` y `config/`. La sesión
+  arranca con `NEO_ARCADE_CONFIG=~/NeoRetro/config`; ahí van lo que se recuerda y los mapeos de mandos,
+  y cualquier archivo de configuración que se quiera cambiar (los demás salen de la app). El registro va
+  a `logs/` y RetroArch guarda partidas y estados en `saves/` y `states/`
+  (`configurar-retroarch.sh --partidas --estados`). El instalador se detiene si `~/NeoRetro` es un
+  repositorio de git, como en la MP80 de desarrollo.
+- Pruebas en la TV nuevas: `scripts/prueba-final-en-tv.sh`, `scripts/prueba-reconexion-en-tv.sh` y
+  `scripts/prueba-carpetas-en-tv.sh`.
 
 ## Cómo se verificó
 
-- `npm test`: 97 pruebas en verde en WSL y en la MP80. En Windows fallan 4 que dependen de Linux; las
+- `npm test`: 101 pruebas en verde en WSL y en la MP80. En Windows fallan 4 que dependen de Linux; las
   pruebas se corren en WSL.
+- Carpetas de la consola, sin instalarla: un NeoRetro de prueba configurado como lo deja el instalador.
+  Los juegos salen de `roms/`, lo recordado va a `config/`, el registro a `logs/` y el estado guardado
+  con F2 a `states/Snes9x/`. La prueba deja `retroarch.cfg` y `~/.config/neo-arcade` como estaban.
 - TV de la MP80, todas en `docs/pruebas-finales/tv-mp80/` y `docs/pruebas-fase7/`:
   - multidisco, BIOS, `neogeo.zip`, tiempo jugado y revisión de juegos;
   - regresión de las fases 3, 4 y 6;
@@ -72,7 +88,8 @@ para decidir. El informe completo está en `docs/pruebas-finales/README.md`.
 2. **Revisión** de las fases 1 a 7. Pantallas con cambios para mirar: Configuración (fila Equipo con
    Apagar y Reiniciar), la animación de arranque, la línea «Jugado» de Detalles y «N discos» en la ficha.
 3. **Decidir** lo de la skill que no está en el plan (`docs/pruebas-finales/README.md`, «Lo que queda
-   por decidir») y corregir la skill como archivo (misma página, «La skill como archivo»).
+   por decidir»). Conviene corregir su §19 (botones), que ya no manda, y su §60 (comandos).
+   La skill ya carga en `.claude/skills/neo-arcade/SKILL.md`.
 4. **Sus archivos** para la última prueba real: un juego de arcade, uno de PlayStation (con su BIOS),
    uno de GameCube y uno de PSP.
 5. **Permiso para reiniciar la MP80** cuando la fase 8 pase en la máquina virtual. Hay vuelta atrás con
@@ -84,8 +101,10 @@ para decidir. El informe completo está en `docs/pruebas-finales/README.md`.
 
 - Fase 8 en una máquina virtual dentro de la MP80 (QEMU con KVM y OVMF): bajar la imagen oficial de
   Debian 13 en la MP80 y comprobar su SHA256SUMS, armar la imagen con `armar-iso-consola.sh`, instalar,
-  medir el arranque (meta del plan: menos de 30 s) y comprobar que no aparece texto. Después, la guía
-  de instalación (`docs/guia-instalacion.md`).
+  medir el arranque (meta del plan: menos de 30 s) y comprobar que no aparece texto. Ahí se prueba de
+  verdad que el instalador arma `~/NeoRetro`. Después, la guía de instalación
+  (`docs/guia-instalacion.md`). Para instalar la consola en la MP80 misma hay que mover antes la copia
+  de desarrollo de `~/NeoRetro` (el instalador se detiene si la encuentra).
 - Pendientes de la fase 4: emparejar Bluetooth desde Configuración, xpadneo y xone en el instalador, y
   el mapeo de mandos en Dolphin y PPSSPP.
 
