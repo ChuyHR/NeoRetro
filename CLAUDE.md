@@ -21,8 +21,9 @@ los botones, como el plan. Lo que pide y el plan no tiene espera su decisión
 
 ## Estado actual
 
-Verificado el 2026-10-20. La fase 0 quedó aprobada por el usuario. **Las fases 1 a 7 están construidas
-y verificadas y esperan su revisión.** La fase 8 está escrita y **sin probar** (ver abajo). Lo verificado:
+Verificado el 2026-10-20. La fase 0 quedó aprobada por el usuario. **Las fases 1 a 8 están construidas
+y verificadas y esperan su revisión. La MP80 ya funciona como consola** con la biblioteca real del
+usuario (ver abajo). Lo verificado:
 
 - Fase 1: la pantalla del prototipo está reproducida por piezas, con 0.0 % de píxeles distintos salvo
   en las dos zonas con cambios aprobados, y se recorre entera con el teclado (`docs/pruebas-fase1/`).
@@ -54,17 +55,22 @@ y verificadas y esperan su revisión.** La fase 8 está escrita y **sin probar**
 (`armar-iso-consola.sh` con `consola.sh`), la vuelta atrás (`volver-al-escritorio.sh`), Apagar y
 Reiniciar en Configuración (en desarrollo solo se anotan) y la terminal de mantenimiento (Ctrl + Alt +
 Mayús + M sostenido 3 s) están probados en una máquina virtual dentro de la MP80
-(`docs/pruebas-finales/README.md`, «Consola instalada»): arranca en Neo Arcade en 11 s, abre juegos,
-vuelve y se apaga desde el menú. Instalarla en la MP80 misma implica reiniciarla; el usuario pidió no
-volver a pedir permiso para eso: se le avisa y se hace.
+(`docs/pruebas-finales/README.md`, «Consola instalada»), y el 2026-10-20 se instaló en la MP80 misma:
+enciende en Neo Arcade en unos 27 s con la biblioteca real, abre juegos con el mando, vuelve con
+Select + Start en 1.9 s y se reinicia desde su menú («Consola instalada en la MP80»). La prueba en
+la máquina virtual encontró y dejó corregidos dos fallos que habrían roto la consola: ningún emulador
+abría (systemd da `CAP_WAKE_ALARM` a la sesión y la caja de Flatpak la rechaza; Cage arranca con
+`setpriv`) y, al volver de un juego, la pantalla se quedaba en «Abriendo…» (en Wayland la ventana ya no
+se oculta, `OCULTAR_AL_JUGAR` en `core/main.js`).
 
-**Juegos reales.** Las pruebas usan programas y medios propios, no juegos de terceros. El 2026-10-20 el
-usuario pidió conseguir los juegos de prueba sin depender de él; el filtro de seguridad de Claude Code
-bloqueó bajar juegos de terceros y bajar o compilar código externo (OpenBIOS para PlayStation), y no se
-rodeó ese bloqueo (tampoco con el navegador que ofreció el usuario). Por eso SNES se probó con
-`scripts/juego-de-prueba-snes.mjs`, un programa escrito aquí. **Arcade y PlayStation siguen sin probarse
-con un juego**: el núcleo de arcade solo acepta copias exactas de placas reales y PlayStation necesita
-una BIOS; ambos los tiene que poner el usuario (en `roms/` y en la carpeta de BIOS de RetroArch).
+**Juegos reales.** El usuario puso su biblioteca: un paquete de RetroBat que se organizó en
+`~/NeoRetro/roms` de la MP80 (12 sistemas, 3 616 juegos visibles). Detalle de lo que se hizo con él
+(partes cortadas, juegos dentro de `.rar` y `.7z`, BIOS) en `docs/pruebas-finales/README.md`,
+«Biblioteca real del usuario». Abren y se juegan 14 juegos de 11 sistemas, arcade incluido. **Faltan
+juegos de PlayStation, GameCube y PSP**: el paquete no los trae (las BIOS de PlayStation y Sega CD sí
+están). Antes de eso, el filtro de seguridad de Claude Code bloqueó bajar juegos de terceros y no se
+rodeó; las pruebas sin juegos del usuario usan `scripts/juego-de-prueba-snes.mjs`, un programa escrito
+aquí.
 
 La tecnología es la de [docs/decision-tecnica.md](docs/decision-tecnica.md): Electron 44, emuladores
 desde Flathub y Debian 13 con Cage. El contexto de la última sesión está en
@@ -93,8 +99,9 @@ de discos de Windows ha avisado cuatro veces que su SSD interno (C:) anticipa un
 **Equipo de referencia**: Blackview MP80 (dato del usuario, 2026-10-20; especificaciones confirmadas
 en la ficha de Intel y en la reseña de CNX Software). Intel N95 (4 núcleos, hasta 3.4 GHz, 15 W) con
 gráficos UHD de 16 EU, 16 GB LPDDR5, SSD M.2 SATA de 512 GB, Wi-Fi 5, Bluetooth 4.2, tres HDMI 2.0 y
-tres USB 3. Tiene Debian 13 en arranque dual con Windows 11 Pro: usuario `arcade` sin contraseña,
-sesión automática en Xfce, sudo sin contraseña y SSH solo con la llave
+tres USB 3. Tiene Debian 13 en arranque dual con Windows 11 Pro: usuario `arcade`, sudo sin
+contraseña, **modo consola instalado** (enciende en Neo Arcade con Cage; el escritorio Xfce sigue
+instalado pero no arranca) y SSH solo con la llave
 `C:\Users\ADMIN\.ssh\neoarcade_ed25519` de la laptop. Está en el Wi-Fi de la casa en `192.168.100.94`
 (tarjeta Realtek RTL8821CE, 5 GHz):
 
@@ -111,18 +118,36 @@ TV sin preguntar, y desde la noche del 2026-10-20 también reiniciarla («ya no 
 permisos»): **se avisa en una línea, sin pedir permiso**. La fase 8 la reinstala como sistema dedicado. Su GPU es el
 recurso más justo, tanto para los efectos de la interfaz como para GameCube.
 
-Lo que ya tiene instalado (2026-10-20): el proyecto en `~/NeoRetro` (un `git push` por SSH actualiza
-también los archivos, porque el repositorio acepta `updateInstead`), Node 24.21.0, RetroArch 1.22.2,
-Dolphin 2609a y PPSSPP 1.20.4 de Flathub, los 11 núcleos de RetroArch que pide `systems.json` y
-RetroArch configurado para salir con Select + Start o con un solo Esc. No se suspende ni apaga la
-pantalla (`scripts/instalador/sin-suspension.sh`). La TV está en HDMI-1 a 1920×1080 y 75 Hz; también
-acepta 60 Hz. Los emuladores de Flathub leen la carpeta personal (RetroArch con escritura, Dolphin y
-PPSSPP solo lectura), así que llegan a `~/NeoRetro/roms` sin permisos extra. Para abrir algo en su TV
-por SSH:
+Lo que tiene instalado (2026-10-20):
+
+- **La consola**: la app en `/opt/neo-arcade`, el servicio `neo-arcade.service` (Cage en tty1) y
+  GRUB en silencio, también en su copia de la partición de Windows.
+- **Lo del usuario en `~/NeoRetro`** (ajuste 10): `roms/` con su biblioteca, `config/` con
+  `biblioteca.json`, lo recordado y los mapeos, y `logs/neo-arcade.log`. RetroArch guarda en `saves/`
+  y `states/`. Las BIOS están en `~/.var/app/org.libretro.RetroArch/config/retroarch/system/`.
+- **La copia de desarrollo en `~/NeoArcade-desarrollo`.** Ahí van los pushes:
+  `GIT_SSH_COMMAND="ssh -i ~/.ssh/neoarcade_ed25519" git push ssh://arcade@192.168.100.94/home/arcade/NeoArcade-desarrollo main`.
+  Acepta `updateInstead`, así que el push también actualiza los archivos. Sus `roms` y `media` son
+  enlaces a los de `~/NeoRetro`.
+- Lo que sobró del paquete de RetroBat está en `~/descargas-retrobat/`: las 12 partes, lo extraído
+  para Windows, los `.rar` y `.7z` internos y el barrido parcial.
+- Node 24.21.0, RetroArch 1.22.2, Dolphin 2609a y PPSSPP 1.20.4 de Flathub, los 11 núcleos, `unrar` (de
+  la sección non-free de Debian, activada solo para él) y `7zip`.
+- Una máquina virtual de prueba en `~/vm-consola/` (2.6 GB).
+
+Con la consola instalada **ya no hay sesión X11**: las pruebas de TV con `xdotool` y `xwd` no corren.
+En su lugar está `scripts/prueba-consola-en-tv.sh`, que captura con `grim` y maneja todo con el mando
+virtual. Para volver al escritorio: `sudo bash scripts/instalador/volver-al-escritorio.sh` y reiniciar.
+Para regresar a la consola: `sudo bash scripts/instalador/instalar-neo-arcade.sh`, que se detiene si
+`~/NeoRetro` tiene `.git`.
+
+El sonido sale por un aparato USB conectado a la MP80 («USB Audio and HID», Zoran), no por el HDMI.
+Falta saber si el usuario lo quiere así. La TV está en HDMI-1 (1920×1080, 60 o 75 Hz). Los emuladores
+de Flathub leen la carpeta personal (RetroArch con escritura, Dolphin y PPSSPP solo lectura). Para
+capturar la TV por SSH en la consola:
 
 ```bash
-export DISPLAY=:0 XAUTHORITY=$HOME/.Xauthority XDG_RUNTIME_DIR=/run/user/$(id -u)
-export DBUS_SESSION_BUS_ADDRESS=unix:path=$XDG_RUNTIME_DIR/bus
+XDG_RUNTIME_DIR=/run/user/$(id -u) WAYLAND_DISPLAY=wayland-0 grim -s 0.5 /tmp/tv.png
 ```
 
 `timeout` sobre `flatpak run` detiene el envoltorio de Flatpak pero no al emulador, que sigue abierto
@@ -152,9 +177,11 @@ bash scripts/configurar-retroarch.sh   # salir con Select + Start o un solo Esc;
                                        #   --partidas y --estados: dónde guarda (la consola: ~/NeoRetro)
 ```
 
-En la MP80, con la sesión gráfica abierta (también por SSH), pruebas en la TV con RetroArch de
-verdad. Arman su biblioteca en `~/juegos-de-prueba*` (nunca en `roms/`) y dejan capturas y
-`resultado.txt` en `/tmp/prueba-*`. Cierran todo Electron al terminar: no corras dos a la vez.
+En la MP80 **con el escritorio activo** (X11; con la consola instalada, primero
+`volver-al-escritorio.sh`), pruebas en la TV con RetroArch de verdad. Arman su biblioteca en
+`~/juegos-de-prueba*` (nunca en `roms/`) y dejan capturas y `resultado.txt` en `/tmp/prueba-*`.
+Cierran todo Electron al terminar: no corras dos a la vez. Con la consola instalada corre
+`bash scripts/prueba-consola-en-tv.sh [pulsaciones de RB]`.
 
 ```bash
 bash scripts/prueba-en-tv.sh           # fase 3: programa de SNES, archivo dañado y disco sin BIOS
@@ -165,7 +192,25 @@ bash scripts/prueba-memoria-en-tv.sh   # fase 7: 30 minutos de uso, memoria minu
 bash scripts/prueba-final-en-tv.sh     # final: multidisco, BIOS, neogeo.zip, tiempo jugado, revisión
 bash scripts/prueba-reconexion-en-tv.sh # desconectar y volver a conectar el mando (pide sudo)
 bash scripts/prueba-carpetas-en-tv.sh  # carpetas de la consola (~/NeoRetro) sin instalarla
+bash scripts/prueba-juegos-reales-en-tv.sh "snes/X.zip" …  # juegos del usuario con el comando de la app
+bash scripts/prueba-biblioteca-real-en-tv.sh [RB]  # la app con la biblioteca real, juego y Detalles
+bash scripts/prueba-version-final-en-tv.sh   # la versión empaquetada con el mando (pide sudo)
+bash scripts/prueba-compatibilidad-en-tv.sh arcade neogeo  # barrido: rechazado / se ve / negro
 ```
+
+Máquina virtual de la consola, en la MP80 (QEMU con KVM y UEFI, sin pantalla; capturas por QMP con
+`scripts/herramientas/maquina-virtual.py`):
+
+```bash
+bash scripts/instalador/armar-iso-consola.sh <debian-13-netinst.iso> consola.iso --llave llave.pub
+bash scripts/instalador/probar-en-maquina-virtual.sh consola.iso ~/vm-consola --llave llave \
+     [--desde instalar|primer-arranque|consola] [--dejar-encendida]
+bash scripts/instalador/probar-consola-encendida.sh ~/vm-consola --llave llave \
+     [--actualizar-app] [--juegos "snes nes"]   # juego, terminal, diagnóstico y apagar
+```
+
+La instalación se detiene una vez, a propósito, en la confirmación del particionado: se contesta con
+`python3 scripts/herramientas/maquina-virtual.py teclas ~/vm-consola/qmp.sock down ret`.
 
 Herramientas que usan esas pruebas, también sueltas: `node scripts/juego-de-prueba-snes.mjs <carpeta>`
 (programa propio de SNES: pantalla azul que se pone roja al pulsar), `bash scripts/electron.sh

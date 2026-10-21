@@ -1,0 +1,22 @@
+Consola instalada en la Blackview MP80, 2026-10-20 (instalar-neo-arcade.sh sobre su Debian 13, con la
+biblioteca real del usuario en ~/NeoRetro/roms). Prueba: scripts/prueba-consola-en-tv.sh 4, por SSH.
+
+== Arranque
+systemd-analyze: Startup finished in 11.786s (firmware) + 5.583s (loader) + 2.793s (kernel) + 4.038s (userspace) = 24.201s
+neo-arcade.service: active, activo desde 6.5 s después de arrancar el núcleo
+Biblioteca lista 10 s después de arrancar el núcleo (unos 27 s desde que se enciende):
+  646 ms, arcade=598 neogeo=126 nes=761 snes=442 n64=83 gb=159 gbc=225 gba=296 mastersystem=245
+  megadrive=468 gamegear=22 pcengine=217, 3605 con carátula (26 entradas ocultas del gamelist no se muestran)
+Sonido: salida predeterminada «USB Audio and HID» (Zoran 0573:1573, conectado por USB); también existe
+  «Audio Interno Estéreo digital (HDMI)». No se cambió.
+
+== Un juego con el mando virtual de Xbox
+RB ×4 → SUPER NINTENDO; A → 3 Ninjas Kick Back abre a pantalla completa (Snes9x)
+Select + Start: el juego se cerró en 1933 ms y Neo Arcade quedó en el mismo juego
+
+== Reiniciar desde Configuración (Equipo → Reiniciar, dos pulsaciones)
+Registro: «equipo · reiniciar · systemctl reboot»; la sesión cerró en orden y la MP80 volvió con
+neo-arcade.service activo en unos 37 s.
+
+Capturas (grim, sesión de Cage): 1-al-encender.png, 2-sistema.png, 3-juego.png, 4-de-vuelta.png,
+5-menu-reiniciar.png, 6-menu-confirmar-reinicio.png

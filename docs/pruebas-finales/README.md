@@ -14,11 +14,15 @@ instalada».
 
 ## Resumen
 
-**Con la biblioteca real** (3 616 juegos de 12 sistemas, 3 624 archivos con carátula):
+**La MP80 ya es la consola.** El 2026-10-20 se le instaló el modo consola:
 
-- abren y se juegan 14 juegos de 11 sistemas;
-- la versión final empaquetada funciona entera con el mando;
-- la consola instalada arranca sola en 11 s, abre juegos, vuelve y se apaga desde el menú.
+- enciende directo en Neo Arcade en unos 27 s, con la biblioteca real (3 616 juegos de 12 sistemas,
+  3 605 con carátula);
+- abre los juegos con el mando y vuelve con Select + Start en 1.9 s;
+- se reinicia desde su propio menú.
+
+Antes se probó lo mismo en una máquina virtual, que reveló los fallos de la lista de abajo, y la
+versión final empaquetada con el mando. Abren y se juegan 14 juegos de 11 sistemas.
 
 Hallazgos de esa ronda, todos corregidos:
 
@@ -55,9 +59,11 @@ Para cumplir la skill se agregaron en esta tanda:
 
 Quedan tres grupos:
 
-- **Lo que necesita tus archivos.** Juegos de PlayStation, GameCube y PSP: el paquete de RetroBat no
-  los trae. Las BIOS de PlayStation y Sega CD ya están instaladas.
-- **Lo que necesita tu permiso.** Instalar la consola en la MP80 misma implica reiniciarla.
+- **Lo que necesita tus archivos y tus mandos.** Juegos de PlayStation, GameCube y PSP (el paquete de
+  RetroBat no los trae; las BIOS de PlayStation y Sega CD ya están instaladas) y probar los tableros
+  arcade reales.
+- **Lo que quedó para después.** El barrido de compatibilidad de arcade (98 de 724 revisados,
+  ninguno rechazado) y repetir la instalación limpia en la máquina virtual con la imagen corregida.
 - **Lo que la skill pide y el plan no tiene.** Ver «Lo que queda por decidir».
 
 ## Biblioteca real del usuario
@@ -100,7 +106,20 @@ Adventures of Lolo, en efecto, no abre.
 | 14 juegos de 11 sistemas con el comando de Neo Arcade | Todos abren y se ven: Super Mario Bros. 3, Super Mario World, Super Mario 64, Tetris, Zelda Link's Awakening DX, Mario Kart Super Circuit, Sonic 2, Alex Kidd, Bonk, Metal Slug (Neo Geo y arcade), Street Fighter II, Donkey Kong y Mortal Kombat II (que pide un botón la primera vez, como la placa real) | `juegos-reales/` |
 | Biblioteca completa en Neo Arcade | 3 642 juegos leídos en 577 ms, 3 624 con carátula, descripciones en español. Un juego abierto desde el menú y Esc de vuelta en 372 ms | `juegos-reales/1-todos.png` a `5-detalles.png` |
 | Versión final empaquetada, con el mando | Abre en 0.4 s; sistemas con RB, carrusel rápido, salto de letra, favorito, buscar «sonic», juego abierto y Select + Start de vuelta en 1.75 s; Esc ya no la cierra; Configuración reconoce el mando | `version-final/` |
-| Compatibilidad de arcade y Neo Geo | Barrido de los 724 juegos con FinalBurn Neo en curso | `compatibilidad.txt` (al terminar) |
+| Compatibilidad de arcade y Neo Geo | Barrido parcial, detenido a pedido del usuario: 98 juegos de arcade revisados con FinalBurn Neo, ninguno rechazado; 76 se ven a los 6 s y 22 siguen en negro (puede ser un arranque lento). Los 724 quedan para otro día (`scripts/prueba-compatibilidad-en-tv.sh`) | `~/descargas-retrobat/compatibilidad-parcial/` en la MP80 |
+
+## Consola instalada en la MP80
+
+`instalar-neo-arcade.sh` sobre el Debian de la MP80, con la biblioteca real en `~/NeoRetro/roms`. La
+copia de desarrollo pasó a `~/NeoArcade-desarrollo`, porque `~/NeoRetro` es ahora la carpeta del
+usuario.
+
+| Prueba | Resultado | Evidencia |
+| --- | --- | --- |
+| Arranque | 24.2 s hasta el sistema listo (firmware 11.8, menú de arranque 5.6, núcleo 2.8, servicios 4.0); la biblioteca, 10 s después de arrancar el núcleo: unos **27 s** de encender a ver tus juegos. Sin escritorio ni textos | `consola-mp80/resultado.txt`, `1-al-encender.png` |
+| Juego con el mando | RB hasta SNES, A abre el juego a pantalla completa, Select + Start lo cierra en 1.9 s y Neo Arcade vuelve en el mismo juego | `consola-mp80/2-sistema.png` a `4-de-vuelta.png` |
+| Reiniciar desde Configuración | Dos pulsaciones; el registro anota «equipo · reiniciar» y la MP80 vuelve en unos 37 s con la consola activa | `consola-mp80/5-menu-reiniciar.png`, `6-menu-confirmar-reinicio.png` |
+| Sonido | Sale por un aparato USB conectado a la MP80 («USB Audio and HID»), no por el HDMI de la TV; no se cambió | `consola-mp80/resultado.txt` |
 
 ## Consola instalada
 
@@ -187,7 +206,7 @@ en el plan), **Parcial**, **No está** y **Choca con el plan** (el plan manda, s
 | 45–46 | Respaldos y base de datos | No está | Lo recordado son archivos JSON legibles que se escriben sin riesgo de corte. |
 | 47–49 | Arquitectura y procesos | Cumple distinto | `core/` (servicios) y `app/` (interfaz) separados; cada lanzamiento anota comando, código de salida, duración y número de proceso. |
 | 50–52 | Instalación, Flatpak y permisos | Cumple | `flatpak info`, permisos de la caja, aviso si una carpeta no se puede leer (en el diagnóstico). |
-| 53–54 | Arranque y quiosco | Parcial | Instalador de la fase 8 escrito (Cage, sin escritorio). Falta probarlo en una máquina virtual. |
+| 53–54 | Arranque y quiosco | Cumple | Instalado en la MP80: arranca en Cage, sin escritorio, en unos 27 s. Terminal de mantenimiento con Ctrl + Alt + Mayús + M (probada en la máquina virtual). |
 | 55 | Actualizaciones | No está | No se actualiza nada solo; tampoco avisa de versiones nuevas. |
 | 56 | Registros | Cumple | En la consola, `~/NeoRetro/logs/neo-arcade.log`; en desarrollo, en la carpeta de datos de la app. |
 | 57 | Pruebas automáticas | Cumple | 101 pruebas; Dolphin y PPSSPP se prueban por su comando, no abriendo un juego. |
@@ -196,17 +215,18 @@ en el plan), **Parcial**, **No está** y **Choca con el plan** (el plan manda, s
 
 ## Pruebas del producto final del plan
 
-De las 15 pruebas, 10 cumplen, 2 se probaron en parte y 3 están pendientes.
+De las 15 pruebas, 13 cumplen, 1 se probó en parte y 1 está pendiente. Se hicieron con mandos
+virtuales; con los tableros arcade reales queda por probar.
 
 | Prueba | Estado | Evidencia o lo que falta |
 | --- | --- | --- |
-| Encender y ver Neo Arcade en menos de 30 s, sin escritorio | Pendiente | Instalador de la fase 8 escrito y sin probar. Probarlo en la MP80 implica reiniciarla. |
-| Pantalla igual al prototipo, con juegos reales y carátulas | Pendiente | Fidelidad de 0.0 % comprobada en la fase 1; carátulas con medios propios en la fase 5. Faltan tus juegos y tus carátulas. |
+| Encender y ver Neo Arcade en menos de 30 s, sin escritorio | Cumple | Unos 27 s en la MP80, con 3 616 juegos (`consola-mp80/`). |
+| Pantalla igual al prototipo, con juegos reales y carátulas | Cumple | 3 605 juegos con carátula (`consola-mp80/1-al-encender.png`). |
 | 21 sistemas con LB/RB; los vacíos no aparecen | Cumple | `tv-mp80/1-inicio.png` (solo los 5 sistemas con juegos). |
 | Cruceta sostenida fluida; LT/RT salta de letra | Cumple | `../pruebas-fase7/fluidez.txt` |
 | Y abre el teclado en pantalla y filtra | Cumple | `../pruebas-fase6/` |
-| Jugar arcade, SNES, PlayStation y GameCube a pantalla completa con sonido | Parcial | Solo SNES, con el programa propio. Los demás necesitan tus juegos y la BIOS de PlayStation. |
-| Select + Start sale y vuelve en menos de 2 s | Cumple | 1351 ms (`regresion-fase4.txt`). |
+| Jugar arcade, SNES, PlayStation y GameCube a pantalla completa con sonido | Parcial | Arcade y SNES sí, con juegos reales (`juegos-reales/`). El paquete no trae juegos de PlayStation ni de GameCube. |
+| Select + Start sale y vuelve en menos de 2 s | Cumple | 1.75 s en la versión final y 1.9 s en la consola de la MP80. |
 | Tres favoritos; se quita uno y desaparece | Cumple | `regresion-fase6.txt` |
 | Recientes muestra los cuatro, el último primero | Cumple | `regresion-fase6.txt` |
 | Perfil Peques | Pendiente | Sigue como propuesta sin confirmar (ajuste 9 del CLAUDE.md). |
@@ -214,7 +234,7 @@ De las 15 pruebas, 10 cumplen, 2 se probaron en parte y 3 están pendientes.
 | Ruta del emulador mal escrita: mensaje claro | Cumple | `../pruebas-fase3/04-falta-emulador.png` |
 | Desconectar y reconectar el mando | Cumple | `reconexion.txt` |
 | 30 minutos sin tirones ni aumento de memoria | Cumple | `../pruebas-fase7/memoria-30-min.txt` |
-| Apagar desde el menú | Parcial | El botón y su doble confirmación están. En desarrollo solo se anota; la prueba real apaga la MP80 y necesita tu permiso. |
+| Apagar desde el menú | Cumple | En la consola de la máquina virtual se apaga limpio en 1 s. En la MP80 se probó Reiniciar, que sigue el mismo camino, para no dejarla apagada. |
 
 ## Lo que queda por decidir
 
