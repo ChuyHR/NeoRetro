@@ -7,19 +7,21 @@
 #   4. corre el diagnóstico dentro de la consola, con el Electron de la app como Node;
 #   5. apaga desde Configuración (fila Equipo, dos pulsaciones) y mide cuánto tarda en apagarse.
 # Con --actualizar-app copia antes app/, core/ y config/ de este repositorio a /opt/neo-arcade, para
-# probar un cambio sin volver a armar la imagen.
+# probar un cambio sin volver a armar la imagen. Con --juegos "snes nes…" copia esas carpetas de
+# ~/NeoRetro/roms del equipo (juegos, carátulas y gamelist.xml) en lugar del programa de prueba.
 # Uso: bash scripts/instalador/probar-consola-encendida.sh <carpeta de la máquina> --llave <privada>
-#        [--actualizar-app]
+#        [--actualizar-app] [--juegos "sistemas"]
 set -euo pipefail
 
 REPO="$(cd "$(dirname "$0")/../.." && pwd)"
 DIR="$(realpath "$1")"
 shift
-LLAVE="" ACTUALIZAR=false
+LLAVE="" ACTUALIZAR=false JUEGOS=""
 while [ $# -gt 0 ]; do
   case "$1" in
     --llave) LLAVE="$(realpath "$2")"; shift ;;
     --actualizar-app) ACTUALIZAR=true ;;
+    --juegos) JUEGOS="$2"; shift ;;
     *) echo "Opción desconocida: $1" >&2; exit 2 ;;
   esac
   shift
@@ -42,11 +44,19 @@ if $ACTUALIZAR; then
   informe "App actualizada desde el repositorio ($(git -C "$REPO" log --oneline -1))"
 fi
 
-informe "== 1. Un juego en la biblioteca"
-node "$REPO/scripts/juego-de-prueba-snes.mjs" "$SALIDA/juego" >/dev/null
-ssh_vm 'mkdir -p ~/NeoRetro/roms/snes'
-scp -q -i "$LLAVE" -P 2222 -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=ERROR \
-  "$SALIDA/juego/"*.sfc arcade@127.0.0.1:NeoRetro/roms/snes/
+copiar() { scp -q -r -i "$LLAVE" -P 2222 -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=ERROR "$@"; }
+if [ -n "$JUEGOS" ]; then
+  informe "== 1. Juegos reales en la biblioteca: $JUEGOS"
+  for sistema in $JUEGOS; do
+    ssh_vm "rm -rf ~/NeoRetro/roms/$sistema"
+    copiar "$HOME/NeoRetro/roms/$sistema" arcade@127.0.0.1:NeoRetro/roms/
+  done
+else
+  informe "== 1. Un juego en la biblioteca"
+  node "$REPO/scripts/juego-de-prueba-snes.mjs" "$SALIDA/juego" >/dev/null
+  ssh_vm 'mkdir -p ~/NeoRetro/roms/snes'
+  copiar "$SALIDA/juego/"*.sfc arcade@127.0.0.1:NeoRetro/roms/snes/
+fi
 ssh_vm 'sudo systemctl restart neo-arcade.service'
 sleep 15
 captura 1-biblioteca-con-un-juego
