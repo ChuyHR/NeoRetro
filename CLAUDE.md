@@ -50,12 +50,13 @@ y verificadas y esperan su revisión.** La fase 8 está escrita y **sin probar**
   (`scripts/prueba-carpetas-en-tv.sh`, `docs/pruebas-finales/tv-mp80/carpetas-neoretro.txt`).
 - `npm test` pasa (101 pruebas) en WSL y en la MP80. En Windows fallan 4 que dependen de Linux.
 
-**Fase 8, sin probar.** El instalador de la consola (`scripts/instalador/instalar-neo-arcade.sh`), la
-imagen USB (`armar-iso-consola.sh` con `consola.sh`), la vuelta atrás (`volver-al-escritorio.sh`),
-Apagar y Reiniciar en Configuración (en desarrollo solo se anotan) y la terminal de mantenimiento
-(Ctrl + Alt + Mayús + M sostenido 3 s) están escritos. Falta probar la instalación en una máquina
-virtual dentro de la MP80 y medir el arranque. Instalarla en la MP80 de verdad implica reiniciarla:
-**se le pregunta antes al usuario.**
+**Fase 8.** El instalador de la consola (`scripts/instalador/instalar-neo-arcade.sh`), la imagen USB
+(`armar-iso-consola.sh` con `consola.sh`), la vuelta atrás (`volver-al-escritorio.sh`), Apagar y
+Reiniciar en Configuración (en desarrollo solo se anotan) y la terminal de mantenimiento (Ctrl + Alt +
+Mayús + M sostenido 3 s) están probados en una máquina virtual dentro de la MP80
+(`docs/pruebas-finales/README.md`, «Consola instalada»): arranca en Neo Arcade en 11 s, abre juegos,
+vuelve y se apaga desde el menú. Instalarla en la MP80 misma implica reiniciarla; el usuario pidió no
+volver a pedir permiso para eso: se le avisa y se hace.
 
 **Juegos reales.** Las pruebas usan programas y medios propios, no juegos de terceros. El 2026-10-20 el
 usuario pidió conseguir los juegos de prueba sin depender de él; el filtro de seguridad de Claude Code
@@ -106,7 +107,8 @@ entrada `Boot0003`, que apunta a una copia de shim y GRUB en la partición EFI d
 mantiene `/usr/local/sbin/neoarcade-copiar-grub`, que apt corre después de cada instalación
 (`scripts/instalador/copiar-grub-a-esp-windows.sh`). Windows se elige en el menú de GRUB. El usuario
 dio permiso para instalar ahí lo necesario, llevar el proyecto y abrir la app o los emuladores en su
-TV sin preguntar. **Reiniciarla o apagarla sí se le avisa antes.** La fase 8 la reinstala como sistema dedicado. Su GPU es el
+TV sin preguntar, y desde la noche del 2026-10-20 también reiniciarla («ya no debes de pedir
+permisos»): **se avisa en una línea, sin pedir permiso**. La fase 8 la reinstala como sistema dedicado. Su GPU es el
 recurso más justo, tanto para los efectos de la interfaz como para GameCube.
 
 Lo que ya tiene instalado (2026-10-20): el proyecto en `~/NeoRetro` (un `git push` por SSH actualiza
