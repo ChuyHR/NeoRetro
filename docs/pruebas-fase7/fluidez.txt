@@ -1,0 +1,25 @@
+Fluidez del carrusel en la TV de la MP80, 2026-10-20 (scripts/prueba-fluidez-en-tv.sh)
+Biblioteca de 3.000 juegos (scripts/biblioteca-grande.mjs), mando virtual de Xbox, Neo Arcade con
+NEO_ARCADE_MEDIR=1. Lectura de la biblioteca: 181 ms a 60 Hz y 175 ms a 75 Hz.
+
+Antes del cambio (cada paso del carrusel reiniciaba la animación de sus 10 portadas cada 90 ms):
+  Derecha sostenida, 60 Hz: 54 cuadros/s, 56 cuadros de más de 25 ms
+  Derecha sostenida, 75 Hz: 48 cuadros/s, 270 cuadros de más de 25 ms
+Sombras, reflejos, will-change, tema y adornos no cambiaban el resultado.
+
+Después (un paso que llega antes de que termine el anterior se dibuja sin transición,
+app/piezas/carrusel.js, duracionDelPaso):
+
+TV a 60 Hz
+  Derecha sostenida 10 s (un juego cada 90 ms): 59.4 cuadros/s, mediana 16.7 ms, 95 % < 16.8 ms, 3 de más de 25 ms
+  Cambiar de sistema cada 0.8 s:                60.0 cuadros/s, mediana 16.7 ms, 95 % < 16.8 ms, 0 de más de 25 ms
+  Saltar de letra cada 0.7 s:                   59.7 cuadros/s, mediana 16.7 ms, 95 % < 16.8 ms, 3 de más de 25 ms
+
+TV a 75 Hz
+  Derecha sostenida 10 s (un juego cada 90 ms): 74.3 cuadros/s, mediana 13.3 ms, 95 % < 13.4 ms, 4 de más de 25 ms
+  Cambiar de sistema cada 0.8 s:                75.0 cuadros/s, mediana 13.3 ms, 95 % < 13.4 ms, 0 de más de 25 ms
+  Saltar de letra cada 0.7 s:                   73.3 cuadros/s, mediana 13.3 ms, 95 % < 13.4 ms, 17 de más de 25 ms
+
+Memoria de la página: 10 MB en todas las mediciones.
+Memoria durante 30 minutos de uso: memoria-30-min.txt (643 MB el primer minuto, 647 MB el último).
+Capturas: arranque-*.png (animación de arranque) y carrusel-rapido-*.png (a media pasada rápida).

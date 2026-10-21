@@ -124,18 +124,23 @@ npm run recorrido                      # recorre la app con el teclado y captura
 npm run simulacion                     # la app real con biblioteca, emulador y medios falsos (fases 2, 3, 5 y 6)
 npm run medir-fps                      # fluidez del carrusel en la pantalla real (solo en la MP80)
 npm run empaquetar                     # versión final en dist/neo-arcade/ (ejecutable neo-arcade)
+npm run diagnostico                    # emuladores, núcleos, BIOS, carpetas y mandos del equipo (--json)
+npm run diagnostico -- --juegos        # además cada juego: vacío, cortado, pistas, BIOS, duplicados
 bash scripts/instalar-nucleos.sh       # núcleos de RetroArch de systems.json (--actualizar los renueva)
 bash scripts/configurar-retroarch.sh   # salir con Select + Start o un solo Esc; perfiles de mando editables
 ```
 
-En la MP80, con la sesión gráfica abierta (también por SSH), tres pruebas en la TV con RetroArch de
+En la MP80, con la sesión gráfica abierta (también por SSH), pruebas en la TV con RetroArch de
 verdad. Arman su biblioteca en `~/juegos-de-prueba*` (nunca en `roms/`) y dejan capturas y
-`resultado.txt` en `/tmp/prueba-*`:
+`resultado.txt` en `/tmp/prueba-*`. Cierran todo Electron al terminar: no corras dos a la vez.
 
 ```bash
 bash scripts/prueba-en-tv.sh           # fase 3: programa de SNES, archivo dañado y disco sin BIOS
 bash scripts/prueba-mando-en-tv.sh     # fase 4: mando de Xbox y palanca de arcade virtuales (pide sudo)
 bash scripts/prueba-datos-en-tv.sh     # fase 6: favoritos, recientes, Configuración y reabrir (pide sudo)
+bash scripts/prueba-fluidez-en-tv.sh   # fase 7: fluidez con 3.000 juegos a 60 y 75 Hz (pide sudo)
+bash scripts/prueba-memoria-en-tv.sh   # fase 7: 30 minutos de uso, memoria minuto a minuto (pide sudo)
+bash scripts/prueba-final-en-tv.sh     # final: multidisco, BIOS, neogeo.zip, tiempo jugado, revisión
 ```
 
 Herramientas que usan esas pruebas, también sueltas: `node scripts/juego-de-prueba-snes.mjs <carpeta>`

@@ -1,0 +1,39 @@
+Uso simulado durante 30 min (72 vueltas de recorrido).
+Primer minuto: memoria total 643 MB (Browser 166 MB, GPU 179 MB, Utility 150 MB, Tab 149 MB)
+Último minuto: memoria total 647 MB (Browser 167 MB, GPU 178 MB, Utility 151 MB, Tab 152 MB)
+Fluidez, últimas mediciones:
+74.6 cuadros/s, mediana 13.3 ms, 95 % < 13.4 ms, 4 de más de 25 ms, memoria de la página 10 MB
+74.2 cuadros/s, mediana 13.3 ms, 95 % < 13.4 ms, 8 de más de 25 ms, memoria de la página 10 MB
+74.2 cuadros/s, mediana 13.3 ms, 95 % < 13.4 ms, 8 de más de 25 ms, memoria de la página 10 MB
+
+Memoria minuto a minuto:
+memoria total 643 MB (Browser 166 MB, GPU 179 MB, Utility 150 MB, Tab 149 MB)
+memoria total 643 MB (Browser 165 MB, GPU 179 MB, Utility 151 MB, Tab 148 MB)
+memoria total 643 MB (Browser 165 MB, GPU 178 MB, Utility 151 MB, Tab 150 MB)
+memoria total 645 MB (Browser 165 MB, GPU 178 MB, Utility 151 MB, Tab 151 MB)
+memoria total 646 MB (Browser 166 MB, GPU 178 MB, Utility 151 MB, Tab 152 MB)
+memoria total 646 MB (Browser 166 MB, GPU 178 MB, Utility 151 MB, Tab 152 MB)
+memoria total 646 MB (Browser 166 MB, GPU 178 MB, Utility 151 MB, Tab 150 MB)
+memoria total 645 MB (Browser 166 MB, GPU 178 MB, Utility 151 MB, Tab 150 MB)
+memoria total 646 MB (Browser 166 MB, GPU 178 MB, Utility 151 MB, Tab 151 MB)
+memoria total 645 MB (Browser 166 MB, GPU 178 MB, Utility 151 MB, Tab 150 MB)
+memoria total 649 MB (Browser 166 MB, GPU 179 MB, Utility 151 MB, Tab 153 MB)
+memoria total 646 MB (Browser 166 MB, GPU 178 MB, Utility 151 MB, Tab 151 MB)
+memoria total 647 MB (Browser 166 MB, GPU 178 MB, Utility 151 MB, Tab 152 MB)
+memoria total 645 MB (Browser 166 MB, GPU 178 MB, Utility 151 MB, Tab 150 MB)
+memoria total 646 MB (Browser 166 MB, GPU 178 MB, Utility 151 MB, Tab 151 MB)
+memoria total 647 MB (Browser 166 MB, GPU 178 MB, Utility 151 MB, Tab 152 MB)
+memoria total 647 MB (Browser 166 MB, GPU 178 MB, Utility 151 MB, Tab 152 MB)
+memoria total 647 MB (Browser 166 MB, GPU 178 MB, Utility 151 MB, Tab 152 MB)
+memoria total 647 MB (Browser 166 MB, GPU 178 MB, Utility 151 MB, Tab 152 MB)
+memoria total 646 MB (Browser 166 MB, GPU 178 MB, Utility 151 MB, Tab 152 MB)
+memoria total 647 MB (Browser 166 MB, GPU 178 MB, Utility 151 MB, Tab 152 MB)
+memoria total 646 MB (Browser 166 MB, GPU 178 MB, Utility 151 MB, Tab 152 MB)
+memoria total 646 MB (Browser 166 MB, GPU 178 MB, Utility 151 MB, Tab 151 MB)
+memoria total 647 MB (Browser 166 MB, GPU 178 MB, Utility 151 MB, Tab 153 MB)
+memoria total 647 MB (Browser 166 MB, GPU 178 MB, Utility 151 MB, Tab 151 MB)
+memoria total 646 MB (Browser 166 MB, GPU 178 MB, Utility 151 MB, Tab 151 MB)
+memoria total 647 MB (Browser 166 MB, GPU 178 MB, Utility 151 MB, Tab 152 MB)
+memoria total 647 MB (Browser 167 MB, GPU 178 MB, Utility 151 MB, Tab 151 MB)
+memoria total 648 MB (Browser 166 MB, GPU 178 MB, Utility 151 MB, Tab 153 MB)
+memoria total 647 MB (Browser 167 MB, GPU 178 MB, Utility 151 MB, Tab 152 MB)
