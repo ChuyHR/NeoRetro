@@ -187,6 +187,10 @@ function crearVentana() {
   ventana.webContents.on('before-input-event', (_evento, entrada) => {
     if (DESARROLLO && entrada.type === 'keyDown' && entrada.key === 'Escape') app.quit();
   });
+  // Solo al medir: NEO_ARCADE_CSS agrega reglas a la página, para ver cuánto pesa un efecto apagándolo.
+  if (MEDIR && process.env.NEO_ARCADE_CSS) {
+    ventana.webContents.on('did-finish-load', () => ventana.webContents.insertCSS(process.env.NEO_ARCADE_CSS));
+  }
   // En desarrollo, lo que la página escribe en su consola (errores incluidos) sale en la terminal.
   if (DESARROLLO) {
     ventana.webContents.on('console-message', ({ level, message, lineNumber, sourceId }) => {

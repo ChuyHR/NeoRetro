@@ -28,7 +28,9 @@ sudo python3 scripts/herramientas/mando-virtual.py xbox <"$SALIDA/tubo" >"$SALID
 exec 3>"$SALIDA/tubo"
 trap 'exec 3>&- 2>/dev/null; pkill -x electron; sudo pkill -f "herramientas/mando-[v]irtual"; xrandr --output "$SALIDA_HDMI" --mode 1920x1080 --rate "$FRECUENCIA_ORIGINAL"' EXIT
 
-for frecuencia in 60 "$FRECUENCIA_ORIGINAL"; do
+# FRECUENCIAS="60" mide solo a 60 Hz; SOLO_RAPIDO=1 mide solo el carrusel con la dirección sostenida.
+# NEO_ARCADE_CSS, si se exporta, agrega reglas a la página (para medir sin un efecto).
+for frecuencia in ${FRECUENCIAS:-60 $FRECUENCIA_ORIGINAL}; do
   xrandr --output "$SALIDA_HDMI" --mode 1920x1080 --rate "$frecuencia"
   sleep 2
   : >"$SALIDA/neo.log"
@@ -41,6 +43,7 @@ for frecuencia in 60 "$FRECUENCIA_ORIGINAL"; do
   xbox bajar derecha; sleep 10.2; xbox subir derecha
   informe "Derecha sostenida 10 s (un juego cada 90 ms): $(medicion 1)"
   captura "carrusel-rapido-$frecuencia-hz"
+  if [ "${SOLO_RAPIDO:-}" = 1 ]; then pkill -x electron; sleep 2; continue; fi
   for vez in $(seq 1 12); do xbox pulsar rb; sleep 0.6; done
   informe "Cambiar de sistema cada 0.8 s: $(medicion 1)"
   for vez in $(seq 1 14); do xbox pulsar rt; sleep 0.5; done

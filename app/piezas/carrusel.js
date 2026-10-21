@@ -8,6 +8,7 @@ import { montar } from './dom.js';
 const VECINOS_PRECARGA = 10; // carátulas que se piden por adelantado a cada lado de lo visible
 
 const DURACION_MS = 300; // la misma transición de 0.3 s del prototipo
+const PASO_RAPIDO_MS = 80; // la transición más corta, al mantener una dirección
 const SIN_GIRO = 'perspective(900px) rotateY(0deg)'; // equivale a 'none' y permite interpolar el giro
 
 const ESTILO_CARTA = 'position: absolute; padding: 0; border-radius: 12px; background: #050914; overflow: hidden; display: flex; flex-direction: column';
@@ -98,7 +99,23 @@ export function crearCarrusel(lienzo, { despachar }) {
     carta.central = central;
   }
 
-  function animar(carta, antes, despues) {
+  // Con un paso suelto, la transición del prototipo (0.3 s, suave al final). Si los pasos llegan más
+  // seguido, como al mantener una dirección (cada 90 ms), la transición dura lo que hay entre un paso y
+  // otro y va a ritmo parejo: se ve como un desplazamiento continuo y no se enciman diez animaciones.
+  let ultimoPaso = 0;
+  let ultimaSeleccion = null;
+  function duracionDelPaso(seleccion) {
+    if (seleccion === ultimaSeleccion) return { duracion: DURACION_MS, curva: 'ease' };
+    const ahora = performance.now();
+    const intervalo = ahora - ultimoPaso;
+    ultimoPaso = ahora;
+    ultimaSeleccion = seleccion;
+    return intervalo >= DURACION_MS
+      ? { duracion: DURACION_MS, curva: 'ease' }
+      : { duracion: Math.max(PASO_RAPIDO_MS, intervalo), curva: 'linear' };
+  }
+
+  function animar(carta, antes, despues, { duracion, curva }) {
     if (antes.left === despues.left && antes.top === despues.top && antes.ancho === despues.ancho) return;
     const dx = antes.left + antes.ancho / 2 - (despues.left + despues.ancho / 2);
     const dy = antes.top + antes.alto / 2 - (despues.top + despues.alto / 2);
@@ -107,12 +124,13 @@ export function crearCarrusel(lienzo, { despachar }) {
     carta.boton.animate([
       { transform: `translate(${dx}px, ${dy}px) scale(${antes.ancho / despues.ancho}, ${antes.alto / despues.alto}) ${giro(antes.giro)}`, opacity: antes.opacidad },
       { transform: `translate(0px, 0px) scale(1, 1) ${giro(despues.giro)}`, opacity: despues.opacidad },
-    ], { duration: DURACION_MS, easing: 'ease' });
+    ], { duration: duracion, easing: curva });
   }
 
   return {
     actualizar({ ranuras, lista, indice, sistemas, estado }) {
       const animado = estado.ajustes.animaciones; // con las animaciones apagadas, el paso es instantáneo
+      const paso = duracionDelPaso(estado.seleccion);
       if (lista.length > ranuras.length) {
         const vecinos = [];
         for (let paso = 1; paso <= VECINOS_PRECARGA; paso += 1) {
@@ -128,7 +146,7 @@ export function crearCarrusel(lienzo, { despachar }) {
         const antes = carta.caja;
         colocar(carta, ranura);
         carta.caja = { left: ranura.left, top: ranura.top, ancho: ranura.ancho, alto: ranura.alto, giro: ranura.giro, opacidad: ranura.opacidad };
-        if (antes && animado) animar(carta, antes, carta.caja);
+        if (antes && animado) animar(carta, antes, carta.caja, paso);
       }
       for (const [id, carta] of cartas) {
         if (presentes.has(id)) continue;
