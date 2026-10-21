@@ -85,6 +85,18 @@ export function textoUltimaPartida(fecha, ahora = new Date()) {
   return `${cuando.getDate()} ${MESES[cuando.getMonth()]} ${cuando.getFullYear()}`;
 }
 
+// Cuánto se ha jugado, para Detalles: «1 vez, 12 min», «5 veces, 3 h 20 min». Menos de un minuto no
+// se cuenta como tiempo: suele ser un juego que se abrió y se cerró enseguida.
+export function textoTiempoJugado(partida) {
+  if (!partida?.veces) return null;
+  const veces = partida.veces === 1 ? '1 vez' : `${partida.veces} veces`;
+  const minutos = Math.floor(partida.segundos / 60);
+  if (minutos < 1) return veces;
+  const horas = Math.floor(minutos / 60);
+  const tiempo = horas ? `${horas} h${minutos % 60 ? ` ${minutos % 60} min` : ''}` : `${minutos} min`;
+  return `${veces}, ${tiempo}`;
+}
+
 export function vistaDe(estado, datos, ahora = new Date()) {
   const lista = juegosDeLaVista(datos, estado);
   const indice = Math.max(0, lista.findIndex((juego) => juego.id === estado.seleccion));
@@ -102,6 +114,7 @@ export function vistaDe(estado, datos, ahora = new Date()) {
     ranuras: ranurasCarrusel(lista, indice),
     esFavorito: juego ? estado.favoritos.includes(juego.id) : false,
     ultimaPartida: textoUltimaPartida(reciente?.fecha, ahora),
+    tiempoJugado: juego ? textoTiempoJugado(estado.partidas?.[juego.id]) : null,
     // «Buscar» muestra cuántos juegos coinciden con lo que se lleva escrito.
     resultados: estado.ventana === 'buscar' && estado.escribiendo.trim()
       ? datos.juegos.filter((candidato) => coincide(candidato.titulo, estado.escribiendo)).length

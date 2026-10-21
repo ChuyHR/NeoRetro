@@ -1,6 +1,8 @@
-// Muestra el diagnóstico del equipo (core/diagnostico.js) en palabras, o en JSON con --json. Sale con
-// código 1 si falta algo sin lo que la consola no puede funcionar (un emulador o una carpeta ilegible).
-// Uso: npm run diagnostico [-- --json]
+// Muestra el diagnóstico del equipo (core/diagnostico.js) en palabras, o en JSON con --json. Con
+// --juegos revisa además cada juego (core/revision-juegos.js): vacíos, incompletos, listas con archivos
+// que faltan, BIOS y posibles duplicados. Sale con código 1 si falta algo sin lo que la consola no puede
+// funcionar (un emulador o una carpeta ilegible).
+// Uso: npm run diagnostico [-- --juegos] [-- --json]
 import os from 'node:os';
 import path from 'node:path';
 
@@ -10,7 +12,7 @@ import { diagnosticar } from '../core/diagnostico.js';
 const configuracion = await cargarConfiguracion();
 // La carpeta de datos de Electron para esta app; NEO_ARCADE_DATOS la cambia, como en la app.
 const carpetaDatos = process.env.NEO_ARCADE_DATOS ? expandirRuta(process.env.NEO_ARCADE_DATOS) : path.join(os.homedir(), '.config', 'neo-arcade');
-const informe = await diagnosticar(configuracion, carpetaDatos);
+const informe = await diagnosticar(configuracion, carpetaDatos, { revisar: process.argv.includes('--juegos') });
 if (process.argv.includes('--json')) {
   console.log(JSON.stringify(informe, null, 2));
   process.exit(0);
@@ -47,6 +49,16 @@ for (const carpeta of informe.juegos.carpetas) {
   grave ||= carpeta.existe && !carpeta.legible;
   const estado = !carpeta.existe ? 'no existe' : !carpeta.legible ? 'no se puede leer: revisa sus permisos' : `${carpeta.juegos} juegos`;
   console.log(`  ${marca(carpeta.existe && carpeta.legible)} ${carpeta.sistema.padEnd(16)} ${estado}`);
+}
+if (informe.revision) {
+  const ETIQUETAS = { INVALID: 'NO SIRVE', CORRUPTED: 'DAÑADO', MISSING_BIOS: 'SIN BIOS', DUPLICATE: 'DUPLICADO' };
+  const { juegos } = informe.revision;
+  const conProblema = juegos.filter(({ estado }) => estado !== 'VALID');
+  console.log(`REVISIÓN DE JUEGOS: ${juegos.length - conProblema.length} de ${juegos.length} sin problemas`);
+  for (const juego of conProblema) {
+    console.log(`  ${(ETIQUETAS[juego.estado] ?? juego.estado).padEnd(9)} ${juego.sistema}/${juego.archivo}: ${juego.detalle.join('; ')}`);
+  }
+  if (informe.revision.duplicados.length) console.log('  Los duplicados no se borran: decide tú cuál conservar.');
 }
 console.log(`MEDIOS: ${casa(informe.medios.carpeta)} ${informe.medios.existe ? '' : '(no existe)'}`);
 console.log(`MANDOS CONECTADOS: ${informe.mandos.length ? informe.mandos.map(({ nombre }) => nombre).join(', ') : 'ninguno'}`);

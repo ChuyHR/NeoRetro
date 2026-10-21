@@ -13,6 +13,8 @@ import { promisify } from 'node:util';
 
 import { expandirRuta } from './configuracion.js';
 import { escanearBiblioteca } from './escaner/escaner.js';
+import { archivoDeSistema } from './lanzador/lanzador.js';
+import { revisarJuegos } from './revision-juegos.js';
 
 const ejecutar = promisify(execFile);
 const existe = (ruta, modo = constants.F_OK) => access(ruta, modo).then(() => true, () => false);
@@ -66,7 +68,8 @@ export function flatpakAlcanza(carpetas, ruta) {
   });
 }
 
-async function emuladores(configuracion) {
+// También lo usa la app al arrancar, para dejar en el registro qué emuladores encontró.
+export async function detectarEmuladores(configuracion) {
   const resultado = [];
   for (const [id, emulador] of Object.entries(configuracion.emuladores)) {
     if (!emulador.comando.length) continue; // los ports se ejecutan solos
@@ -108,13 +111,12 @@ async function bios(configuracion, carpetaBios) {
       const { md5, sha256 } = await huellas(ruta);
       archivos.push({ nombre, presente: true, sha256, reconocida: BIOS_CONOCIDAS[nombre] ? BIOS_CONOCIDAS[nombre] === md5 : null });
     }
-    resultado.push({ sistema: sistema.nombreLargo, carpeta: carpetaBios, archivos, lista: archivos.some(({ presente }) => presente) });
+    resultado.push({ id: sistema.id, sistema: sistema.nombreLargo, carpeta: carpetaBios, archivos, lista: archivos.some(({ presente }) => presente) });
   }
   return resultado;
 }
 
-async function carpetasDeJuegos(configuracion, carpetaDatos) {
-  const { biblioteca } = await escanearBiblioteca(configuracion, path.join(carpetaDatos, 'biblioteca.json'));
+async function carpetasDeJuegos(configuracion, biblioteca, carpetaBios) {
   const resultado = [];
   for (const sistema of configuracion.sistemas) {
     const carpeta = path.join(configuracion.carpetaRoms, sistema.carpeta);
@@ -122,9 +124,9 @@ async function carpetasDeJuegos(configuracion, carpetaDatos) {
     const legible = hay && await existe(carpeta, constants.R_OK | constants.X_OK);
     resultado.push({ sistema: sistema.nombreLargo, carpeta, existe: hay, legible, juegos: biblioteca.sistemas[sistema.id]?.juegos.length ?? 0 });
   }
-  // Neo Geo: FBNeo necesita neogeo.zip junto a los juegos.
+  // Neo Geo: FBNeo necesita neogeo.zip junto a los juegos o en su carpeta de BIOS.
   const neogeo = configuracion.sistemas.find(({ id }) => id === 'neogeo');
-  const neogeoZip = neogeo ? await existe(path.join(configuracion.carpetaRoms, neogeo.carpeta, 'neogeo.zip')) : null;
+  const neogeoZip = neogeo ? Boolean(await archivoDeSistema('neogeo.zip', path.join(configuracion.carpetaRoms, neogeo.carpeta), carpetaBios)) : null;
   return { carpetas: resultado, neogeoZip };
 }
 
@@ -142,16 +144,21 @@ async function mandos() {
   return lista;
 }
 
-export async function diagnosticar(configuracion, carpetaDatos) {
-  const lista = await emuladores(configuracion);
+// revisar: también revisa cada juego (core/revision-juegos.js). Lee los archivos, así que tarda más.
+export async function diagnosticar(configuracion, carpetaDatos, { revisar = false } = {}) {
+  const lista = await detectarEmuladores(configuracion);
   const retroarch = lista.find(({ id }) => id === 'retroarch');
   const flatpakRA = retroarch?.carpetas ?? [];
-  const juegos = await carpetasDeJuegos(configuracion, carpetaDatos);
+  const { biblioteca } = await escanearBiblioteca(configuracion, path.join(carpetaDatos, 'biblioteca.json'));
+  const juegos = await carpetasDeJuegos(configuracion, biblioteca, retroarch?.bios);
+  const listaBios = retroarch?.bios ? await bios(configuracion, retroarch.bios) : [];
+  const biosPorSistema = new Map(listaBios.map(({ id, lista: hay }) => [id, hay]));
   return {
     emuladores: lista,
     nucleos: retroarch?.nucleos ? await nucleos(configuracion, retroarch.nucleos) : [],
-    bios: retroarch?.bios ? await bios(configuracion, retroarch.bios) : [],
+    bios: listaBios,
     juegos,
+    revision: revisar ? await revisarJuegos(configuracion, biblioteca, { biosPorSistema, carpetaBios: retroarch?.bios }) : null,
     alcanceFlatpak: retroarch?.instalado ? flatpakAlcanza(flatpakRA, configuracion.carpetaRoms) : null,
     medios: { carpeta: configuracion.carpetaMedios, existe: await existe(configuracion.carpetaMedios) },
     mandos: await mandos(),

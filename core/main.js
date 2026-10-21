@@ -9,6 +9,8 @@ import path from 'node:path';
 import { crearAlmacen } from './almacenamiento/almacenamiento.js';
 import { conteoPorSistema, datosParaInterfaz, ubicarJuego } from './biblioteca.js';
 import { cargarConfiguracion, expandirRuta, RAIZ } from './configuracion.js';
+import { detectarEmuladores } from './diagnostico.js';
+import { listaDeDiscos } from './discos.js';
 import { iniciarMandos } from './entrada/mandos.js';
 import { escribirPerfiles } from './entrada/perfil-retroarch.js';
 import { limpiarPerfil } from './entrada/traductor.js';
@@ -60,6 +62,7 @@ const esperar = (ms) => new Promise((listo) => setTimeout(listo, ms));
 let ventana = null;
 let enJuego = false;
 let mandos = null;
+let discosPorJuego = new Map(); // id → archivos de sus discos, de la última lectura de la biblioteca
 
 // Mapeos hechos en «Configurar control», uno por modelo de mando, en un JSON legible.
 const ARCHIVO_MAPEOS = path.join(app.getPath('userData'), 'mandos.json');
@@ -98,6 +101,7 @@ ipcMain.handle('biblioteca', async () => {
     leerMedios(configuracion),
   ]);
   const datos = datosParaInterfaz(configuracion, biblioteca, medios);
+  discosPorJuego = new Map(datos.juegos.filter(({ discos }) => discos).map(({ id, discos }) => [id, discos]));
   const conteo = conteoPorSistema(configuracion, biblioteca)
     .filter(({ juegos }) => juegos > 0)
     .map(({ id, juegos }) => `${id}=${juegos}`)
@@ -117,6 +121,12 @@ ipcMain.handle('jugar', async (_evento, id, opciones = {}) => {
   try {
     comando = armarComando(ubicado.sistema, ubicado.ruta, configuracion.emuladores);
     await verificar(comando, ubicado.sistema, ubicado.ruta);
+    const discos = discosPorJuego.get(id);
+    if (discos && !ubicado.ruta.toLowerCase().endsWith('.m3u')) {
+      // Varios discos sin lista propia: se abre una lista armada aquí, para poder cambiar de disco.
+      const rutas = discos.map((archivo) => ubicarJuego(`${ubicado.sistema.id}/${archivo}`, configuracion)?.ruta).filter(Boolean);
+      comando = armarComando(ubicado.sistema, await listaDeDiscos(app.getPath('userData'), id, rutas), configuracion.emuladores);
+    }
     if (comando.emulador.carpetaPerfilesMando && mandos) {
       // Un mando configurado aquí debe servir igual dentro del juego. Si falla, el juego abre igual.
       await escribirPerfiles(expandirRuta(comando.emulador.carpetaPerfilesMando), mandos.conectados())
@@ -132,12 +142,12 @@ ipcMain.handle('jugar', async (_evento, id, opciones = {}) => {
     await esperar(PANTALLA_LANZAMIENTO_MS);
     ventana.hide();
     const resultado = await ejecutar(comando);
-    const { codigo, senal, duracionMs } = resultado;
-    await registro.anotar('lanzamiento', comandoLegible(comando), `salida ${codigo ?? senal}`, `${duracionMs} ms`);
+    const { codigo, senal, duracionMs, pid } = resultado;
+    await registro.anotar('lanzamiento', comandoLegible(comando), `salida ${codigo ?? senal}`, `${duracionMs} ms`, `proceso ${pid}`);
     if (falloAlAbrir(resultado)) {
       return { ok: false, mensaje: `${ubicado.sistema.nombreEmulador} se cerró al abrir el juego. Puede que el archivo esté dañado o que no sea de ${ubicado.sistema.nombreLargo}.` };
     }
-    return { ok: true, codigo };
+    return { ok: true, codigo, duracionMs };
   } catch (error) {
     const conocido = error instanceof ErrorLanzamiento;
     const mensaje = conocido ? error.message : 'No se pudo abrir el juego.';
@@ -250,6 +260,13 @@ app.whenReady().then(() => {
   protocol.handle('medio', crearServidorDeMedios(configuracion));
   crearVentana();
   if (MEDIR) setInterval(medirMemoria, 60000);
+  // Qué emuladores hay y en qué versión, para el registro. Va unos segundos después de abrir para no
+  // competir con la animación de arranque.
+  setTimeout(() => {
+    detectarEmuladores(configuracion)
+      .then((lista) => registro.anotar('emuladores', ...lista.map(({ nombre, instalado, version, tipo }) => (instalado ? [nombre, version, `(${tipo})`].filter(Boolean).join(' ') : `${nombre} no instalado`))))
+      .catch((error) => registro.anotar('error', 'no se pudieron detectar los emuladores', String(error)));
+  }, 5000);
   // Solo al medir: NEO_ARCADE_TRAZA=archivo.json graba 6 s de traza de Chromium, de los 12 a los 18 s.
   if (MEDIR && process.env.NEO_ARCADE_TRAZA) {
     setTimeout(() => contentTracing.startRecording({ included_categories: ['cc', 'viz', 'gpu', 'blink', 'v8', 'devtools.timeline', 'toplevel', 'disabled-by-default-devtools.timeline'] }), 12000);

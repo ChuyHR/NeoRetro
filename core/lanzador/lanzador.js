@@ -67,7 +67,28 @@ export async function verificar({ programa, emulador }, sistema, rutaJuego, ento
       throw new ErrorLanzamiento(`Falta la BIOS de ${sistema.nombreLargo}. Copia ${listaLegible(sistema.bios)} en la carpeta ${emulador.carpetaBios}.`);
     }
   }
+  // Neo Geo: sin neogeo.zip, FBNeo abre y se queda en negro, igual que sin BIOS.
+  const carpetaBios = emulador.carpetaBios ? expandirRuta(emulador.carpetaBios) : null;
+  if (sistema.archivoDeSistema && !(await archivoDeSistema(sistema.archivoDeSistema, path.dirname(rutaJuego), carpetaBios))) {
+    throw new ErrorLanzamiento(`Falta ${sistema.archivoDeSistema}, el archivo de sistema de ${sistema.nombreLargo}. Cópialo junto a sus juegos, en la carpeta ${carpetaLegible(path.dirname(rutaJuego))}.`);
+  }
 }
+
+// FBNeo busca el archivo de sistema junto al juego y en la carpeta de BIOS (también en su subcarpeta
+// fbneo/). Devuelve dónde lo encontró, o null.
+export async function archivoDeSistema(nombre, carpetaDelJuego, carpetaBios = null) {
+  const carpetas = [carpetaDelJuego];
+  if (carpetaBios) carpetas.push(carpetaBios, path.join(carpetaBios, 'fbneo'));
+  for (const carpeta of carpetas) {
+    if (await existe(path.join(carpeta, nombre))) return path.join(carpeta, nombre);
+  }
+  return null;
+}
+
+const carpetaLegible = (ruta) => {
+  const casa = process.env.HOME;
+  return casa && ruta.startsWith(`${casa}/`) ? `~${ruta.slice(casa.length)}` : ruta;
+};
 
 const listaLegible = (archivos) => (archivos.length === 1 ? archivos[0] : `${archivos.slice(0, -1).join(', ')} o ${archivos.at(-1)}`);
 
@@ -79,13 +100,14 @@ export function falloAlAbrir({ codigo, duracionMs }) {
   return codigo !== 0 && codigo !== null && duracionMs < CIERRE_TEMPRANO_MS;
 }
 
-// Ejecuta el emulador y espera a que se cierre. Devuelve el código de salida y cuánto duró.
+// Ejecuta el emulador y espera a que se cierre. Devuelve el código de salida, cuánto duró y el número
+// de proceso, para el registro.
 export function ejecutar({ programa, argumentos }) {
   return new Promise((listo, fallo) => {
     const inicio = Date.now();
     const proceso = spawn(programa, argumentos, { stdio: 'ignore' });
     proceso.once('error', () => fallo(new ErrorLanzamiento('No se pudo abrir el emulador.')));
-    proceso.once('exit', (codigo, senal) => listo({ codigo, senal, duracionMs: Date.now() - inicio }));
+    proceso.once('exit', (codigo, senal) => listo({ codigo, senal, duracionMs: Date.now() - inicio, pid: proceso.pid }));
   });
 }
 

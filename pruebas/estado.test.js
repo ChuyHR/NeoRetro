@@ -205,6 +205,12 @@ test('al quitar un favorito desde Favoritos se elige el que quedó en su lugar',
   assert.equal(quitado.seleccion, lista[2]);
 });
 
+test('cada partida suma una vez y su tiempo al juego', () => {
+  const jugado = (id, segundos) => ({ tipo: 'jugado', valor: { id, fecha: '2026-10-20T10:00:00Z', segundos } });
+  const estado = pasos([jugado('mgs', 600.4), jugado('zelda', 30), jugado('mgs', 1200), jugado('mgs')]);
+  assert.deepEqual(estado.partidas, { mgs: { veces: 3, segundos: 1800 }, zelda: { veces: 1, segundos: 30 } });
+});
+
 test('Recientes guarda el último primero, sin repetir, y View recorre los filtros', () => {
   const jugado = (id, fecha) => ({ tipo: 'jugado', valor: { id, fecha } });
   const estado = pasos([jugado('mgs', '2026-10-20T10:00:00Z'), jugado('zelda', '2026-10-20T11:00:00Z'), jugado('mgs', '2026-10-20T12:00:00Z')]);

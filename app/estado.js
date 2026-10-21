@@ -46,12 +46,13 @@ export const BOTONES = Object.fromEntries(Object.entries(FILAS).map(([ventana, f
 // guardados: lo que devuelve el núcleo de la sesión anterior (core/almacenamiento/). Sin selección se
 // muestra el primer juego de la lista. La demostración del prototipo arranca con
 // { seleccion: 'sf2', favoritos: ['sf2'] }.
-export function estadoInicial({ seleccion = null, favoritos = [], recientes = [], ultimoPorSistema = {}, sistema = 'todos', ajustes = {} } = {}) {
+export function estadoInicial({ seleccion = null, favoritos = [], recientes = [], partidas = {}, ultimoPorSistema = {}, sistema = 'todos', ajustes = {} } = {}) {
   return {
     sistema,
     seleccion,
     favoritos,
     recientes, // [{ id, fecha }], el más reciente primero
+    partidas, // id → { veces, segundos }: cuántas veces se abrió cada juego y cuánto se jugó en total
     ultimoPorSistema, // sistema → id del último juego elegido en él
     busqueda: '', // texto confirmado en «Buscar»; mientras hay uno, la barra muestra la búsqueda
     escribiendo: '', // lo que se lleva escrito en el teclado de «Buscar»
@@ -143,9 +144,11 @@ function deCualquierPantalla(estado, tipo, valor) {
     case 'crudo':
       return conCrudo(estado, valor);
     case 'jugado': {
-      // Un juego que se abrió de verdad pasa al frente de Recientes.
+      // Un juego que se abrió de verdad pasa al frente de Recientes y suma una partida con su tiempo.
       const recientes = [{ id: valor.id, fecha: valor.fecha }, ...estado.recientes.filter(({ id }) => id !== valor.id)];
-      return { ...estado, recientes: recientes.slice(0, MAX_RECIENTES) };
+      const previa = estado.partidas[valor.id] ?? { veces: 0, segundos: 0 };
+      const partida = { veces: previa.veces + 1, segundos: previa.segundos + Math.max(0, Math.round(valor.segundos ?? 0)) };
+      return { ...estado, recientes: recientes.slice(0, MAX_RECIENTES), partidas: { ...estado.partidas, [valor.id]: partida } };
     }
     default:
       return null;

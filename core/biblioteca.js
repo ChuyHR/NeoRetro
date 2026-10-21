@@ -4,19 +4,26 @@
 // tienen juegos.
 import path from 'node:path';
 
+import { agruparDiscos, sinMarcaDeDisco } from './discos.js';
 import { datosDelJuego } from './medios/medios.js';
 
 // medios: lo que devuelve leerMedios(), un índice por sistema. Sin él, los juegos van sin medios.
+// Los juegos de varios discos salen una sola vez, con discos: [archivos] (core/discos.js), en los
+// sistemas cuyo emulador abre listas .m3u.
 export function datosParaInterfaz(configuracion, biblioteca, medios = null) {
   const juegos = [];
   for (const sistema of configuracion.sistemas) {
     const indice = medios?.get(sistema.id) ?? null;
-    for (const { archivo, titulo } of biblioteca.sistemas[sistema.id]?.juegos ?? []) {
+    const escaneados = biblioteca.sistemas[sistema.id]?.juegos ?? [];
+    const conDiscos = sistema.extensiones?.some((extension) => extension.toLowerCase() === '.m3u');
+    for (const { archivo, titulo, discos } of conDiscos ? agruparDiscos(escaneados) : escaneados) {
       const datos = datosDelJuego(indice, archivo, configuracion);
+      // El nombre del gamelist manda sobre el del archivo: en arcade el archivo es «mslug.zip».
+      const nombre = datos.titulo ?? titulo;
       juegos.push({
         id: `${sistema.id}/${archivo}`,
-        // El nombre del gamelist manda sobre el del archivo: en arcade el archivo es «mslug.zip».
-        titulo: datos.titulo ?? titulo,
+        titulo: discos ? sinMarcaDeDisco(nombre) : nombre,
+        ...(discos ? { discos } : {}),
         sistema: sistema.id,
         nombreSistema: sistema.nombreLargo,
         emulador: sistema.nombreEmulador,

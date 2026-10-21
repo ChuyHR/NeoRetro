@@ -35,6 +35,14 @@ test('solo se guarda lo que tiene la forma esperada', () => {
   assert.equal(muchos.recientes.length, MAX_RECIENTES);
 });
 
+test('las partidas se guardan solo con veces y segundos enteros', () => {
+  const limpio = limpiarDatos({
+    partidas: { 'psx/ff7.m3u': { veces: 3, segundos: 5400, extra: 1 }, malo: { veces: -1, segundos: 2 }, otro: { veces: 1.5, segundos: 1 }, nada: null },
+  });
+  assert.deepEqual(limpio.partidas, { 'psx/ff7.m3u': { veces: 3, segundos: 5400 } });
+  assert.deepEqual(limpiarDatos({ partidas: [1, 2] }).partidas, {});
+});
+
 test('se escribe un JSON legible, juntando los cambios seguidos, y se lee igual al volver', async () => {
   const carpeta = await mkdtemp(path.join(os.tmpdir(), 'neo-arcade-datos-'));
   temporales.push(carpeta);

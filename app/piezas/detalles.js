@@ -28,6 +28,7 @@ export function crearDetalles(lienzo, { despachar }) {
         <span data-ref="controles"></span>
         <span data-ref="emulador"></span>
         <span data-ref="ultima"></span>
+        <span data-ref="tiempo"></span>
         <div style="display: flex; gap: 12px; margin-top: auto">
           <button data-ref="jugar" style="height: 52px; padding: 0 26px; border-radius: 10px; border: 3px solid var(--acento); background: #0B2350; color: #F5F7FF; font-family: 'Pixelify Sans', monospace; font-weight: 700; font-size: 22px">JUGAR</button>
           <button data-ref="cerrar" style="height: 52px; padding: 0 26px; border-radius: 10px; border: 2px solid #2A3B70; background: #0E1730; color: #F5F7FF; font-family: 'Pixelify Sans', monospace; font-weight: 600; font-size: 22px">VOLVER AL INICIO</button>
@@ -39,7 +40,7 @@ export function crearDetalles(lienzo, { despachar }) {
   refs.cerrar.addEventListener('click', () => despachar({ tipo: 'boton', valor: 'cerrar' }));
 
   return {
-    actualizar({ estado, juego, fondo, ultimaPartida }) {
+    actualizar({ estado, juego, fondo, ultimaPartida, tiempoJugado }) {
       const visible = estado.ventana === 'detalles' && juego;
       refs.capa.style.display = visible ? 'flex' : 'none';
       if (!visible) return;
@@ -67,6 +68,7 @@ export function crearDetalles(lienzo, { despachar }) {
       rellenar(refs.controles, 'Controles', juego.controles);
       rellenar(refs.emulador, 'Emulador', juego.emulador);
       rellenar(refs.ultima, 'Última partida', ultimaPartida);
+      rellenar(refs.tiempo, 'Jugado', tiempoJugado);
       const enfocado = BOTONES.detalles[estado.foco];
       marcarFocoAlterno(refs.jugar, enfocado === 'jugar');
       marcarFocoAlterno(refs.cerrar, enfocado === 'cerrar');

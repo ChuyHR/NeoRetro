@@ -1,16 +1,16 @@
 {
-  "_nota": "Un sistema por carpeta de roms/. comando: plantilla con {emulador} (el comando de emulators.json), {nucleo} (ruta del núcleo de RetroArch) y {juego} (ruta del archivo). nombre va en la barra; nombreLargo, en la banda de la portada. colores y motivo arman la portada de reemplazo cuando falta la carátula. bios: archivos de los que el núcleo necesita al menos uno en carpetaBios de su emulador; sin ninguno, el juego no arranca y se avisa antes de abrirlo.",
+  "_nota": "Un sistema por carpeta de roms/. comando: plantilla con {emulador} (el comando de emulators.json), {nucleo} (ruta del núcleo de RetroArch) y {juego} (ruta del archivo). nombre va en la barra; nombreLargo, en la banda de la portada. colores y motivo arman la portada de reemplazo cuando falta la carátula. bios: archivos de los que el núcleo necesita al menos uno en carpetaBios de su emulador; sin ninguno, el juego no arranca y se avisa antes de abrirlo. archivoDeSistema: lo mismo para un archivo que va junto a los juegos (neogeo.zip), y que también se busca en carpetaBios. noSonJuegos: archivos de la carpeta que el escáner no muestra como juegos.",
   "sistemas": [
     {
       "id": "arcade", "nombre": "ARCADE", "nombreLargo": "ARCADE", "carpeta": "arcade",
-      "extensiones": [".zip", ".7z"],
+      "extensiones": [".zip", ".7z"], "noSonJuegos": ["neogeo.zip"],
       "emulador": "retroarch", "nucleo": "fbneo", "nombreEmulador": "FinalBurn Neo",
       "comando": ["{emulador}", "-f", "-L", "{nucleo}", "{juego}"],
       "controles": "Palanca y botones", "colores": ["#E53935", "#FFD23F", "#0A0A2A"], "motivo": "grid"
     },
     {
       "id": "neogeo", "nombre": "NEO GEO", "nombreLargo": "NEO GEO", "carpeta": "neogeo",
-      "extensiones": [".zip", ".7z"],
+      "extensiones": [".zip", ".7z"], "noSonJuegos": ["neogeo.zip"], "archivoDeSistema": "neogeo.zip",
       "emulador": "retroarch", "nucleo": "fbneo", "nombreEmulador": "FinalBurn Neo",
       "comando": ["{emulador}", "-f", "-L", "{nucleo}", "{juego}"],
       "controles": "Palanca y 4 botones", "colores": ["#FFB020", "#F5F7FF", "#1A1405"], "motivo": "rays"

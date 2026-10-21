@@ -106,14 +106,15 @@ function despachar(accion) {
 let guardado = null;
 function guardarSiCambio() {
   if (!puente) return;
-  const { favoritos, recientes, ajustes, ultimoPorSistema, sistema, seleccion } = estado;
-  const ahora = [favoritos, recientes, ajustes, ultimoPorSistema, sistema, seleccion];
+  const { favoritos, recientes, partidas, ajustes, ultimoPorSistema, sistema, seleccion } = estado;
+  const ahora = [favoritos, recientes, partidas, ajustes, ultimoPorSistema, sistema, seleccion];
   if (guardado && ahora.every((valor, indice) => valor === guardado[indice])) return;
   guardado = ahora;
   const recordado = sistema === 'busqueda' ? ultimoPorSistema : { ...ultimoPorSistema, [sistema]: seleccion };
   puente.guardarDatosUsuario({
     favoritos,
     recientes,
+    partidas,
     ultimoPorSistema: recordado,
     ultimoSistema: sistema === 'busqueda' ? 'todos' : sistema,
     perfil: 'normal',
@@ -126,6 +127,7 @@ function estadoGuardado(guardados) {
   const base = estadoInicial({
     favoritos: guardados.favoritos,
     recientes: guardados.recientes,
+    partidas: guardados.partidas,
     ultimoPorSistema: guardados.ultimoPorSistema,
     ajustes: guardados.ajustes,
   });
@@ -143,7 +145,7 @@ async function jugar() {
   enJuego = true;
   try {
     const resultado = await puente.jugar(juego.id, { salir: estado.ajustes.salir });
-    if (resultado.ok) despachar({ tipo: 'jugado', valor: { id: juego.id, fecha: new Date().toISOString() } });
+    if (resultado.ok) despachar({ tipo: 'jugado', valor: { id: juego.id, fecha: new Date().toISOString(), segundos: (resultado.duracionMs ?? 0) / 1000 } });
     despachar(resultado.ok ? 'juego-terminado' : { tipo: 'error-lanzamiento', valor: resultado.mensaje });
   } finally {
     enJuego = false;
@@ -196,7 +198,7 @@ async function arrancar() {
     ]);
     datos = biblioteca;
     estado = estadoGuardado(guardados);
-    guardado = [estado.favoritos, estado.recientes, estado.ajustes, estado.ultimoPorSistema, estado.sistema, estado.seleccion];
+    guardado = [estado.favoritos, estado.recientes, estado.partidas, estado.ajustes, estado.ultimoPorSistema, estado.sistema, estado.seleccion];
     escucharMandos();
   } else {
     datos = DATOS;

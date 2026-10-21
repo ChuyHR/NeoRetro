@@ -4,7 +4,23 @@ import { test } from 'node:test';
 import { fondoPortada } from '../app/arte.js';
 import { DATOS } from '../app/datos-ejemplo.js';
 import { estadoInicial } from '../app/estado.js';
-import { marcador, ranurasCarrusel, textosReloj, ventanaSistemas, vistaDe } from '../app/modelo.js';
+import { marcador, ranurasCarrusel, textosReloj, textoTiempoJugado, ventanaSistemas, vistaDe } from '../app/modelo.js';
+import { lineaDatos } from '../app/piezas/ficha.js';
+
+test('el tiempo jugado se dice en veces, horas y minutos', () => {
+  assert.equal(textoTiempoJugado(undefined), null);
+  assert.equal(textoTiempoJugado({ veces: 1, segundos: 40 }), '1 vez');
+  assert.equal(textoTiempoJugado({ veces: 2, segundos: 754 }), '2 veces, 12 min');
+  assert.equal(textoTiempoJugado({ veces: 5, segundos: 12000 }), '5 veces, 3 h 20 min');
+  assert.equal(textoTiempoJugado({ veces: 4, segundos: 7200 }), '4 veces, 2 h');
+});
+
+test('un juego de varios discos lo dice en su línea de datos', () => {
+  const base = { nombreSistema: 'PLAYSTATION', discos: ['a', 'b', 'c'] };
+  assert.equal(lineaDatos(base), 'PLAYSTATION • 3 discos');
+  assert.equal(lineaDatos({ ...base, desarrollador: 'Square', anio: '1997' }), 'Square • 1997 • 3 discos');
+  assert.equal(lineaDatos({ nombreSistema: 'SNES', anio: '1991' }), '1991');
+});
 
 test('el carrusel dibuja solo los lugares de -4 a +5 alrededor del juego elegido', () => {
   const ranuras = ranurasCarrusel(DATOS.juegos, 3);

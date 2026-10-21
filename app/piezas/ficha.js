@@ -4,9 +4,12 @@
 import { ponerCaratula } from '../caratulas.js';
 import { montar } from './dom.js';
 
-// Desarrollador • año • género, con lo que haya; sin ningún dato, el nombre del sistema.
+// Desarrollador • año • género, con lo que haya; sin ningún dato, el nombre del sistema. Un juego de
+// varios discos dice cuántos al final.
 export function lineaDatos(juego) {
-  return [juego.desarrollador, juego.anio, juego.genero].filter(Boolean).join(' • ') || juego.nombreSistema;
+  const datos = [juego.desarrollador, juego.anio, juego.genero].filter(Boolean);
+  const discos = juego.discos?.length > 1 ? `${juego.discos.length} discos` : null;
+  return [...(datos.length ? datos : [juego.nombreSistema]), discos].filter(Boolean).join(' • ');
 }
 
 export function crearFicha(lienzo) {

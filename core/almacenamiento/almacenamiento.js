@@ -1,6 +1,6 @@
 // Lo que Neo Arcade recuerda entre una sesión y otra, en datos-usuario.json de la carpeta de datos:
-// favoritos, recientes (los últimos 50, con fecha), el último juego de cada sistema, el último sistema,
-// el perfil y los ajustes. Es JSON con sangría para que una persona lo pueda leer y corregir.
+// favoritos, recientes (los últimos 50, con fecha), cuántas veces y cuánto tiempo se jugó cada juego, el
+// último juego de cada sistema, el último sistema, el perfil y los ajustes. Es JSON con sangría para que una persona lo pueda leer y corregir.
 //
 // La interfaz es la dueña de estos datos y los manda completos cada vez que cambian; aquí se limpian
 // (nada que no sea de la forma esperada se guarda) y se escriben juntando los cambios seguidos, porque
@@ -29,6 +29,7 @@ export const datosIniciales = () => ({
   version: 1,
   favoritos: [],
   recientes: [],
+  partidas: {},
   ultimoPorSistema: {},
   ultimoSistema: 'todos',
   perfil: 'normal',
@@ -37,6 +38,7 @@ export const datosIniciales = () => ({
 
 const esId = (valor) => typeof valor === 'string' && valor.length > 0 && valor.length <= 1000;
 const fechaValida = (valor) => typeof valor === 'string' && !Number.isNaN(Date.parse(valor));
+const cuenta = (valor) => Number.isInteger(valor) && valor >= 0 && valor <= 1e9;
 
 export function limpiarDatos(datos) {
   const limpio = datosIniciales();
@@ -48,6 +50,11 @@ export function limpiarDatos(datos) {
       .filter((reciente) => esId(reciente?.id) && fechaValida(reciente.fecha) && !vistos.has(reciente.id) && vistos.add(reciente.id))
       .map(({ id, fecha }) => ({ id, fecha }))
       .slice(0, MAX_RECIENTES);
+  }
+  if (datos.partidas && typeof datos.partidas === 'object' && !Array.isArray(datos.partidas)) {
+    for (const [id, partida] of Object.entries(datos.partidas).slice(0, 10000)) {
+      if (esId(id) && cuenta(partida?.veces) && cuenta(partida.segundos)) limpio.partidas[id] = { veces: partida.veces, segundos: partida.segundos };
+    }
   }
   if (datos.ultimoPorSistema && typeof datos.ultimoPorSistema === 'object') {
     for (const [sistema, id] of Object.entries(datos.ultimoPorSistema).slice(0, 100)) {

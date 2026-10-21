@@ -68,6 +68,20 @@ test('sin ninguna de sus BIOS, PlayStation avisa cuáles faltan y dónde van', a
   await verificar(armarComando(psx, juego, emuladores), psx, juego);
 });
 
+test('sin neogeo.zip, un juego de Neo Geo avisa antes de abrirse', async () => {
+  const carpeta = await carpetaTemporal();
+  const juegos = path.join(carpeta, 'neogeo');
+  await mkdir(juegos);
+  const juego = path.join(juegos, 'mslug.zip');
+  await writeFile(juego, '');
+  await writeFile(path.join(carpeta, 'fbneo_libretro.so'), '');
+  const emuladores = { retroarch: { nombre: 'RetroArch', comando: ['bash'], carpetaNucleos: carpeta, carpetaBios: path.join(carpeta, 'bios') } };
+  const neogeo = sistema('neogeo');
+  await assert.rejects(verificar(armarComando(neogeo, juego, emuladores), neogeo, juego), /Falta neogeo\.zip, el archivo de sistema de NEO GEO\. Cópialo junto a sus juegos/);
+  await writeFile(path.join(juegos, 'neogeo.zip'), '');
+  await verificar(armarComando(neogeo, juego, emuladores), neogeo, juego);
+});
+
 test('un emulador que sale con error en los primeros segundos no abrió el juego', () => {
   assert.equal(falloAlAbrir({ codigo: 1, duracionMs: 312 }), true);
   assert.equal(falloAlAbrir({ codigo: 0, duracionMs: 312 }), false);

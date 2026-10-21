@@ -5,7 +5,7 @@
 import { mkdir, readdir, readFile, stat, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
-const VERSION_CACHE = 1;
+const VERSION_CACHE = 2; // 2: los noSonJuegos de systems.json ya no se listan
 const PROFUNDIDAD = 3; // subcarpetas, para juegos de varios archivos (psx/Juego/Juego.cue)
 const DISCO = /^(disc|disk|disco|cd)\s*\d/i;
 
@@ -21,7 +21,7 @@ export function limpiarNombre(archivo) {
   return limpio || base;
 }
 
-async function recorrer(raiz, extensiones) {
+async function recorrer(raiz, extensiones, ocultos) {
   const juegos = [];
   const carpetas = [];
   async function visitar(relativa, nivel) {
@@ -40,7 +40,7 @@ async function recorrer(raiz, extensiones) {
       const archivo = path.posix.join(relativa.split(path.sep).join('/'), entrada.name);
       if (entrada.isDirectory()) {
         if (nivel < PROFUNDIDAD) await visitar(path.join(relativa, entrada.name), nivel + 1);
-      } else if (extensiones.has(path.extname(entrada.name).toLowerCase())) {
+      } else if (extensiones.has(path.extname(entrada.name).toLowerCase()) && !ocultos.has(entrada.name.toLowerCase())) {
         juegos.push({ archivo, titulo: limpiarNombre(entrada.name) });
       }
     }
@@ -52,7 +52,8 @@ async function recorrer(raiz, extensiones) {
 
 export async function escanearSistema(carpetaRoms, sistema) {
   const extensiones = new Set(sistema.extensiones.map((extension) => extension.toLowerCase()));
-  const { juegos, carpetas } = await recorrer(path.join(carpetaRoms, sistema.carpeta), extensiones);
+  const ocultos = new Set((sistema.noSonJuegos ?? []).map((nombre) => nombre.toLowerCase()));
+  const { juegos, carpetas } = await recorrer(path.join(carpetaRoms, sistema.carpeta), extensiones, ocultos);
   return { extensiones: [...extensiones].sort(), carpetas, juegos };
 }
 
