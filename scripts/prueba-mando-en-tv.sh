@@ -45,8 +45,9 @@ palanca() { echo "$*" >&4; sleep 0.25; }
 
 NEO_ARCADE_DEPURAR=1 NEO_ARCADE_ROMS=$BASE/roms NEO_ARCADE_DATOS=$BASE/datos setsid ./node_modules/.bin/electron . >"$SALIDA/neo.log" 2>&1 &
 esperar 30 neo_visible || { informe "Neo Arcade no abrió"; exit 1; }
-# El patrón con corchetes no se encuentra a sí mismo en la línea de comandos de pkill.
-trap 'exec 3>&- 4>&- 2>/dev/null; pkill -x electron; sudo pkill -f "herramientas/mando-[v]irtual"' EXIT
+# El patrón con corchetes no se encuentra a sí mismo en la línea de comandos de pkill. Los perfiles de
+# RetroArch son globales: el de la palanca virtual no debe quedarse para una palanca real del mismo modelo.
+trap 'exec 3>&- 4>&- 2>/dev/null; pkill -x electron; sudo pkill -f "herramientas/mando-[v]irtual"; rm -f "$PERFILES"/neo-arcade-*.cfg' EXIT
 sleep 3
 captura 01-inicio-con-teclado
 

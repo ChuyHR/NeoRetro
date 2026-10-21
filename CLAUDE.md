@@ -17,21 +17,34 @@ sección «Ajustes al plan» de este archivo manda sobre el plan y sobre los pro
 
 ## Estado actual
 
-Verificado el 2026-10-20. La fase 0 quedó aprobada por el usuario. Las fases 1, 2 y 3 están
-construidas y verificadas; **esperan su revisión, y a las 2 y 3 les falta la prueba con juegos reales**
-(el usuario tiene que copiar un juego de arcade, uno de SNES y uno de PlayStation en `roms/` de la
-MP80). Lo verificado:
+Verificado el 2026-10-20. La fase 0 quedó aprobada por el usuario. **Las fases 1 a 6 están construidas
+y verificadas y esperan su revisión.** La fase 7 (pulido y rendimiento) no se ha empezado. Lo verificado:
 
 - Fase 1: la pantalla del prototipo está reproducida por piezas, con 0.0 % de píxeles distintos salvo
   en las dos zonas con cambios aprobados, y se recorre entera con el teclado (`docs/pruebas-fase1/`).
   En la TV de la MP80 el carrusel va a 59 cuadros por segundo a 60 Hz y a unos 66 a 75 Hz
   (`docs/pruebas-fase1/fps-mp80.txt`).
-- Fases 2 y 3, con una biblioteca de archivos vacíos y un emulador falso (`npm run simulacion`, en la
-  laptop y en la MP80): la barra muestra solo los sistemas con juegos; la ventana se oculta al abrir
-  el juego y vuelve con el foco unos 10 ms después de que el emulador se cierra; los avisos de núcleo,
-  emulador o juego faltante salen en pantalla y en el registro (`docs/pruebas-fase2/`,
-  `docs/pruebas-fase3/`). Con la configuración real, los 21 sistemas pasan la comprobación en la MP80.
-- `npm test` pasa (39 pruebas) en la laptop y en la MP80.
+- Fases 2 y 3: con una biblioteca de archivos vacíos y un emulador falso (`npm run simulacion`) y en
+  la TV de la MP80 con RetroArch de verdad y un programa de prueba propio de SNES
+  (`scripts/prueba-en-tv.sh`, `docs/pruebas-fase3/tv-mp80/`): abre a pantalla completa, responde al
+  teclado y Esc vuelve a Neo Arcade en 375 ms. Avisos de núcleo, emulador, BIOS o juego faltante y de
+  juego que no abre.
+- Fase 4: en la TV con mandos virtuales (`scripts/prueba-mando-en-tv.sh`, `docs/pruebas-fase4/`), un
+  mando de Xbox y una palanca de arcade que se configura sola la primera vez; los dos sirven dentro de
+  RetroArch y Select + Start vuelve al menú.
+- Fase 5: carátulas, capturas, vídeos y datos del `gamelist.xml` o de las carpetas de medios
+  (`npm run simulacion`, `docs/pruebas-fase5/`), también en la TV.
+- Fase 6: favoritos, recientes, búsqueda, Configuración completa y todo se recupera al cerrar y volver a
+  abrir (`scripts/prueba-datos-en-tv.sh`, `docs/pruebas-fase6/`).
+- `npm test` pasa (77 pruebas) en la laptop y en la MP80.
+
+**Juegos reales.** Las pruebas usan programas y medios propios, no juegos de terceros. El 2026-10-20 el
+usuario pidió conseguir los juegos de prueba sin depender de él; el filtro de seguridad de Claude Code
+bloqueó bajar juegos de terceros y bajar o compilar código externo (OpenBIOS para PlayStation), y no se
+rodeó ese bloqueo (tampoco con el navegador que ofreció el usuario). Por eso SNES se probó con
+`scripts/juego-de-prueba-snes.mjs`, un programa escrito aquí. **Arcade y PlayStation siguen sin probarse
+con un juego**: el núcleo de arcade solo acepta copias exactas de placas reales y PlayStation necesita
+una BIOS; ambos los tiene que poner el usuario (en `roms/` y en la carpeta de BIOS de RetroArch).
 
 La tecnología es la de [docs/decision-tecnica.md](docs/decision-tecnica.md): Electron 44, emuladores
 desde Flathub y Debian 13 con Cage. El contexto de la última sesión está en
@@ -108,24 +121,43 @@ npm test                               # pruebas con el ejecutor de Node (carpet
 node --test pruebas/estado.test.js     # un solo archivo de pruebas
 npm run comparar                       # app contra prototipo a 1920×1080: % distinto por zona y mapa
 npm run recorrido                      # recorre la app con el teclado y captura cada pantalla
-npm run simulacion                     # la app real con biblioteca y emulador falsos (fases 2 y 3)
+npm run simulacion                     # la app real con biblioteca, emulador y medios falsos (fases 2, 3, 5 y 6)
 npm run medir-fps                      # fluidez del carrusel en la pantalla real (solo en la MP80)
 npm run empaquetar                     # versión final en dist/neo-arcade/ (ejecutable neo-arcade)
 bash scripts/instalar-nucleos.sh       # núcleos de RetroArch de systems.json (--actualizar los renueva)
-bash scripts/configurar-retroarch.sh   # salir con Select + Start o con un solo Esc
+bash scripts/configurar-retroarch.sh   # salir con Select + Start o un solo Esc; perfiles de mando editables
 ```
+
+En la MP80, con la sesión gráfica abierta (también por SSH), tres pruebas en la TV con RetroArch de
+verdad. Arman su biblioteca en `~/juegos-de-prueba*` (nunca en `roms/`) y dejan capturas y
+`resultado.txt` en `/tmp/prueba-*`:
+
+```bash
+bash scripts/prueba-en-tv.sh           # fase 3: programa de SNES, archivo dañado y disco sin BIOS
+bash scripts/prueba-mando-en-tv.sh     # fase 4: mando de Xbox y palanca de arcade virtuales (pide sudo)
+bash scripts/prueba-datos-en-tv.sh     # fase 6: favoritos, recientes, Configuración y reabrir (pide sudo)
+```
+
+Herramientas que usan esas pruebas, también sueltas: `node scripts/juego-de-prueba-snes.mjs <carpeta>`
+(programa propio de SNES: pantalla azul que se pone roja al pulsar), `bash scripts/electron.sh
+scripts/medios-de-prueba.mjs <carpeta de medios>` (carátula, captura, vídeo y gamelist propios),
+`sudo python3 scripts/herramientas/mando-virtual.py xbox|palanca` (un mando por uinput que obedece
+órdenes por la entrada estándar) y `scripts/herramientas/xwd-a-png.py` (captura de la TV con `xwd`).
 
 `comparar` y `recorrido` dejan sus capturas en `docs/pruebas-fase1/`. La comparación es la prueba de
 fidelidad de cualquier cambio visual: fuera de los cambios aprobados, cada zona debe quedar en 0.0 %.
 Necesita internet, porque el prototipo pide sus tipografías a Google Fonts. `simulacion` arma todo en
-una carpeta temporal (nunca toca `roms/` ni `config/`) y deja capturas en `docs/pruebas-fase2/` y
-`docs/pruebas-fase3/`, con los tiempos en `docs/pruebas-fase3/resultado.txt`. Correrla en la MP80
-cambia esas capturas en `~/NeoRetro`; restáuralas con `git checkout -- docs/` o el siguiente
-`git push` será rechazado.
+una carpeta temporal (nunca toca `roms/` ni `config/`) y deja capturas en `docs/pruebas-fase2/`,
+`docs/pruebas-fase3/`, `docs/pruebas-fase5/` y `docs/pruebas-fase6/`, con un `resultado.txt` en cada
+una. Correrla en la MP80 cambia esas capturas en `~/NeoRetro`; restáuralas con `git checkout -- docs/`
+o el siguiente `git push` será rechazado. Al cerrar una tanda, descarta las capturas de fases que solo
+cambiaron por la hora del reloj.
 
-Para probar con otra configuración o con otra carpeta de juegos sin tocar las reales:
-`NEO_ARCADE_CONFIG` (carpeta con los tres JSON), `NEO_ARCADE_ROMS` (carpeta de juegos) y
-`NEO_ARCADE_DATOS` (caché y registros, en lugar de la carpeta de datos de Electron).
+Para probar con otra configuración o con otras carpetas sin tocar las reales: `NEO_ARCADE_CONFIG`
+(carpeta con los JSON), `NEO_ARCADE_ROMS` (juegos), `NEO_ARCADE_MEDIOS` (medios) y `NEO_ARCADE_DATOS`
+(caché, registros, `mandos.json` y `datos-usuario.json`, en lugar de la carpeta de datos de Electron).
+En desarrollo, `NEO_ARCADE_DEPURAR=1` escribe en la terminal cada acción que llega del mando, y lo que
+la página escribe en su consola sale siempre en la terminal.
 
 Claude Code corre en Windows y todo lo de Linux se ejecuta en el Debian de WSL. Usa `--exec`: sin él,
 WSL vuelve a interpretar el comando con otro shell y las variables llegan vacías. Desde Git Bash
@@ -187,23 +219,35 @@ Electron con JavaScript sin framework ni paso de compilación: lo que está en `
   desarrollo, zoom). El modo desarrollo se decide con `app.isPackaged`: con `electron .` es
   desarrollo, y en la versión final el ejecutable se llama `neo-arcade` y Electron la da por
   empaquetada. Solo en desarrollo Esc cierra la app y existen las herramientas de desarrollo.
-- `app/` es la interfaz. El flujo es de un solo sentido: tecla → acción → estado nuevo → vista →
-  piezas.
+- `app/` es la interfaz. El flujo es de un solo sentido: tecla o mando → acción → estado nuevo →
+  vista → piezas.
   - `entrada-teclado.js` traduce teclas a acciones: flechas para mover, Enter para aceptar,
-    Retroceso para volver, y Re Pág y Av Pág para cambiar de sistema. Esc no está porque en
-    desarrollo cierra la app.
+    Retroceso para volver, Re Pág y Av Pág para cambiar de sistema, Inicio y Fin para saltar de
+    letra; letras y números se escriben en «Buscar». Esc no está porque en desarrollo cierra la app.
+    Las acciones del mando llegan ya hechas del núcleo (`core/entrada/`).
   - `estado.js` (`aplicar`) decide cómo cambia el estado con cada acción, en la pantalla principal o
-    en una ventana.
+    en una ventana. También tiene lo que se guarda (favoritos, recientes, último juego por sistema,
+    ajustes), la barra con sus filtros (`sistemasDeLaBarra`: los sistemas y, al final, Favoritos,
+    Recientes y la búsqueda) y la lista de cada entrada (`juegosDeLaVista`). Las ventanas con varias
+    filas (Configuración, el teclado de Buscar) se recorren por filas; las de una fila, en línea.
   - `modelo.js` (`vistaDe`) calcula lo que cada pieza dibuja: los lugares del carrusel (tabla
-    `RANURAS` del prototipo), la ventana de 12 sistemas, el reloj, el marcador y la portada.
-  - Las tres son puras y se prueban con Node. `inicio.js` las conecta y vuelve a pintar tras cada
-    cambio.
+    `RANURAS` del prototipo), la ventana de 12 sistemas, el reloj, el marcador, la portada, la
+    última partida y los resultados de Buscar.
+  - `mapeo.js`: los pasos de «Configurar control» y cómo se asigna cada botón o eje. `ajustes.js`:
+    ajustes de fábrica, colores del tema y combinaciones para salir. `caratulas.js`: carátulas con
+    precarga y respaldo (si una no carga, ese juego usa la portada de reemplazo).
+  - Las de arriba son puras y se prueban con Node. `inicio.js` las conecta, vuelve a pintar tras cada
+    cambio, aplica al lienzo el tema, el neón y las animaciones, restaura la sesión anterior al abrir y
+    manda a guardar cuando cambia algo que se recuerda.
 - `app/piezas/` tiene una pieza por parte de la pantalla: cabecera, barra de sistemas, carrusel, ficha,
-  acciones, vista previa, pie, detalles, configuración, lanzamiento y decoración. Cada una crea su
-  marcado una sola vez (`crearX(lienzo, contexto)`) y luego solo cambia lo dinámico en
-  `actualizar(vista)`. **El marcado conserva los estilos en línea del prototipo, copiados tal cual**:
-  así cada valor se compara directo con `docs/referencia/NeoArcade.dc.html`. El orden de creación en
-  `inicio.js` es el del prototipo y define qué queda encima.
+  acciones, vista previa, pie, detalles, configuración, buscar, probar control, configurar control,
+  lanzamiento y decoración. Cada una crea su marcado una sola vez (`crearX(lienzo, contexto)`) y luego
+  solo cambia lo dinámico en `actualizar(vista)`. **El marcado conserva los estilos en línea del
+  prototipo, copiados tal cual**: así cada valor se compara directo con
+  `docs/referencia/NeoArcade.dc.html`. La única excepción es el azul de acento `#1E90FF`, que es
+  `var(--acento)` (y `color-mix` para sus variantes transparentes) para que Configuración cambie el
+  color del tema; vale lo mismo, y la comparación sigue en 0.0 %. El orden de creación en `inicio.js`
+  es el del prototipo y define qué queda encima.
 - El carrusel coloca cada portada al instante en su lugar final y anima el paso con `transform` y
   opacidad (técnica FLIP, `element.animate`), sin animar posición ni tamaño (ajuste 8).
 - `datos-ejemplo.js` (los 14 juegos del prototipo, con ids de sistema del plan), `arte.js` (portada de
@@ -216,12 +260,15 @@ Electron con JavaScript sin framework ni paso de compilación: lo que está en `
   izquierda y parecía que la app no se adaptaba. La adaptación real se prueba con `npm start`
   (`docs/pruebas-fase2/pantalla-1366x768.png`).
 - La interfaz no toca Node. Habla con el núcleo por `core/preload.cjs` (CommonJS, porque un preload
-  con aislamiento no puede ser ESM), que expone `window.neoArcade.biblioteca()` y `jugar(id)` con
-  `contextBridge`; `core/main.js` los atiende con `ipcMain.handle`. Sin el puente (en `comparar` y
+  con aislamiento no puede ser ESM), que expone en `window.neoArcade` la biblioteca, `jugar(id,
+  opciones)`, los datos del usuario, el mapeo de mandos y `escuchar(canal)` para lo que mandan los
+  mandos; `core/main.js` los atiende con `ipcMain.handle`. Sin el puente (en `comparar` y
   `recorrido`) `app/inicio.js` usa los datos de ejemplo.
 - `core/configuracion.js` lee `config/systems.json` (21 sistemas: carpeta, extensiones, emulador,
-  núcleo y plantilla de comando), `config/emulators.json` (comando de cada emulador de Flathub y la
-  carpeta de núcleos) y `config/biblioteca.json` (carpetas de juegos y medios). `~` es la carpeta del
+  núcleo, BIOS que necesita y plantilla de comando), `config/emulators.json` (comando de cada emulador
+  de Flathub y sus carpetas de núcleos, BIOS, perfiles de mando y `retroarch.cfg`),
+  `config/biblioteca.json` (carpetas de juegos y medios) y `config/gamepad-map.json` (qué hace cada
+  control del mando y qué código de Linux es cada uno en los mandos estándar). `~` es la carpeta del
   usuario y una ruta relativa parte de la raíz del repositorio.
 - `core/escaner/escaner.js` recorre `roms/<carpeta>/` hasta tres niveles, filtra por extensión,
   limpia el nombre (quita paréntesis y corchetes salvo el número de disco, y los guiones bajos) y
@@ -231,11 +278,34 @@ Electron con JavaScript sin framework ni paso de compilación: lo que está en `
   carpeta de su sistema.
 - `core/lanzador/lanzador.js` arma el comando reemplazando `{emulador}`, `{nucleo}` y `{juego}`, sin
   shell (los espacios del nombre no importan). Antes de lanzar comprueba que existan el juego, el
-  programa, la app de Flathub y el núcleo; si algo falta, lanza `ErrorLanzamiento` con un mensaje
-  para el usuario. `main.js` deja ver «Abriendo…» 1.2 s, oculta la ventana, espera a que el emulador
-  cierre y la vuelve a mostrar con foco (encima de todo durante 300 ms, como pide la tabla de
-  riesgos). `core/registro.js` anota cada lectura, lanzamiento y error en `registros/neo-arcade.log`.
-- `core/entrada/` y `core/almacenamiento/` siguen vacías hasta las fases 4 y 6.
+  programa, la app de Flathub, el núcleo y, si el sistema la pide, una de sus BIOS (sin BIOS,
+  SwanStation deja la pantalla en negro sin cerrarse); si algo falta, lanza `ErrorLanzamiento` con un
+  mensaje para el usuario. Un emulador que sale con error en los primeros 8 s no abrió el juego y
+  también se avisa. `main.js` escribe antes en RetroArch la combinación para salir
+  (`retroarch-cfg.js`) y los perfiles de los mandos, deja ver «Abriendo…» 1.2 s, oculta la ventana,
+  espera a que el emulador cierre y la vuelve a mostrar con foco (encima de todo durante 300 ms, como
+  pide la tabla de riesgos; también al abrir la app). `core/registro.js` anota cada lectura,
+  lanzamiento, mando y error en `registros/neo-arcade.log`.
+- `core/entrada/` lee los mandos (ajuste 4). `lector-mandos.py` (solo biblioteca estándar de Python)
+  abre los dispositivos de entrada que son mandos, consulta el rango real de cada eje y escribe una
+  línea JSON por suceso; va aparte porque Node no puede hacer esa consulta (ioctl) ni esperar a varios
+  dispositivos sin ocupar un hilo por cada uno. `mandos.js` lo arranca (y lo reinicia si se cae),
+  elige el perfil de cada mando (el estándar si tiene `BTN_SOUTH`, o el que se guardó en
+  `mandos.json`), y entrega acciones, controles pulsados y sucesos crudos. `traductor.js` lleva ejes y
+  botones a controles con nombre, con margen para que una palanca en el borde no parpadee;
+  `navegacion.js` los convierte en acciones y repite las direcciones (380 ms, luego cada 90 ms).
+  `perfil-retroarch.js` escribe el perfil de RetroArch de cada mando configurado aquí con la
+  numeración de botones y ejes de RetroArch (`udev_joypad.c`). Con un emulador abierto, el mando no
+  llega a la interfaz.
+- `core/medios/` une `gamelist.xml` (en `media/<sistema>/`, o en `roms/<sistema>/` como lo deja
+  Skraper) y las carpetas comunes de medios con la biblioteca, por ruta de archivo. `<thumbnail>` es
+  la carátula y `<image>` la captura; si solo hay `<image>`, es la carátula. Los medios llegan a la
+  página por el protocolo `medio://` (`servidor.js`, con rangos para los vídeos), que se registra
+  antes de que la app esté lista y solo sirve archivos de las carpetas de medios y de juegos; la CSP
+  de `app/index.html` lo permite para imágenes y vídeo.
+- `core/almacenamiento/` guarda `datos-usuario.json` (favoritos, recientes, último juego por sistema,
+  último sistema, perfil y ajustes), juntando los cambios seguidos y escribiendo aparte y renombrando.
+  Lo que manda la interfaz se limpia antes de guardarse; al cerrar la app se escribe lo pendiente.
 - `scripts/empaquetar.sh` copia el motor de `node_modules/electron/dist`, renombra el ejecutable y
   pone la app en `resources/app`, que Electron carga en lugar de su app de ejemplo. En la MP80,
   `chrome-sandbox` necesita dueño root y permiso 4755 (lo hará `install.sh` en la fase 8).
@@ -254,14 +324,18 @@ Electron con JavaScript sin framework ni paso de compilación: lo que está en `
    cumplidas medidas en la MP80.
 3. **Primero teclado.** La interfaz recibe acciones (mover, aceptar, volver, favorito, buscar,
    ajustes, filtro), nunca teclas, para que el control se agregue después como otra fuente de las
-   mismas acciones. La fase 4 queda en pausa hasta que haya controles. Mientras tanto, las pruebas de
-   cada fase y los criterios de terminado se hacen con teclado y sin ratón.
-4. **Controles, cuando se retome la fase 4.** El mando se lee en el núcleo (dispositivos de entrada
-   de Linux) y no en la interfaz, para cubrir tableros que se presentan como teclado, pasar del tope
-   de 4 controles de Chromium y seguir escuchando con el emulador abierto. Una pantalla «Configurar
-   control» mapea la primera vez cada control desconocido; el mapeo se guarda por control en la
-   carpeta de datos y Neo Arcade lo escribe en la configuración de cada emulador antes de lanzar.
-   Ajustes permite emparejar controles Bluetooth, y el instalador agrega xpadneo y xone para Xbox.
+   mismas acciones. La fase 4 estuvo en pausa hasta que el usuario pidió hacerla el 2026-10-20; como
+   no hay controles físicos, se probó con mandos virtuales en la MP80. Todo se sigue pudiendo usar con
+   teclado y sin ratón.
+4. **Controles.** El mando se lee en el núcleo (dispositivos de entrada de Linux) y no en la interfaz,
+   para cubrir tableros que se presentan como teclado, pasar del tope de 4 controles de Chromium y
+   seguir escuchando con el emulador abierto. Una pantalla «Configurar control» mapea la primera vez
+   cada control desconocido; el mapeo se guarda por control en la carpeta de datos y Neo Arcade lo
+   escribe en la configuración de cada emulador antes de lanzar. Ajustes permite emparejar controles
+   Bluetooth, y el instalador agrega xpadneo y xone para Xbox. **Hecho en la fase 4**: lectura,
+   «Configurar control», «Probar control» y los perfiles de RetroArch. **Falta**: emparejar por
+   Bluetooth desde Ajustes (la MP80 no tiene BlueZ instalado), xpadneo y xone (van en el instalador de
+   la fase 8) y escribir el mapeo en Dolphin y PPSSPP (hoy usan su propia detección de mandos).
 5. **Sistema dedicado con teclado.** En la versión final ninguna combinación de teclas saca de Neo
    Arcade: cerrar la ventana, recargar, abrir herramientas de desarrollo o cambiar de consola. Esc
    cierra la app solo en desarrollo. Los tres emuladores salen con la misma tecla, que Neo Arcade
@@ -353,6 +427,21 @@ guarda dentro del proyecto.
    aviso de biblioteca vacía («Todavía no hay juegos», `04-biblioteca-vacia.png`); y la variante de
    error de la pantalla de lanzamiento (`docs/pruebas-fase3/03-falta-nucleo.png`). El aviso de un
    sistema vacío es el del prototipo, a 20 px tal cual.
+7. **Pantallas nuevas de las fases 4, 5 y 6, pendientes de aprobación.** Todas siguen el estilo de los
+   diálogos del prototipo:
+   - Fase 4: «Probar control» y «Configurar control» (`docs/pruebas-fase4/08-…`, `13-…`, `15-…`) y la
+     fila de Control en Configuración. Con el mando, el pie muestra la leyenda del prototipo (A, B,
+     MENÚ).
+   - Fase 5: la carátula en la ficha ocupa el lugar del ícono del mando (72×72); la vista previa
+     muestra captura y vídeo completos dentro del recuadro actual, con franjas negras. El ajuste 7
+     permitía rediseñar ese recuadro para un vídeo más grande; no se hizo, queda como opción.
+   - Fase 6: Favoritos, Recientes y la búsqueda como entradas al final de la barra (al final para no
+     mover los sistemas; LB desde ALL GAMES llega a ellos); «Buscar» con teclado en pantalla;
+     Configuración en filas con brillo neón (dos niveles: alto y sin brillos), animaciones, volumen,
+     cuatro colores de la paleta del prototipo (azul, magenta, violeta, naranja), combinación para
+     salir y RESTABLECER con confirmación; «Última partida» en Detalles (`docs/pruebas-fase6/`).
+   - El perfil Peques (ajuste 9) no se hizo: sigue como propuesta sin confirmar. El perfil se guarda,
+     siempre «normal».
 
 ## Reglas del proyecto
 
@@ -383,7 +472,9 @@ arriba incorporados.
 ### Juegos y emuladores
 - Las carpetas `roms/` y `media/` son del usuario: nunca las modifiques, borres ni descargues contenido
   en ellas. Quedan fuera de git.
-- No descargues ni sugieras descargar ROMs. Si falta un juego para probar, pídelo.
+- No descargues ni sugieras descargar ROMs. Si falta un juego para probar, pídelo. Para probar sin
+  juegos del usuario se usan programas y medios escritos aquí (`scripts/juego-de-prueba-snes.mjs`,
+  `scripts/medios-de-prueba.mjs`), en carpetas aparte, nunca en `roms/` ni `media/`.
 - Las rutas de los emuladores se le preguntan al usuario; no se inventan.
 - RetroArch se lanza con `retroarch -f -L <ruta del núcleo> "<ruta del juego>"`. Dolphin y PPSSPP,
   con sus propios comandos de `config/systems.json`.
