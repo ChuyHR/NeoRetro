@@ -214,7 +214,14 @@ function volverAlFrente() {
   if (!ventana.isVisible()) ventana.show();
   ventana.focus();
   ventana.setAlwaysOnTop(true);
-  setTimeout(() => ventana?.setAlwaysOnTop(false), 300);
+  // En Wayland (la consola instalada, con Cage) la ventana vuelve mostrando el último cuadro que dibujó
+  // antes de ocultarse, «Abriendo…», hasta que algo la obliga a dibujar otro: se le pide uno nuevo.
+  ventana.webContents.invalidate();
+  setTimeout(() => {
+    if (!ventana || ventana.isDestroyed()) return;
+    ventana.setAlwaysOnTop(false);
+    ventana.webContents.invalidate();
+  }, 300);
 }
 
 async function capturar(ruta) {
