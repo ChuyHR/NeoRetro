@@ -97,6 +97,29 @@ en `docs/pruebas-finales/README.md`; guía de instalación en `docs/guia-instala
 - Las capturas de un reinicio por menú se guardaron en la raíz de la copia de desarrollo; se movieron a
   `docs/` y se borraron de ahí.
 
+## Al final: partidas con el mando en la consola
+
+Con la consola ya instalada, el usuario pidió ver que funcionara «desde la consola». Con el mando
+virtual de Xbox, en la TV de la MP80:
+
+- **KOF '98**: buscado con el teclado en pantalla («SLUGFEST», 1 coincidencia), abierto, moneda,
+  Start, equipo Kyo, Benimaru y Daimon, y dos rounds. Salir con Select + Start: 0.24 s de vuelta al
+  menú, en el mismo juego.
+- **1942** de Game Boy Color, elegido en ALL GAMES sin borrar la búsqueda: abre en su menú en español.
+- **Metal Slug 3** en NEO GEO, alcanzado con 11 saltos de letra (RT) y 6 pasos: abre hasta la selección
+  de soldado. Se agregó a Favoritos con X y el filtro FAVORITOS lo muestra; quedó guardado en
+  `~/NeoRetro/config/datos-usuario.json`.
+- Antes de que el usuario lo detuviera, un barrido rápido abrió sin problema 8 KOF de arcade ('94 a
+  '99, '98 UMH y 2000).
+
+**Hallazgo por confirmar con mandos reales**: en los juegos de Neo Geo, las pulsaciones del mando
+virtual de 150 a 300 ms a veces no entraban (moneda, Start, golpes); las de 500 ms o más, siempre.
+Puede ser propio del mando virtual. Una pulsación humana suele durar más, pero hay que confirmarlo con
+los tableros del usuario. Si le pasa, revisar en RetroArch `input_poll_type_behavior` y la latencia
+del núcleo FBNeo.
+
+El usuario pidió apagar todo y dará su retroalimentación mañana, cuando juegue de verdad.
+
 ## Lo que espera al usuario
 
 1. **Probar con sus tableros arcade** mañana. La primera vez que use cada uno, Neo Arcade abre
