@@ -140,7 +140,11 @@ UtmpMode=user
 Environment=XDG_SESSION_TYPE=wayland
 Environment=NEO_ARCADE_CONFIG=$NEORETRO/config
 # Sin -s: Cage no deja cambiar de consola con Ctrl + Alt + F1…F12 (ajuste 5).
-ExecStart=/usr/bin/cage -- /opt/neo-arcade/neo-arcade --ozone-platform-hint=auto
+# setpriv suelta CAP_WAKE_ALARM, que systemd (desde la 254) da a las sesiones de usuario: con ella,
+# la caja de Flatpak (bwrap) se niega a arrancar y ningún emulador abre («Unexpected capabilities but
+# not setuid»). Se vio en la máquina virtual de la fase 8. La opción de pam_systemd para no darla no
+# acepta un conjunto vacío.
+ExecStart=/usr/bin/setpriv --inh-caps=-all --ambient-caps=-all -- /usr/bin/cage -- /opt/neo-arcade/neo-arcade --ozone-platform-hint=auto
 Restart=always
 RestartSec=1
 
