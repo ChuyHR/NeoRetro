@@ -66,15 +66,19 @@ export function crearCarrusel(lienzo, { despachar }) {
     } else {
       reemplazo();
     }
-    const carta = { boton, titulo, banda, caja: null, central: false };
+    const carta = { boton, titulo, banda, caja: null, central: false, desplazamiento: null };
     boton.addEventListener('click', () =>
       despachar(carta.central ? { tipo: 'ejecutar', valor: 'jugar' } : { tipo: 'seleccionar', valor: juego.id }));
     refs.seccion.insertBefore(boton, refs.marca);
     return carta;
   }
 
+  // Solo se escriben los estilos si la portada cambió de lugar: repintar por otra razón (el reloj, un
+  // cambio en el menú) no debe tocar las diez portadas.
   function colocar(carta, ranura) {
     const { juego, central } = ranura;
+    if (carta.desplazamiento === ranura.desplazamiento) return;
+    carta.desplazamiento = ranura.desplazamiento;
     const largo = juego.titulo.length > 18;
     Object.assign(carta.boton.style, {
       left: `${ranura.left}px`,

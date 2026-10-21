@@ -34,8 +34,18 @@ const CAPTURA = DESARROLLO
   ? process.argv.find((arg) => arg.startsWith('--captura='))?.slice('--captura='.length)
   : undefined;
 
-// Solo en desarrollo: NEO_ARCADE_DEPURAR=1 escribe en la terminal cada acción que llega del mando.
+// Solo en desarrollo: NEO_ARCADE_DEPURAR=1 escribe en la terminal cada acción que llega del mando, y
+// NEO_ARCADE_MEDIR=1, la fluidez de la página cada 10 s y la memoria de cada proceso cada minuto.
 const DEPURAR = DESARROLLO && Boolean(process.env.NEO_ARCADE_DEPURAR);
+const MEDIR = DESARROLLO && process.env.NEO_ARCADE_MEDIR === '1';
+
+function medirMemoria() {
+  const porTipo = {};
+  for (const { type, memory } of app.getAppMetrics()) porTipo[type] = (porTipo[type] ?? 0) + memory.workingSetSize;
+  const total = Object.values(porTipo).reduce((suma, kb) => suma + kb, 0);
+  const detalle = Object.entries(porTipo).map(([tipo, kb]) => `${tipo} ${Math.round(kb / 1024)} MB`).join(', ');
+  console.log(`[medir] memoria total ${Math.round(total / 1024)} MB (${detalle})`);
+}
 
 // Tiempo mínimo de «Abriendo…» en pantalla antes de ocultar la ventana, para que alcance a leerse.
 const PANTALLA_LANZAMIENTO_MS = 1200;
@@ -150,7 +160,7 @@ function volverAlFrente() {
 
 async function capturar(ruta) {
   await ventana.webContents.executeJavaScript('document.fonts.ready.then(() => true)');
-  await esperar(1000);
+  await esperar(2600); // la animación de arranque dura 2 s
   const imagen = await ventana.webContents.capturePage();
   await writeFile(ruta, imagen.toPNG());
   const { width, height } = imagen.getSize();
@@ -165,7 +175,13 @@ function crearVentana() {
     frame: false,
     show: false,
     backgroundColor: '#050914',
-    webPreferences: { devTools: DESARROLLO, preload: path.join(RAIZ, 'core', 'preload.cjs') },
+    webPreferences: {
+      devTools: DESARROLLO,
+      preload: path.join(RAIZ, 'core', 'preload.cjs'),
+      // Los sonidos de navegación tienen que oírse también con el mando, que para el navegador no es
+      // una pulsación del usuario.
+      autoplayPolicy: 'no-user-gesture-required',
+    },
   });
 
   ventana.webContents.on('before-input-event', (_evento, entrada) => {
@@ -195,6 +211,7 @@ console.log(`Neo Arcade ${app.getVersion()} en ${DESARROLLO ? 'modo desarrollo' 
 app.whenReady().then(() => {
   protocol.handle('medio', crearServidorDeMedios(configuracion));
   crearVentana();
+  if (MEDIR) setInterval(medirMemoria, 60000);
   // Con un emulador abierto el mando es del juego: Neo Arcade no reacciona hasta que se cierre.
   mandos = iniciarMandos({
     mapa: configuracion.mapaMando,

@@ -10,6 +10,7 @@ contextBridge.exposeInMainWorld('neoArcade', {
   jugar: (id, opciones) => ipcRenderer.invoke('jugar', id, opciones),
   datosUsuario: () => ipcRenderer.invoke('datos-usuario'),
   guardarDatosUsuario: (datos) => ipcRenderer.invoke('guardar-datos-usuario', datos),
+  medir: process.env.NEO_ARCADE_MEDIR === '1', // solo para medir fluidez (core/main.js)
   mandos: () => ipcRenderer.invoke('mandos'),
   guardarMapeo: (clave, perfil) => ipcRenderer.invoke('guardar-mapeo', clave, perfil),
   escuchar(canal, alRecibir) {

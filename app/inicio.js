@@ -9,7 +9,9 @@ import { aplicar, estadoInicial, juegosDeLaVista, MENU, sistemasDeLaBarra } from
 import { ajustarLienzo } from './lienzo.js';
 import { esMovimiento, mapeoTerminado, PASOS_MAPEO } from './mapeo.js';
 import { vistaDe } from './modelo.js';
+import { crearSonidos, sonidoDelCambio } from './sonidos.js';
 import { crearAcciones } from './piezas/acciones.js';
+import { crearArranque } from './piezas/arranque.js';
 import { crearBarraSistemas } from './piezas/barra-sistemas.js';
 import { crearBuscar } from './piezas/buscar.js';
 import { crearCabecera } from './piezas/cabecera.js';
@@ -55,6 +57,22 @@ const piezas = [
   crearConfigurarControl(lienzo, contexto),
   crearLanzamiento(lienzo, contexto),
 ];
+const sonidos = crearSonidos();
+
+// La animación de arranque se ve una vez por sesión (no al recargar la página, como hacen las pruebas)
+// y solo con el núcleo: en la demostración del prototipo estorbaría a las comparaciones. Mientras se
+// ve, teclado y mando no hacen nada.
+function primeraVezEnLaSesion() {
+  try {
+    if (sessionStorage.getItem('neoArcadeArranque')) return false;
+    sessionStorage.setItem('neoArcadeArranque', '1');
+  } catch {
+    // sin almacenamiento de sesión, se muestra siempre
+  }
+  return true;
+}
+const arranque = puente && primeraVezEnLaSesion() ? crearArranque(lienzo) : null;
+let arrancando = Boolean(arranque);
 
 // Los ajustes que no son de una sola pieza se aplican al lienzo entero: color del tema, brillo del neón
 // y animaciones (app/estilos.css).
@@ -76,6 +94,7 @@ function despachar(accion) {
   if (siguiente === estado) return;
   estado = siguiente;
   pintar();
+  if (puente) sonidos.tocar(sonidoDelCambio(anterior, estado), estado.ajustes.volumen);
   if (puente && estado.ventana === 'lanzamiento' && anterior.ventana !== 'lanzamiento') jugar();
   efectosDelMapeo(anterior);
   guardarSiCambio();
@@ -175,22 +194,61 @@ async function arrancar() {
     estado = estadoInicial({ seleccion: 'sf2', favoritos: ['sf2'] });
   }
   pintar();
+  programarReloj();
+  if (puente?.medir) medirFluidez();
+  if (arranque) {
+    const principal = ['nav[aria-label="Sistemas"]', 'section[aria-label="Juegos"]', 'section[aria-label="Juego seleccionado"]']
+      .map((selector) => lienzo.querySelector(selector)).filter(Boolean);
+    await arranque.terminar({ listo: Promise.resolve(), animado: estado.ajustes.animaciones, principal });
+  }
+  arrancando = false;
+}
+
+// El reloj y la fecha de la cabecera cambian al empezar cada minuto.
+function programarReloj() {
+  const ahora = new Date();
+  const falta = (60 - ahora.getSeconds()) * 1000 - ahora.getMilliseconds() + 50;
+  setTimeout(() => {
+    if (!enJuego) pintar();
+    programarReloj();
+  }, falta);
+}
+
+// Solo para medir (NEO_ARCADE_MEDIR=1): cada 10 s escribe en la consola, que en desarrollo sale en la
+// terminal, cuánto tardaron los cuadros y cuánta memoria usa la página.
+function medirFluidez() {
+  let cuadros = [];
+  let previo = performance.now();
+  const paso = (ahora) => {
+    cuadros.push(ahora - previo);
+    previo = ahora;
+    requestAnimationFrame(paso);
+  };
+  requestAnimationFrame(paso);
+  setInterval(() => {
+    const ordenados = [...cuadros].sort((a, b) => a - b);
+    const total = cuadros.reduce((suma, ms) => suma + ms, 0);
+    const p = (fraccion) => ordenados[Math.min(ordenados.length - 1, Math.floor(ordenados.length * fraccion))]?.toFixed(1);
+    const memoria = performance.memory ? Math.round(performance.memory.usedJSHeapSize / 1048576) : '?';
+    console.log(`[medir] ${(1000 * cuadros.length / total).toFixed(1)} cuadros/s, mediana ${p(0.5)} ms, 95 % < ${p(0.95)} ms, ${cuadros.filter((ms) => ms > 25).length} de más de 25 ms, memoria de la página ${memoria} MB`);
+    cuadros = [];
+  }, 10000);
 }
 
 function escucharMandos() {
   puente.escuchar('mandos', (lista) => despachar({ tipo: 'mandos', valor: lista }));
   puente.escuchar('mando-accion', (accion) => {
-    if (enJuego || SIN_ACCIONES_DE_MANDO.has(estado.ventana)) return;
+    if (enJuego || arrancando || SIN_ACCIONES_DE_MANDO.has(estado.ventana)) return;
     despachar({ tipo: 'entrada', valor: 'mando' });
     despachar(accion);
   });
   puente.escuchar('mando-control', (cambio) => {
-    if (enJuego) return;
+    if (enJuego || arrancando) return;
     despachar({ tipo: 'control', valor: cambio });
     vigilarSalidaDePrueba(cambio);
   });
   puente.escuchar('mando-crudo', (crudo) => {
-    if (enJuego) return;
+    if (enJuego || arrancando) return;
     if (esMovimiento(crudo)) despachar({ tipo: 'entrada', valor: 'mando' });
     despachar({ tipo: 'crudo', valor: crudo });
   });
@@ -198,7 +256,7 @@ function escucharMandos() {
 }
 
 escucharTeclado(window, (accion) => {
-  if (enJuego) return;
+  if (enJuego || arrancando) return;
   despachar({ tipo: 'entrada', valor: 'teclado' });
   despachar(accion);
 });
