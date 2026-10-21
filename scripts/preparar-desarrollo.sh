@@ -63,6 +63,7 @@ if $con_emuladores; then
   flatpak list --app --columns=application,version
   echo "== Núcleos de RetroArch"
   bash "$(dirname "$0")/instalar-nucleos.sh"
+  bash "$(dirname "$0")/configurar-retroarch.sh"
 else
   echo "== Emuladores: omitidos (--sin-emuladores)"
 fi

@@ -5,7 +5,8 @@ import { BrowserWindow, nativeImage } from 'electron';
 const esperar = (ms) => new Promise((listo) => setTimeout(listo, ms));
 
 // El sistema de ventanas recorta cualquier ventana al tamaño de la pantalla, así que el tamaño se
-// emula con el protocolo de depuración de Chromium.
+// emula con el protocolo de depuración de Chromium. La página cree medir 1920×1080 y la ventana la
+// muestra reducida a su tamaño (scale); sin eso, en una pantalla chica solo se ve una esquina.
 export async function abrir(cargar) {
   const ventana = new BrowserWindow({ width: 1280, height: 720, frame: false, backgroundColor: '#050914' });
   await cargar(ventana);
@@ -16,7 +17,9 @@ export async function abrir(cargar) {
 export async function controlar(ventana) {
   const depurador = ventana.webContents.debugger;
   depurador.attach('1.3');
-  await depurador.sendCommand('Emulation.setDeviceMetricsOverride', { width: 1920, height: 1080, deviceScaleFactor: 1, mobile: false });
+  const [ancho, alto] = ventana.getContentSize();
+  const scale = Math.min(1, ancho / 1920, alto / 1080);
+  await depurador.sendCommand('Emulation.setDeviceMetricsOverride', { width: 1920, height: 1080, deviceScaleFactor: 1, mobile: false, scale });
   await ventana.webContents.executeJavaScript('document.fonts.ready.then(() => true)');
   await esperar(2500); // el prototipo pide sus tipografías a Google Fonts después de cargar
   return {

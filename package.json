@@ -11,6 +11,7 @@
     "comparar": "bash scripts/electron.sh scripts/comparar-con-prototipo.mjs",
     "recorrido": "bash scripts/electron.sh scripts/recorrido.mjs",
     "simulacion": "bash scripts/electron.sh scripts/simulacion.mjs",
+    "medir-fps": "bash scripts/electron.sh scripts/medir-fps.mjs",
     "empaquetar": "bash scripts/empaquetar.sh"
   },
   "engines": {

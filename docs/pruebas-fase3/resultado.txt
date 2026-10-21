@@ -1,10 +1,10 @@
 Barra al abrir: 12 botones visibles; elegido «ALEX KIDD IN MIRACLE WORLD»
 PLAYSTATION: elegido «METAL GEAR SOLID (DISC 1)» (subcarpeta y número de disco)
-Ventana oculta 1209 ms después de Enter (incluye 1200 ms de «Abriendo…»)
-De vuelta 6 ms después de cerrarse el emulador; foco: sí, a los 10 ms; isFocused=true
+Ventana oculta 1207 ms después de Enter (incluye 1200 ms de «Abriendo…»)
+De vuelta 5 ms después de cerrarse el emulador; foco: sí, a los 13 ms; isFocused=true
 Al volver: elegido «SUPER MARIO WORLD»
 Una flecha a la derecha después de volver: «THE LEGEND OF ZELDA - A LINK TO THE PAST»
-Port: de vuelta a los 2733 ms (espera de 1200 ms + 1500 ms de juego)
+Port: de vuelta a los 2730 ms (espera de 1200 ms + 1500 ms de juego)
 NINTENDO 64: «Falta el núcleo Mupen64Plus-Next de RetroArch.»
 GAMECUBE: «Dolphin no está instalado en este equipo.»
 GBA: «No encuentro el archivo del juego. Quizá se movió o se borró de su carpeta.»
@@ -14,11 +14,11 @@ Argumentos que recibió el emulador falso:
 -f -L <temporal>/nucleos/snes9x_libretro.so <temporal>/roms/snes/Super Mario World (USA).sfc
 
 Registro de la app:
-2026-10-20T23:53:41.839Z	biblioteca	34 ms	21 sistemas leídos del disco	arcade=1 neogeo=1 cps=1 nes=1 snes=2 n64=1 gb=1 gbc=1 gba=1 gamecube=1 mastersystem=1 megadrive=1 segacd=1 sega32x=1 gamegear=1 dreamcast=1 psx=1 psp=1 pcengine=1 atari2600=1 ports=1
-2026-10-20T23:53:55.492Z	lanzamiento	<temporal>/emulador-falso.sh -f -L <temporal>/nucleos/snes9x_libretro.so '<temporal>/roms/snes/Super Mario World (USA).sfc'	salida 0	1560 ms
-2026-10-20T23:54:04.145Z	lanzamiento	bash '<temporal>/roms/ports/Juego propio.sh'	salida 0	1516 ms
-2026-10-20T23:54:06.530Z	error	<temporal>/emulador-falso.sh -f -L <temporal>/nucleos/mupen64plus_next_libretro.so '<temporal>/roms/n64/Super Mario 64 (USA).z64'	Falta el núcleo Mupen64Plus-Next de RetroArch.	
-2026-10-20T23:54:08.940Z	error	<temporal>/no-instalado/dolphin-emu -b -C Dolphin.Display.Fullscreen=True -e '<temporal>/roms/gamecube/Super Smash Bros Melee (USA).rvz'	Dolphin no está instalado en este equipo.	
-2026-10-20T23:54:15.641Z	error	<temporal>/emulador-falso.sh -f -L <temporal>/nucleos/mgba_libretro.so '<temporal>/roms/gba/Metroid Fusion (USA).gba'	No encuentro el archivo del juego. Quizá se movió o se borró de su carpeta.	
-2026-10-20T23:54:17.098Z	biblioteca	9 ms	21 sistemas leídos del disco	sin juegos
+2026-10-21T00:17:15.798Z	biblioteca	1478 ms	21 sistemas leídos del disco	arcade=1 neogeo=1 cps=1 nes=1 snes=2 n64=1 gb=1 gbc=1 gba=1 gamecube=1 mastersystem=1 megadrive=1 segacd=1 sega32x=1 gamegear=1 dreamcast=1 psx=1 psp=1 pcengine=1 atari2600=1 ports=1
+2026-10-21T00:17:29.959Z	lanzamiento	<temporal>/emulador-falso.sh -f -L <temporal>/nucleos/snes9x_libretro.so '<temporal>/roms/snes/Super Mario World (USA).sfc'	salida 0	1531 ms
+2026-10-21T00:17:38.732Z	lanzamiento	bash '<temporal>/roms/ports/Juego propio.sh'	salida 0	1516 ms
+2026-10-21T00:17:41.109Z	error	<temporal>/emulador-falso.sh -f -L <temporal>/nucleos/mupen64plus_next_libretro.so '<temporal>/roms/n64/Super Mario 64 (USA).z64'	Falta el núcleo Mupen64Plus-Next de RetroArch.	
+2026-10-21T00:17:43.502Z	error	<temporal>/no-instalado/dolphin-emu -b -C Dolphin.Display.Fullscreen=True -e '<temporal>/roms/gamecube/Super Smash Bros Melee (USA).rvz'	Dolphin no está instalado en este equipo.	
+2026-10-21T00:17:50.206Z	error	<temporal>/emulador-falso.sh -f -L <temporal>/nucleos/mgba_libretro.so '<temporal>/roms/gba/Metroid Fusion (USA).gba'	No encuentro el archivo del juego. Quizá se movió o se borró de su carpeta.	
+2026-10-21T00:17:51.704Z	biblioteca	13 ms	21 sistemas leídos del disco	sin juegos
 

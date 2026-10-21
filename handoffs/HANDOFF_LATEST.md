@@ -1,77 +1,96 @@
-# Handoff del 2026-10-20 (fase 1)
+# Handoff del 2026-10-20 (fases 2 y 3)
 
-Antes de este, el mismo día: `history/HANDOFF_2026-10-20.md` (análisis de viabilidad, ajustes al plan,
-fase 0 e incidentes con los discos) y `history/HANDOFF_2026-10-20_b.md` (instalación de Debian en la
-MP80 y su arranque).
+Antes de este, el mismo día: `history/HANDOFF_2026-10-20.md` (viabilidad, ajustes al plan, fase 0),
+`history/HANDOFF_2026-10-20_b.md` (Debian en la MP80) y `history/HANDOFF_2026-10-20_c.md` (fase 1).
 
 ## Resumen
 
-La fase 1 está terminada y verificada; **espera la revisión del usuario**. La pantalla del prototipo
-está reproducida por piezas y coincide píxel por píxel con él, salvo en los dos cambios aprobados que
-se notan con los datos de ejemplo. Se recorre entera con el teclado.
+Las fases 2 y 3 están construidas y verificadas con una biblioteca de archivos vacíos y un emulador
+falso, en la laptop y en la MP80. **Falta la prueba de aceptación con juegos reales**: el usuario tiene
+que copiar un juego de arcade, uno de SNES y uno de PlayStation en `~/NeoRetro/roms/<sistema>/` de la
+MP80. No se descargó ni se sugirió descargar ningún juego. Por instrucción del usuario («continúa
+hasta la fase 3») el trabajo se detiene aquí.
 
-## Decisiones del usuario y cómo se interpretaron
+## Decisiones del usuario
 
-- «Sí, ya comienza con la fase 1» se tomó como aprobación de la fase 0. No llegó a ver la ventana de
-  NEO ARCADE con sus ojos; pidió avanzar.
+- «Continúa hasta la fase 3»: hacer las fases 2 y 3 y detenerse.
+- Permiso permanente para llevar el proyecto a la MP80, instalar ahí lo necesario y abrir la app o
+  los emuladores en su TV sin preguntar. Reiniciarla o apagarla sí se avisa antes.
+- «Configura la MP80 para que no se suspenda»: hecho con `scripts/instalador/sin-suspension.sh`.
+  Además de la suspensión, quita el apagado de pantalla y el bloqueo de sesión; si el usuario quiere
+  que la pantalla sí se apague, se quita esa parte.
+- El usuario vio cortada en su laptop la ventana de la simulación. Era la herramienta de prueba, que
+  emula 1920×1080; la app normal se adapta (`docs/pruebas-fase2/pantalla-1366x768.png`). La
+  herramienta ahora muestra la página reducida a la ventana.
 
 ## Lo que se hizo
 
-- **Tipografías locales** en `app/fuentes/`: subconjunto latino en woff2 de Google Fonts, con sus
-  licencias OFL (89 KB en total). Pixelify Sans es variable, un solo archivo para 500, 600 y 700.
-- **Piezas** en `app/piezas/` (cabecera, barra de sistemas, carrusel, ficha, acciones, vista previa,
-  pie, detalles, configuración, lanzamiento y decoración), con el marcado y los estilos en línea del
-  prototipo copiados tal cual.
-- **Lógica pura**: `estado.js` (acciones → estado), `modelo.js` (estado → lo que dibuja cada pieza) y
-  `entrada-teclado.js` (teclas → acciones). Datos de ejemplo en `datos-ejemplo.js`, ya con los ids de
-  carpeta del plan.
-- **Cambios aprobados aplicados**: descripción y ficha de detalles a 24 px (la descripción se corta
-  en tres líneas para no invadir el pie), pie con las teclas del teclado, foco único, barra de 12
-  sistemas que se desplaza si hay más, y carrusel animado con `transform` (FLIP).
-- **Herramientas de verificación**: `npm run comparar` (app contra prototipo a 1920×1080, por zonas) y
-  `npm run recorrido` (captura cada pantalla recorrida con el teclado). `scripts/electron.sh` reúne los
-  ajustes de WSL que antes vivían en `dev.sh`.
-- 21 pruebas con `node --test`.
+- **Configuración**: `config/systems.json` (21 sistemas con las carpetas del plan, extensiones,
+  emulador, núcleo y plantilla de comando), `config/emulators.json` (Flathub) y
+  `config/biblioteca.json`. `core/configuracion.js` los lee; `NEO_ARCADE_CONFIG`, `NEO_ARCADE_ROMS` y
+  `NEO_ARCADE_DATOS` apartan las pruebas de lo real.
+- **Fase 2**: `core/escaner/escaner.js` (recorrido de tres niveles, limpieza de nombres que conserva
+  el disco, caché por fecha de carpeta) y `core/biblioteca.js` (datos para la interfaz, sin sistemas
+  vacíos, bloqueo de rutas fuera de su carpeta). La interfaz pide la biblioteca por
+  `core/preload.cjs`. Diez íconos nuevos en `app/iconos.js`. Aviso nuevo de biblioteca vacía.
+- **Fase 3**: `core/lanzador/lanzador.js` (comando sin shell, comprobación de juego, programa, app de
+  Flathub y núcleo, mensajes para el usuario), ciclo en `core/main.js` (1.2 s de «Abriendo…»,
+  ocultar, esperar, volver con foco) y `core/registro.js`. La pantalla de lanzamiento tiene una
+  variante de error con «VOLVER AL INICIO».
+- **Herramientas**: `npm run simulacion` (app real con biblioteca y emulador falsos),
+  `npm run medir-fps`, `scripts/instalar-nucleos.sh` (CRC del servidor de libretro, que es del núcleo
+  descomprimido) y `scripts/configurar-retroarch.sh`. `preparar-desarrollo.sh` llama a los dos
+  scripts después de instalar los emuladores.
+- 39 pruebas: escáner (incluida la de 500 archivos), biblioteca, lanzador (con un emulador que sale
+  con código 3), configuración real y estado.
 
 ## Cómo se verificó
 
-- `npm run comparar`: 0.0 % de píxeles distintos en cabecera, reloj, barra, carrusel, reflejos, menú,
-  vista previa, INSERT COIN y lema del pie. 9.2 % en la ficha (texto a 24 px) y 9.6 % en el pie
-  (teclas), que son los cambios aprobados. Capturas y mapa en `docs/pruebas-fase1/`.
-- `npm run recorrido`: nueve pantallas en `docs/pruebas-fase1/recorrido/`, revisadas a ojo (carrusel
-  movido, sistema ARCADE, detalles con foco en cada botón, configuración con CRT apagado, lanzamiento
-  y vuelta sin CRT).
-- `npm test`: 21 pruebas en verde.
+- `npm test`: 39 en verde, en la laptop y en la MP80.
+- `npm run simulacion` en la laptop y en la TV de la MP80 (Xfce): ventana oculta 1.2 s después de
+  Enter; de vuelta 6 a 8 ms después de cerrarse el emulador y con foco a los 10 a 28 ms; flechas
+  funcionando al volver; el port corre como programa propio; avisos de núcleo, emulador y juego
+  faltante en pantalla y en el registro. Resultado en `docs/pruebas-fase3/resultado.txt`.
+- En la MP80, con la configuración real y un archivo vacío como juego, los 21 sistemas pasan la
+  comprobación previa (Flathub instalado, 11 núcleos presentes).
+- `npm run comparar`: sin cambios respecto a la fase 1.
+- Fluidez en la MP80 (`docs/pruebas-fase1/fps-mp80.txt`): a 75 Hz, unos 66 cuadros por segundo con
+  cuadros perdidos; a 60 Hz, 59 cuadros por segundo con 7 u 8 perdidos en 8.6 s.
 
-## Decisiones de diseño tomadas sin preguntar (para que el usuario las revise)
+## Errores propios de esta sesión
 
-- **Foco en las ventanas.** El prototipo no lo definía. Se usó el brillo azul del menú de acciones
-  (`0 0 22px #1E90FFAA`). En Detalles, el botón con foco toma además el aspecto principal (borde azul,
-  fondo `#0B2350`); en Configuración, el borde azul sigue marcando la opción elegida y el brillo, el
-  foco.
-- **Teclas**: flechas, Enter, Retroceso para volver y Re Pág y Av Pág para cambiar de sistema. Esc no
-  se usa porque en desarrollo cierra la app.
-- **Pie**: la cruceta se conserva para NAVEGAR; las teclas van en recuadros redondeados del mismo
-  estilo que los círculos A y B del prototipo.
+- Ajusté por mi cuenta la letra de las portadas para no partir palabras y el ancho del título de
+  lanzamiento, aunque la diferencia 5 de `CLAUDE.md` dice que eso lo decide el usuario. Lo revertí y
+  quedó como propuesta con captura (`docs/pruebas-fase2/propuesta-titulos-sin-cortar.png`).
+- Un `timeout` sobre `flatpak run` dejó RetroArch abierto en la TV de la MP80 durante las primeras
+  mediciones de fluidez. Se cerró con `kill -INT` y se repitieron las mediciones.
 
-## Lo que falta, en orden
+## Lo que espera al usuario
 
-1. **Revisión del usuario de la fase 1.** Puede verla en su laptop con `npm start` desde WSL. Antes de
-   abrirla en la TV de la MP80, pedirle permiso: se pone a pantalla completa.
-2. **Medir el carrusel en la MP80**, que es la prueba real de fluidez (su GPU es de 16 EU). Hace falta
-   llevar el proyecto allá (clonar o copiar sin `node_modules` ni `credenciales/`) y correr
-   `scripts/preparar-desarrollo.sh --sin-emuladores`.
-3. Pendientes de la MP80: comprobar que Windows arranca desde GRUB y que después vuelve a aparecer el
-   menú; formatear la memoria USB (guarda la contraseña del Wi-Fi); opcional, apagar en la laptop el
-   uso compartido de la conexión.
-4. Fase 2: biblioteca real (`config/systems.json`, escáner, sistemas sin juegos fuera de la barra y
-   los 10 íconos que faltan).
+1. **Tres juegos suyos** (arcade, SNES y PlayStation) en `~/NeoRetro/roms/arcade/`, `snes/` y `psx/`
+   de la MP80, para la prueba de aceptación real. PlayStation necesita además la BIOS
+   (`scph5501.bin` u otra) en `~/.var/app/org.libretro.RetroArch/config/retroarch/system/`; también es
+   del usuario y no se descarga.
+2. **Revisión** de las fases 1, 2 y 3, de los 10 íconos nuevos, del aviso de biblioteca vacía y de la
+   pantalla de error (diferencia 6 de `CLAUDE.md`).
+3. **Decidir** la propuesta de títulos (diferencia 5) y si la fase 8 fija la salida a 60 Hz.
+4. Pendientes viejos de la MP80: probar Windows desde GRUB y que el menú vuelva a aparecer; formatear
+   la memoria USB (guarda la contraseña del Wi-Fi); opcional, apagar el uso compartido de conexión en
+   la laptop.
+
+## Lo que sigue cuando haya juegos
+
+- Abrir cada uno desde Neo Arcade en la TV, salir con Esc (una pulsación) o Select + Start y medir la
+  vuelta (meta: menos de 2 s). Revisar el registro `~/.config/neo-arcade/registros/neo-arcade.log`
+  (carpeta de datos de Electron; confirmar el nombre real allá).
+- Mostrar al usuario cuántos juegos encontró por sistema (lo pide el prompt de la fase 2).
+- Dolphin y PPSSPP no tienen todavía una tecla de salida configurada; con teclado, PPSSPP sale desde
+  su menú (Esc) y Dolphin cerrando su ventana. Se resuelve con el ajuste 5 (misma tecla en los tres).
 
 ## Observaciones
 
-- Los títulos de hasta 18 letras se cortan a media palabra en las portadas laterales angostas; es así
-  en el prototipo (ver diferencia 5 en `CLAUDE.md`).
-- Al dar la vuelta (del último juego al primero) todas las portadas saltan de golpe, igual que en el
-  prototipo.
-- Si se pulsan flechas muy rápido, cada animación nueva cancela la anterior y el paso puede verse
-  brusco. Es tema de la fase 7.
+- C: de la laptop tiene 12 GB libres; el aviso al usuario es por debajo de 10 GB.
+- El carrusel no da la vuelta visualmente: en el primer juego no hay portadas a la izquierda, aunque
+  la navegación sí da la vuelta. Así es el prototipo.
+- Con la biblioteca vacía siguen a la vista la barra sin botones y el menú de acciones; Enter no hace
+  nada.

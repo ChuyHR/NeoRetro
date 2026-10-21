@@ -17,14 +17,25 @@ sección «Ajustes al plan» de este archivo manda sobre el plan y sobre los pro
 
 ## Estado actual
 
-Verificado el 2026-10-20. La fase 0 quedó aprobada por el usuario. **La fase 1 está terminada y
-verificada; espera su revisión.** La pantalla del prototipo está reproducida por piezas, con 0.0 % de
-píxeles distintos en todas las zonas salvo las dos con cambios aprobados (ficha a 24 px y pie con
-teclas), y se recorre entera con el teclado (`docs/pruebas-fase1/`). `npm test` pasa (21 pruebas).
+Verificado el 2026-10-20. La fase 0 quedó aprobada por el usuario. Las fases 1, 2 y 3 están
+construidas y verificadas; **esperan su revisión, y a las 2 y 3 les falta la prueba con juegos reales**
+(el usuario tiene que copiar un juego de arcade, uno de SNES y uno de PlayStation en `roms/` de la
+MP80). Lo verificado:
+
+- Fase 1: la pantalla del prototipo está reproducida por piezas, con 0.0 % de píxeles distintos salvo
+  en las dos zonas con cambios aprobados, y se recorre entera con el teclado (`docs/pruebas-fase1/`).
+  En la TV de la MP80 el carrusel va a 59 cuadros por segundo a 60 Hz y a unos 66 a 75 Hz
+  (`docs/pruebas-fase1/fps-mp80.txt`).
+- Fases 2 y 3, con una biblioteca de archivos vacíos y un emulador falso (`npm run simulacion`, en la
+  laptop y en la MP80): la barra muestra solo los sistemas con juegos; la ventana se oculta al abrir
+  el juego y vuelve con el foco unos 10 ms después de que el emulador se cierra; los avisos de núcleo,
+  emulador o juego faltante salen en pantalla y en el registro (`docs/pruebas-fase2/`,
+  `docs/pruebas-fase3/`). Con la configuración real, los 21 sistemas pasan la comprobación en la MP80.
+- `npm test` pasa (39 pruebas) en la laptop y en la MP80.
+
 La tecnología es la de [docs/decision-tecnica.md](docs/decision-tecnica.md): Electron 44, emuladores
-desde Flathub y Debian 13 con Cage. La MP80 ya tiene Debian en arranque dual y responde por SSH. El
-contexto de la última sesión está en [handoffs/HANDOFF_LATEST.md](handoffs/HANDOFF_LATEST.md); léelo
-al empezar.
+desde Flathub y Debian 13 con Cage. El contexto de la última sesión está en
+[handoffs/HANDOFF_LATEST.md](handoffs/HANDOFF_LATEST.md); léelo al empezar.
 
 **Dónde vive cada cosa.** El repositorio está en `C:\Users\ADMIN\Documents\UtilsDev\ArcadeRetro`, con
 respaldo en GitHub: `https://github.com/ChuyHR/NeoRetro.git` (privado, rama `main`). Las carpetas
@@ -66,6 +77,25 @@ dio permiso para instalar ahí lo necesario, llevar el proyecto y abrir la app o
 TV sin preguntar. **Reiniciarla o apagarla sí se le avisa antes.** La fase 8 la reinstala como sistema dedicado. Su GPU es el
 recurso más justo, tanto para los efectos de la interfaz como para GameCube.
 
+Lo que ya tiene instalado (2026-10-20): el proyecto en `~/NeoRetro` (un `git push` por SSH actualiza
+también los archivos, porque el repositorio acepta `updateInstead`), Node 24.21.0, RetroArch 1.22.2,
+Dolphin 2609a y PPSSPP 1.20.4 de Flathub, los 11 núcleos de RetroArch que pide `systems.json` y
+RetroArch configurado para salir con Select + Start o con un solo Esc. No se suspende ni apaga la
+pantalla (`scripts/instalador/sin-suspension.sh`). La TV está en HDMI-1 a 1920×1080 y 75 Hz; también
+acepta 60 Hz. Los emuladores de Flathub leen la carpeta personal (RetroArch con escritura, Dolphin y
+PPSSPP solo lectura), así que llegan a `~/NeoRetro/roms` sin permisos extra. Para abrir algo en su TV
+por SSH:
+
+```bash
+export DISPLAY=:0 XAUTHORITY=$HOME/.Xauthority XDG_RUNTIME_DIR=/run/user/$(id -u)
+export DBUS_SESSION_BUS_ADDRESS=unix:path=$XDG_RUNTIME_DIR/bus
+```
+
+`timeout` sobre `flatpak run` detiene el envoltorio de Flatpak pero no al emulador, que sigue abierto
+en la TV. Para saber qué emulador corre, `flatpak ps`; para cerrarlo bien, `kill -INT` a su proceso
+(`pgrep -x retroarch`). No uses `pgrep -f` con la ruta de un emulador: también encuentra el comando de
+SSH que la menciona.
+
 ## Comandos
 
 Probados el 2026-10-20. Corren dentro de Debian, en la raíz del repositorio:
@@ -78,12 +108,24 @@ npm test                               # pruebas con el ejecutor de Node (carpet
 node --test pruebas/estado.test.js     # un solo archivo de pruebas
 npm run comparar                       # app contra prototipo a 1920×1080: % distinto por zona y mapa
 npm run recorrido                      # recorre la app con el teclado y captura cada pantalla
+npm run simulacion                     # la app real con biblioteca y emulador falsos (fases 2 y 3)
+npm run medir-fps                      # fluidez del carrusel en la pantalla real (solo en la MP80)
 npm run empaquetar                     # versión final en dist/neo-arcade/ (ejecutable neo-arcade)
+bash scripts/instalar-nucleos.sh       # núcleos de RetroArch de systems.json (--actualizar los renueva)
+bash scripts/configurar-retroarch.sh   # salir con Select + Start o con un solo Esc
 ```
 
 `comparar` y `recorrido` dejan sus capturas en `docs/pruebas-fase1/`. La comparación es la prueba de
 fidelidad de cualquier cambio visual: fuera de los cambios aprobados, cada zona debe quedar en 0.0 %.
-Necesita internet, porque el prototipo pide sus tipografías a Google Fonts.
+Necesita internet, porque el prototipo pide sus tipografías a Google Fonts. `simulacion` arma todo en
+una carpeta temporal (nunca toca `roms/` ni `config/`) y deja capturas en `docs/pruebas-fase2/` y
+`docs/pruebas-fase3/`, con los tiempos en `docs/pruebas-fase3/resultado.txt`. Correrla en la MP80
+cambia esas capturas en `~/NeoRetro`; restáuralas con `git checkout -- docs/` o el siguiente
+`git push` será rechazado.
+
+Para probar con otra configuración o con otra carpeta de juegos sin tocar las reales:
+`NEO_ARCADE_CONFIG` (carpeta con los tres JSON), `NEO_ARCADE_ROMS` (carpeta de juegos) y
+`NEO_ARCADE_DATOS` (caché y registros, en lugar de la carpeta de datos de Electron).
 
 Claude Code corre en Windows y todo lo de Linux se ejecuta en el Debian de WSL. Usa `--exec`: sin él,
 WSL vuelve a interpretar el comando con otro shell y las variables llegan vacías. Desde Git Bash
@@ -169,9 +211,31 @@ Electron con JavaScript sin framework ni paso de compilación: lo que está en `
   `lienzo.js` escala el lienzo de 1920×1080 a la ventana sin deformarlo.
 - `scripts/captura.mjs` abre una página a 1920×1080 aunque la pantalla sea más chica (emula el tamaño
   con el protocolo de depuración de Chromium) y compara capturas con `nativeImage`, sin dependencias.
-- `core/entrada/`, `core/lanzador/`, `core/escaner/` y `core/almacenamiento/` están vacías; cada una
-  se llena en su fase. La interfaz no toca Node: cuando necesite al núcleo, hablará con él por un
-  `preload` con `contextBridge`, con aislamiento de contexto y sin integración de Node en la página.
+  Con la emulación, la página no se adapta a la ventana: cree medir 1920×1080. Por eso la ventana la
+  muestra reducida con `scale`; sin él, en la pantalla de la laptop solo se veía la esquina superior
+  izquierda y parecía que la app no se adaptaba. La adaptación real se prueba con `npm start`
+  (`docs/pruebas-fase2/pantalla-1366x768.png`).
+- La interfaz no toca Node. Habla con el núcleo por `core/preload.cjs` (CommonJS, porque un preload
+  con aislamiento no puede ser ESM), que expone `window.neoArcade.biblioteca()` y `jugar(id)` con
+  `contextBridge`; `core/main.js` los atiende con `ipcMain.handle`. Sin el puente (en `comparar` y
+  `recorrido`) `app/inicio.js` usa los datos de ejemplo.
+- `core/configuracion.js` lee `config/systems.json` (21 sistemas: carpeta, extensiones, emulador,
+  núcleo y plantilla de comando), `config/emulators.json` (comando de cada emulador de Flathub y la
+  carpeta de núcleos) y `config/biblioteca.json` (carpetas de juegos y medios). `~` es la carpeta del
+  usuario y una ruta relativa parte de la raíz del repositorio.
+- `core/escaner/escaner.js` recorre `roms/<carpeta>/` hasta tres niveles, filtra por extensión,
+  limpia el nombre (quita paréntesis y corchetes salvo el número de disco, y los guiones bajos) y
+  guarda el resultado en `biblioteca.json` de la carpeta de datos. Un sistema se vuelve a leer solo si
+  cambió la fecha de alguna de sus carpetas. `core/biblioteca.js` lo convierte en lo que dibuja la
+  interfaz (el id de un juego es `<sistema>/<archivo>`) y bloquea cualquier id que salga de la
+  carpeta de su sistema.
+- `core/lanzador/lanzador.js` arma el comando reemplazando `{emulador}`, `{nucleo}` y `{juego}`, sin
+  shell (los espacios del nombre no importan). Antes de lanzar comprueba que existan el juego, el
+  programa, la app de Flathub y el núcleo; si algo falta, lanza `ErrorLanzamiento` con un mensaje
+  para el usuario. `main.js` deja ver «Abriendo…» 1.2 s, oculta la ventana, espera a que el emulador
+  cierre y la vuelve a mostrar con foco (encima de todo durante 300 ms, como pide la tabla de
+  riesgos). `core/registro.js` anota cada lectura, lanzamiento y error en `registros/neo-arcade.log`.
+- `core/entrada/` y `core/almacenamiento/` siguen vacías hasta las fases 4 y 6.
 - `scripts/empaquetar.sh` copia el motor de `node_modules/electron/dist`, renombra el ejecutable y
   pone la app en `resources/app`, que Electron carga en lugar de su app de ejemplo. En la MP80,
   `chrome-sandbox` necesita dueño root y permiso 4755 (lo hará `install.sh` en la fase 8).
@@ -179,7 +243,7 @@ Electron con JavaScript sin framework ni paso de compilación: lo que está en `
 ## Ajustes al plan (decididos con el usuario el 2026-10-20)
 
 1. **Dónde se desarrolla.** En Debian dentro de WSL 2, en la PC de trabajo, con las ventanas gráficas
-   de WSLg; el repositorio vive en el externo D: para no llenar C:. Ahí se
+   de WSLg; el repositorio y el Debian viven en C: (el externo D: se descartó). Ahí se
    construyen y prueban la interfaz, el escáner, el lanzador y el almacenamiento. No
    sirve para medir rendimiento ni para probar el arranque, la sesión de quiosco, el Bluetooth o los
    controles. Eso se prueba en la MP80 cuando el producto esté casi completo, y el instalador de la
@@ -278,8 +342,17 @@ guarda dentro del proyecto.
    INSERT COIN, RETRO IS NOT A STYLE…, PRESS START) y la pestaña ALL GAMES. Por la regla de no
    cambiar el diseño se conservan; si alguno debe pasar a español, lo decide el usuario.
 5. **Títulos cortados a media palabra.** En las portadas laterales angostas, un título de hasta 18
-   letras va a 26 px y se parte («HEDGEHO G», «FIGHTE R II») por `word-break: break-word`. Así lo hace
-   el prototipo y se reprodujo tal cual; si se ajusta, lo decide el usuario.
+   letras va a 26 px y se parte («HEDGEHO G», «FIGHTE R II», «BONK ADVENTUR E») por
+   `word-break: break-word`. Así lo hace el prototipo y se reprodujo tal cual; si se ajusta, lo decide
+   el usuario. Propuesta con captura en `docs/pruebas-fase2/propuesta-titulos-sin-cortar.png`: achicar
+   la letra solo cuando la palabra más larga no cabe en el ancho de la portada (a 0.72 em por letra
+   de Bungee). En la pantalla de lanzamiento, un título muy largo se parte en líneas que tocan los
+   bordes; la propuesta es un ancho máximo de 1600 px.
+6. **Pantallas nuevas de las fases 2 y 3, pendientes de aprobación.** Los 10 íconos de sistema que no
+   traía el prototipo (`app/iconos.js`, captura en `docs/pruebas-fase2/02-barra-al-final.png`); el
+   aviso de biblioteca vacía («Todavía no hay juegos», `04-biblioteca-vacia.png`); y la variante de
+   error de la pantalla de lanzamiento (`docs/pruebas-fase3/03-falta-nucleo.png`). El aviso de un
+   sistema vacío es el del prototipo, a 20 px tal cual.
 
 ## Reglas del proyecto
 

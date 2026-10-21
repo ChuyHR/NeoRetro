@@ -10,14 +10,6 @@ const SIN_GIRO = 'perspective(900px) rotateY(0deg)'; // equivale a 'none' y perm
 const ESTILO_CARTA = 'position: absolute; padding: 0; border-radius: 12px; background: #050914; overflow: hidden; display: flex; flex-direction: column';
 const MARCADO_CARTA = `<span style="position: relative; flex: 1; display: block"><span style="position: absolute; inset: 0; background: linear-gradient(180deg, transparent 45%, rgba(0,0,0,0.75) 100%)"></span><span style="position: absolute; left: 8%; right: 8%; bottom: 10%; font-family: 'Bungee', 'Arial Black', sans-serif; line-height: 0.95; color: #FFFFFF; text-transform: uppercase; text-align: center; word-break: break-word"></span></span><span style="display: flex; align-items: center; justify-content: center; background: #08080F; font-family: 'Pixelify Sans', monospace; font-weight: 700; letter-spacing: 1px; white-space: nowrap"></span>`;
 
-// Los nombres reales traen palabras largas que el tamaño fijo del prototipo partía a la mitad. Si la
-// palabra más larga no cabe en el 84 % del ancho de la portada (el título lleva 8 % de margen por
-// lado), la letra se achica hasta que quepa. Bungee mide cerca de 0.72 em por letra mayúscula.
-export function tamanoTitulo(titulo, ancho, base) {
-  const palabra = Math.max(...titulo.split(/\s+/).map((parte) => parte.length));
-  return Math.min(base, Math.floor((ancho * 0.84) / (palabra * 0.72)));
-}
-
 export function crearCarrusel(lienzo, { despachar }) {
   const refs = montar(lienzo, `
   <section data-ref="seccion" aria-label="Juegos" style="position: absolute; left: 0; top: 452px; width: 1920px; height: 400px">
@@ -29,8 +21,12 @@ export function crearCarrusel(lienzo, { despachar }) {
       <svg width="34" height="60" viewBox="0 0 34 60" aria-hidden="true"><path d="M4 2l26 28L4 58z" fill="#1E90FF"></path></svg>
     </button>
     <div data-ref="vacio" style="position: absolute; inset: 0; display: none; flex-direction: column; align-items: center; justify-content: center; gap: 10px; font-size: 28px">
-      <span data-ref="vacioTitulo"></span>
-      <span data-ref="vacioDetalle" style="max-width: 1200px; text-align: center; font-family: 'Share Tech Mono', monospace; font-size: 24px; line-height: 1.3; color: #8997B8"></span>
+      <span>No hay juegos en este sistema</span>
+      <span style="font-family: 'Share Tech Mono', monospace; font-size: 20px; color: #8997B8">Añade juegos a su carpeta y aparecerán aquí</span>
+    </div>
+    <div data-ref="sinJuegos" style="position: absolute; inset: 0; display: none; flex-direction: column; align-items: center; justify-content: center; gap: 10px; font-size: 28px">
+      <span>Todavía no hay juegos</span>
+      <span style="max-width: 1200px; text-align: center; font-family: 'Share Tech Mono', monospace; font-size: 24px; line-height: 1.3; color: #8997B8">Copia tus juegos en la carpeta roms, cada sistema en su propia carpeta (arcade, snes, psx…), y vuelve a abrir Neo Arcade.</span>
     </div>
   </section>`);
   refs.anterior.addEventListener('click', () => despachar('izquierda'));
@@ -71,8 +67,7 @@ export function crearCarrusel(lienzo, { despachar }) {
       border: central ? '5px solid #1E90FF' : `3px solid ${juego.colores[0]}AA`,
       boxShadow: central ? '0 0 34px #1E90FFCC, 0 0 80px #1769FF66' : '0 14px 30px rgba(0,0,0,0.6)',
     });
-    const base = central ? (largo ? 40 : 58) : (largo ? 18 : 26);
-    carta.titulo.style.fontSize = `${tamanoTitulo(juego.titulo, ranura.ancho - (central ? 10 : 6), base)}px`;
+    carta.titulo.style.fontSize = central ? (largo ? '40px' : '58px') : (largo ? '18px' : '26px');
     carta.banda.style.height = central ? '62px' : '36px';
     carta.banda.style.fontSize = central ? '30px' : (ranura.ancho < 170 ? '14px' : '17px');
     carta.boton.setAttribute('aria-label', juego.titulo + (central ? ', seleccionado' : ''));
@@ -109,13 +104,11 @@ export function crearCarrusel(lienzo, { despachar }) {
         cartas.delete(id);
       }
       refs.marca.style.display = lista.length ? '' : 'none';
-      refs.vacio.style.display = lista.length ? 'none' : 'flex';
-      // Sin ningún sistema en la barra la biblioteca entera está vacía: se explica dónde van los juegos.
+      // Sin ningún sistema en la barra, la biblioteca entera está vacía y se explica dónde van los juegos.
+      // Este aviso no existe en el prototipo; el de un sistema vacío es el suyo, tal cual.
       const bibliotecaVacia = sistemas.length === 0;
-      refs.vacioTitulo.textContent = bibliotecaVacia ? 'Todavía no hay juegos' : 'No hay juegos en este sistema';
-      refs.vacioDetalle.textContent = bibliotecaVacia
-        ? 'Copia tus juegos en la carpeta roms, cada sistema en su propia carpeta (arcade, snes, psx…), y vuelve a abrir Neo Arcade.'
-        : 'Añade juegos a su carpeta y aparecerán aquí.';
+      refs.vacio.style.display = lista.length || bibliotecaVacia ? 'none' : 'flex';
+      refs.sinJuegos.style.display = bibliotecaVacia ? 'flex' : 'none';
     },
   };
 }

@@ -1,0 +1,31 @@
+Fluidez del carrusel en la MP80, medida el 2026-10-20 con scripts/medir-fps.mjs
+(datos de ejemplo, TV por HDMI a 1920x1080, sesión Xfce, Electron 44.5.1 con la GPU activa)
+
+Recorrido: 12 movimientos del carrusel cada 350 ms, 6 cambios de sistema y 20 movimientos
+seguidos cada 90 ms, como una tecla sostenida. Se mide el tiempo entre cuadros con
+requestAnimationFrame.
+
+TV a 75 Hz (como venía configurada)
+  En reposo: 75 cuadros por segundo, ningún salto en 5 s.
+  En el recorrido: de 64.5 a 67.3 cuadros por segundo de promedio, con 67 a 91 cuadros de
+  26.7 ms (un cuadro perdido) en 8.7 s.
+  De la pulsación a la pantalla: mediana 64 a 72 ms, máximo 80 a 112 ms.
+  El JavaScript de cada pulsación tarda de 1 a 7 ms.
+
+TV a 60 Hz (prueba de unos minutos; después se regresó a 75 Hz)
+  En el recorrido: 59.1 y 59.2 cuadros por segundo, con 7 y 8 cuadros perdidos en 8.6 s.
+
+Lo que no cambia el resultado a 75 Hz: quitar los reflejos, las sombras, los degradados de las
+portadas o la sombra del texto; dar a cada portada su propia capa (will-change); apagar el
+compositor de Xfce. Una traza de Chromium muestra el procesador casi libre. El tiempo se va en
+volver a dibujar las portadas que cambian de tamaño en cada movimiento, en el hilo de la GPU
+(tareas de hasta 16 ms), y a 75 Hz cada cuadro solo tiene 13.3 ms.
+
+Conclusión: a 60 Hz se cumple la meta de 60 fps del plan. A 75 Hz no. Los juegos retro corren a
+60 Hz, así que esa frecuencia también conviene a los emuladores. Propuesta, pendiente de
+aprobación: que la fase 8 fije la salida a 60 Hz. Lo que falte para el movimiento rápido con 3.000 juegos se atiende en la fase 7, con las carátulas
+reales de la fase 5 ya puestas, porque cambian lo que se dibuja.
+
+Nota: en las primeras mediciones RetroArch seguía abierto detrás de la app (lo había dejado así un
+timeout que detuvo a Flatpak pero no al emulador). Las cifras de arriba son sin RetroArch; con él
+abierto, el cuadro más lento llegaba a 40 ms.
