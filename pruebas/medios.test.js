@@ -36,12 +36,13 @@ const GAMELIST = `<?xml version="1.0"?>
     <players>1-2</players>
   </game>
   <game><path>.\\Sub\\Otro.zip</path><name>Otro &#233;xito &#x263A;</name></game>
+  <game><path>./megat.zip</path><name>ZZZ(notgame):Pit Boss Megatouch</name><hidden>true</hidden></game>
   <folder><path>./Sub</path><name>Carpeta</name></folder>
 </gameList>`;
 
 test('lee el gamelist de EmulationStation con CDATA, entidades y rutas de Windows', () => {
   const juegos = leerGamelist(GAMELIST);
-  assert.equal(juegos.length, 2);
+  assert.equal(juegos.length, 3);
   assert.equal(juegos[0].name, 'Metal Slug - Super Vehicle-001');
   assert.equal(juegos[0].desc, 'Corre & dispara <sin> escapar.');
   assert.equal(juegos[0].developer, 'Nazca & SNK');
@@ -66,8 +67,9 @@ test('el gamelist da nombre, datos y carátula; sin él, las carpetas por nombre
   await archivo(path.join(base, 'media', 'snes', 'covers', 'Mario (USA).png'));
   await archivo(path.join(base, 'media', 'snes', 'videos', 'Mario (USA).mp4'));
   await archivo(path.join(base, 'media', 'snes', 'screenshots', 'Mario (USA).jpg'));
-  const biblioteca = { sistemas: { neogeo: { juegos: [{ archivo: 'mslug.zip', titulo: 'mslug' }] }, snes: { juegos: [{ archivo: 'Mario (USA).sfc', titulo: 'Mario' }] } } };
+  const biblioteca = { sistemas: { neogeo: { juegos: [{ archivo: 'mslug.zip', titulo: 'mslug' }, { archivo: 'megat.zip', titulo: 'megat' }] }, snes: { juegos: [{ archivo: 'Mario (USA).sfc', titulo: 'Mario' }] } } };
   const { juegos } = datosParaInterfaz(configuracion, biblioteca, await leerMedios(configuracion));
+  assert.equal(juegos.length, 2); // megat.zip está oculto en el gamelist, como lo marca RetroBat
   const [mario, slug] = juegos;
   assert.equal(slug.titulo, 'Metal Slug - Super Vehicle-001');
   assert.equal(slug.anio, 1996);

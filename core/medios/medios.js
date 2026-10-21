@@ -87,6 +87,9 @@ export function datosDelJuego(indice, archivo, configuracion) {
   const video = delGamelist('video') ?? (indice ? enCarpetas(indice, 'video', archivo) : null);
   const direccion = (ruta) => (ruta ? direccionDe(ruta, configuracion) : null);
   return {
+    // <hidden>true</hidden>: EmulationStation no lo muestra. RetroBat marca así lo que no es un juego
+    // (máquinas de medallas, de pantalla táctil, «ZZZ(notgame)»).
+    oculto: entrada?.hidden?.toLowerCase() === 'true',
     titulo: entrada?.name || null,
     descripcion: entrada?.desc || '',
     anio: anioDe(entrada?.releasedate),

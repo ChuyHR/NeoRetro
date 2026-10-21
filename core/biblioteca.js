@@ -18,6 +18,7 @@ export function datosParaInterfaz(configuracion, biblioteca, medios = null) {
     const conDiscos = sistema.extensiones?.some((extension) => extension.toLowerCase() === '.m3u');
     for (const { archivo, titulo, discos } of conDiscos ? agruparDiscos(escaneados) : escaneados) {
       const datos = datosDelJuego(indice, archivo, configuracion);
+      if (datos.oculto) continue; // el gamelist lo oculta, como EmulationStation
       // El nombre del gamelist manda sobre el del archivo: en arcade el archivo es «mslug.zip».
       const nombre = datos.titulo ?? titulo;
       juegos.push({
