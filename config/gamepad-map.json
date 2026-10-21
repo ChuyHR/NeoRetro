@@ -1,0 +1,52 @@
+{
+  "_nota": "Cómo se maneja Neo Arcade con un mando. acciones: qué hace cada control (con los nombres de un mando de Xbox). estandar: qué código de Linux corresponde a cada control en los mandos que siguen la norma de Linux para mandos (Xbox, PlayStation, Nintendo y la mayoría de los modernos); se usa con todo mando que tenga el botón BTN_SOUTH (304). Las palancas y tableros de arcade no la siguen: se configuran una vez en Ajustes › Configurar control y su mapeo se guarda en la carpeta de datos. Los códigos son los de linux/input-event-codes.h. repeticion: al mantener una dirección, espera y cada cuánto se repite. umbral: fracción del recorrido de un eje a partir de la cual cuenta como pulsado; soltar se mide igual, un poco antes, para que no parpadee.",
+  "acciones": {
+    "arriba": "arriba",
+    "abajo": "abajo",
+    "izquierda": "izquierda",
+    "derecha": "derecha",
+    "a": "aceptar",
+    "b": "volver",
+    "x": "favorito",
+    "y": "buscar",
+    "lb": "sistema-anterior",
+    "rb": "sistema-siguiente",
+    "lt": "letra-anterior",
+    "rt": "letra-siguiente",
+    "menu": "ajustes",
+    "view": "filtro"
+  },
+  "estandar": {
+    "botones": {
+      "304": "a",
+      "305": "b",
+      "307": "x",
+      "308": "y",
+      "310": "lb",
+      "311": "rb",
+      "312": "lt",
+      "313": "rt",
+      "314": "view",
+      "315": "menu",
+      "316": "guia",
+      "317": "l3",
+      "318": "r3",
+      "544": "arriba",
+      "545": "abajo",
+      "546": "izquierda",
+      "547": "derecha"
+    },
+    "ejes": {
+      "0": ["izquierda", "derecha"],
+      "1": ["arriba", "abajo"],
+      "16": ["izquierda", "derecha"],
+      "17": ["arriba", "abajo"],
+      "2": [null, "lt"],
+      "5": [null, "rt"],
+      "10": [null, "lt"],
+      "9": [null, "rt"]
+    }
+  },
+  "repeticion": { "esperaMs": 380, "cadaMs": 90 },
+  "umbral": { "pulsar": 0.5, "soltar": 0.35 }
+}

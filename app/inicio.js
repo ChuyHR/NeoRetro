@@ -1,22 +1,25 @@
 // Arma la pantalla: crea las piezas en el orden del prototipo (que define qué queda encima), carga la
-// biblioteca, conecta el teclado y vuelve a pintar cada vez que una acción cambia el estado.
-// Con el puente del núcleo (core/preload.cjs) usa la biblioteca real y abre los juegos; sin él, como
-// en las herramientas de comparación, usa los datos de ejemplo del prototipo.
+// biblioteca, conecta el teclado y el mando, y vuelve a pintar cada vez que una acción cambia el estado.
+// Con el puente del núcleo (core/preload.cjs) usa la biblioteca real, abre los juegos y escucha los
+// mandos; sin él, como en las herramientas de comparación, usa los datos de ejemplo del prototipo.
 import { DATOS } from './datos-ejemplo.js';
 import { escucharTeclado } from './entrada-teclado.js';
 import { aplicar, estadoInicial, MENU } from './estado.js';
 import { ajustarLienzo } from './lienzo.js';
+import { esMovimiento, mapeoTerminado, PASOS_MAPEO } from './mapeo.js';
 import { vistaDe } from './modelo.js';
 import { crearAcciones } from './piezas/acciones.js';
 import { crearBarraSistemas } from './piezas/barra-sistemas.js';
 import { crearCabecera } from './piezas/cabecera.js';
 import { crearCarrusel } from './piezas/carrusel.js';
 import { crearConfiguracion } from './piezas/configuracion.js';
+import { crearConfigurarControl, ESPERA_OMITIR_MS } from './piezas/configurar-control.js';
 import { crearLaterales, crearMoneda } from './piezas/decoracion.js';
 import { crearDetalles } from './piezas/detalles.js';
 import { crearFicha } from './piezas/ficha.js';
 import { crearLanzamiento } from './piezas/lanzamiento.js';
 import { crearPie } from './piezas/pie.js';
+import { crearPruebaControl } from './piezas/prueba-control.js';
 import { crearVistaPrevia } from './piezas/vista-previa.js';
 
 const lienzo = document.getElementById('lienzo');
@@ -26,6 +29,11 @@ const puente = window.neoArcade ?? null;
 let datos = { sistemas: [], juegos: [] };
 let estado = estadoInicial();
 let enJuego = false; // mientras corre un emulador, el teclado no hace nada aquí
+
+const SALIR_PRUEBA_MS = 2000; // en «Probar control», B sostenido este tiempo cierra la pantalla
+const CIERRE_MAPEO_MS = 2500; // «Listo» queda a la vista este tiempo antes de volver
+// En estas pantallas el mando se lee crudo: sus acciones (A acepta, B vuelve…) no se aplican.
+const SIN_ACCIONES_DE_MANDO = new Set(['prueba-control', 'configurar-control']);
 
 const contexto = { despachar, menu: MENU };
 const piezas = [
@@ -40,6 +48,8 @@ const piezas = [
   crearPie(lienzo),
   crearDetalles(lienzo, contexto),
   crearConfiguracion(lienzo, contexto),
+  crearPruebaControl(lienzo, contexto),
+  crearConfigurarControl(lienzo, contexto),
   crearLanzamiento(lienzo, contexto),
 ];
 
@@ -55,6 +65,7 @@ function despachar(accion) {
   estado = siguiente;
   pintar();
   if (puente && estado.ventana === 'lanzamiento' && anterior.ventana !== 'lanzamiento') jugar();
+  efectosDelMapeo(anterior);
 }
 
 async function jugar() {
@@ -69,6 +80,33 @@ async function jugar() {
   }
 }
 
+// «Configurar control»: un paso opcional se salta solo si no llega nada; al terminar se guarda el
+// mapeo y, tras mostrar «Listo», se vuelve al inicio.
+let temporizadorMapeo = null;
+function efectosDelMapeo(anterior) {
+  const antes = anterior.ventana === 'configurar-control' ? anterior.mapeo : null;
+  const ahora = estado.ventana === 'configurar-control' ? estado.mapeo : null;
+  if (antes?.paso === ahora?.paso && Boolean(antes) === Boolean(ahora)) return;
+  clearTimeout(temporizadorMapeo);
+  if (!ahora) return;
+  if (mapeoTerminado(ahora)) {
+    puente?.guardarMapeo(ahora.clave, ahora.perfil);
+    temporizadorMapeo = setTimeout(() => estado.ventana === 'configurar-control' && despachar('volver'), CIERRE_MAPEO_MS);
+  } else if (PASOS_MAPEO[ahora.paso][2]) {
+    temporizadorMapeo = setTimeout(() => despachar('omitir-paso'), ESPERA_OMITIR_MS);
+  }
+}
+
+// «Probar control»: B sostenido dos segundos cierra la pantalla.
+let temporizadorSalida = null;
+function vigilarSalidaDePrueba({ control, pulsado }) {
+  if (control !== 'b') return;
+  clearTimeout(temporizadorSalida);
+  if (pulsado && estado.ventana === 'prueba-control') {
+    temporizadorSalida = setTimeout(() => estado.ventana === 'prueba-control' && despachar('volver'), SALIR_PRUEBA_MS);
+  }
+}
+
 async function arrancar() {
   if (puente) {
     try {
@@ -77,6 +115,7 @@ async function arrancar() {
       console.error('No se pudo leer la biblioteca:', error);
     }
     estado = estadoInicial({ seleccion: datos.juegos[0]?.id ?? null });
+    escucharMandos();
   } else {
     datos = DATOS;
     estado = estadoInicial({ seleccion: 'sf2', favoritos: ['sf2'] });
@@ -84,7 +123,29 @@ async function arrancar() {
   pintar();
 }
 
+function escucharMandos() {
+  puente.escuchar('mandos', (lista) => despachar({ tipo: 'mandos', valor: lista }));
+  puente.escuchar('mando-accion', (accion) => {
+    if (enJuego || SIN_ACCIONES_DE_MANDO.has(estado.ventana)) return;
+    despachar({ tipo: 'entrada', valor: 'mando' });
+    despachar(accion);
+  });
+  puente.escuchar('mando-control', (cambio) => {
+    if (enJuego) return;
+    despachar({ tipo: 'control', valor: cambio });
+    vigilarSalidaDePrueba(cambio);
+  });
+  puente.escuchar('mando-crudo', (crudo) => {
+    if (enJuego) return;
+    if (esMovimiento(crudo)) despachar({ tipo: 'entrada', valor: 'mando' });
+    despachar({ tipo: 'crudo', valor: crudo });
+  });
+  puente.mandos().then((lista) => despachar({ tipo: 'mandos', valor: lista }));
+}
+
 escucharTeclado(window, (accion) => {
-  if (!enJuego) despachar(accion);
+  if (enJuego) return;
+  despachar({ tipo: 'entrada', valor: 'teclado' });
+  despachar(accion);
 });
 arrancar();

@@ -56,7 +56,8 @@ test('en Configuración se apaga y se enciende el efecto CRT', () => {
   const apagado = pasos(['derecha', 'aceptar'], configuracion);
   assert.equal(apagado.crt, false);
   assert.equal(pasos(['izquierda', 'aceptar'], apagado).crt, true);
-  assert.equal(pasos(['abajo', 'abajo', 'aceptar'], configuracion).ventana, null);
+  assert.equal(pasos(['abajo', 'abajo', 'aceptar'], configuracion).ventana, 'prueba-control');
+  assert.equal(pasos(['abajo', 'abajo', 'abajo', 'abajo', 'aceptar'], configuracion).ventana, null);
 });
 
 test('al cambiar de sistema, si el juego no está ahí se elige el primero de ese sistema', () => {
@@ -97,7 +98,51 @@ test('un error del lanzador se muestra en la pantalla de lanzamiento y Retroceso
 test('sin juegos ni sistemas, cambiar de sistema o moverse no rompe nada', () => {
   const vacio = { sistemas: [], juegos: [] };
   const estado = estadoInicial();
-  for (const accion of ['sistema-siguiente', 'sistema-anterior', 'derecha', 'aceptar']) {
+  for (const accion of ['sistema-siguiente', 'sistema-anterior', 'derecha', 'aceptar', 'letra-siguiente', 'favorito']) {
     assert.equal(aplicar(estado, accion, vacio), estado);
   }
+});
+
+test('LT y RT saltan a la letra anterior o siguiente, sin acentos y dando la vuelta', () => {
+  const titulos = ['Aero', 'Alien', 'Bomber', 'Bubble', 'Ébano', 'Zelda'];
+  const datos = { sistemas: [], juegos: titulos.map((titulo) => ({ id: titulo, titulo, sistema: 'snes' })) };
+  const desde = (seleccion, accion) => aplicar({ ...estadoInicial(), seleccion }, accion, datos).seleccion;
+  assert.equal(desde('Aero', 'letra-siguiente'), 'Bomber');
+  assert.equal(desde('Bubble', 'letra-siguiente'), 'Ébano');
+  assert.equal(desde('Zelda', 'letra-siguiente'), 'Aero');
+  assert.equal(desde('Bubble', 'letra-anterior'), 'Aero');
+  assert.equal(desde('Ébano', 'letra-anterior'), 'Bomber');
+  assert.equal(desde('Alien', 'letra-anterior'), 'Zelda');
+});
+
+test('X marca favorito y Start abre y cierra Configuración, sin pasar por el menú', () => {
+  const marcado = pasos(['derecha', 'favorito']);
+  assert.deepEqual(marcado.favoritos, ['sf2', 'mgs']);
+  const ajustes = pasos(['ajustes']);
+  assert.equal(ajustes.ventana, 'configuracion');
+  assert.equal(pasos(['ajustes'], ajustes).ventana, null);
+});
+
+test('un mando sin configurar abre «Configurar control» la primera vez que se pulsa', () => {
+  const crudo = { mando: 'palanca', nombre: 'Palanca', origen: 'sin-configurar', tipo: 'boton', codigo: 288, valor: 1 };
+  const estado = pasos([{ tipo: 'crudo', valor: crudo }]);
+  assert.equal(estado.ventana, 'configurar-control');
+  assert.equal(estado.mapeo.clave, 'palanca');
+  assert.equal(estado.mapeo.paso, 0); // la pulsación que la abrió no cuenta como «arriba»
+  const soltado = pasos([{ tipo: 'crudo', valor: { ...crudo, valor: 0 } }]);
+  assert.equal(soltado.ventana, null);
+});
+
+test('«Probar control» enciende lo que se mantiene pulsado y anota el último código', () => {
+  const prueba = pasos(['ajustes', 'derecha', 'derecha', 'aceptar']);
+  assert.equal(prueba.ventana, 'prueba-control');
+  const pulsado = pasos([{ tipo: 'control', valor: { mando: 'x', control: 'a', pulsado: true } }, { tipo: 'crudo', valor: { mando: 'x', tipo: 'boton', codigo: 304, valor: 1 } }], prueba);
+  assert.deepEqual(pulsado.prueba.pulsados, ['a']);
+  assert.equal(pulsado.prueba.ultimo, 'botón 304');
+  assert.deepEqual(pasos([{ tipo: 'control', valor: { mando: 'x', control: 'a', pulsado: false } }], pulsado).prueba.pulsados, []);
+});
+
+test('el pie sigue a la última entrada usada', () => {
+  assert.equal(estadoInicial().entrada, 'teclado');
+  assert.equal(pasos([{ tipo: 'entrada', valor: 'mando' }]).entrada, 'mando');
 });

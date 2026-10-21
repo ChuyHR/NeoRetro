@@ -1,5 +1,5 @@
-// Traduce teclas en acciones. La interfaz solo entiende acciones; cuando se retome la fase 4, el mando
-// las producirá desde el núcleo. Esc no aparece porque en desarrollo cierra la app (core/main.js).
+// Traduce teclas en acciones. La interfaz solo entiende acciones; el mando las produce desde el núcleo
+// (core/entrada/). Esc no aparece porque en desarrollo cierra la app (core/main.js).
 
 export const TECLAS = {
   ArrowLeft: 'izquierda',
@@ -11,6 +11,8 @@ export const TECLAS = {
   Backspace: 'volver',
   PageUp: 'sistema-anterior',
   PageDown: 'sistema-siguiente',
+  Home: 'letra-anterior', // como LT y RT del mando
+  End: 'letra-siguiente',
 };
 
 export function escucharTeclado(destino, despachar) {

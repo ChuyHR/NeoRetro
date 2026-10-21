@@ -1,6 +1,6 @@
-// Lee config/systems.json, config/emulators.json y config/biblioteca.json. En desarrollo y en las
-// pruebas, NEO_ARCADE_CONFIG cambia la carpeta de configuración y NEO_ARCADE_ROMS la de juegos, sin
-// tocar los archivos ni la carpeta roms/ del usuario.
+// Lee config/systems.json, config/emulators.json, config/biblioteca.json y config/gamepad-map.json.
+// En desarrollo y en las pruebas, NEO_ARCADE_CONFIG cambia la carpeta de configuración, NEO_ARCADE_ROMS
+// la de juegos y NEO_ARCADE_MEDIOS la de medios, sin tocar los archivos ni las carpetas del usuario.
 import { readFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
@@ -20,15 +20,18 @@ async function leerJson(carpeta, nombre) {
 
 export async function cargarConfiguracion(entorno = process.env) {
   const carpeta = entorno.NEO_ARCADE_CONFIG ? expandirRuta(entorno.NEO_ARCADE_CONFIG) : path.join(RAIZ, 'config');
-  const [{ sistemas }, { emuladores }, biblioteca] = await Promise.all([
+  const [{ sistemas }, { emuladores }, biblioteca, mapaMando] = await Promise.all([
     leerJson(carpeta, 'systems.json'),
     leerJson(carpeta, 'emulators.json'),
     leerJson(carpeta, 'biblioteca.json'),
+    // Una configuración de prueba puede no traer el mapa del mando: se usa el del repositorio.
+    leerJson(carpeta, 'gamepad-map.json').catch(() => leerJson(path.join(RAIZ, 'config'), 'gamepad-map.json')),
   ]);
   return {
     sistemas,
     emuladores,
+    mapaMando,
     carpetaRoms: expandirRuta(entorno.NEO_ARCADE_ROMS ?? biblioteca.roms),
-    carpetaMedios: expandirRuta(biblioteca.medios),
+    carpetaMedios: expandirRuta(entorno.NEO_ARCADE_MEDIOS ?? biblioteca.medios),
   };
 }

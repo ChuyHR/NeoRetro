@@ -1,11 +1,15 @@
-// Proceso principal de Neo Arcade: abre la ventana de la interfaz y atiende lo que esta le pide por el
-// puente de core/preload.cjs: la biblioteca de juegos y abrir un juego.
+// Proceso principal de Neo Arcade: abre la ventana de la interfaz, lee los mandos y atiende lo que la
+// interfaz le pide por el puente de core/preload.cjs: la biblioteca de juegos, abrir un juego y
+// guardar el mapeo de un mando.
 import { app, BrowserWindow, ipcMain, Menu } from 'electron';
-import { writeFile } from 'node:fs/promises';
+import { readFile, rename, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
 import { conteoPorSistema, datosParaInterfaz, ubicarJuego } from './biblioteca.js';
 import { cargarConfiguracion, expandirRuta, RAIZ } from './configuracion.js';
+import { iniciarMandos } from './entrada/mandos.js';
+import { escribirPerfiles } from './entrada/perfil-retroarch.js';
+import { limpiarPerfil } from './entrada/traductor.js';
 import { escanearBiblioteca } from './escaner/escaner.js';
 import { armarComando, comandoLegible, ejecutar, ErrorLanzamiento, falloAlAbrir, verificar } from './lanzador/lanzador.js';
 import { crearRegistro } from './registro.js';
@@ -30,6 +34,28 @@ const registro = crearRegistro(app.getPath('userData'));
 const esperar = (ms) => new Promise((listo) => setTimeout(listo, ms));
 let ventana = null;
 let enJuego = false;
+let mandos = null;
+
+// Mapeos hechos en «Configurar control», uno por modelo de mando, en un JSON legible.
+const ARCHIVO_MAPEOS = path.join(app.getPath('userData'), 'mandos.json');
+const mapeos = await readFile(ARCHIVO_MAPEOS, 'utf8').then(JSON.parse, () => ({}));
+
+function enviar(canal, dato) {
+  if (ventana && !ventana.isDestroyed()) ventana.webContents.send(canal, dato);
+}
+
+ipcMain.handle('mandos', () => mandos?.lista() ?? []);
+
+ipcMain.handle('guardar-mapeo', async (_evento, clave, perfil) => {
+  if (typeof clave !== 'string' || clave.length > 300) return false;
+  mapeos[clave] = limpiarPerfil(perfil);
+  // Se escribe aparte y se renombra: un corte de luz a la mitad no deja el archivo roto.
+  await writeFile(`${ARCHIVO_MAPEOS}.nuevo`, `${JSON.stringify(mapeos, null, 2)}\n`);
+  await rename(`${ARCHIVO_MAPEOS}.nuevo`, ARCHIVO_MAPEOS);
+  await registro.anotar('mando', 'mapeo guardado', clave);
+  mandos?.recargar(clave);
+  return true;
+});
 
 ipcMain.handle('biblioteca', async () => {
   const inicio = Date.now();
@@ -52,6 +78,12 @@ ipcMain.handle('jugar', async (_evento, id) => {
   try {
     comando = armarComando(ubicado.sistema, ubicado.ruta, configuracion.emuladores);
     await verificar(comando, ubicado.sistema, ubicado.ruta);
+    if (comando.emulador.carpetaPerfilesMando && mandos) {
+      // Un mando configurado aquí debe servir igual dentro del juego. Si falla, el juego abre igual.
+      await escribirPerfiles(expandirRuta(comando.emulador.carpetaPerfilesMando), mandos.conectados())
+        .catch((error) => registro.anotar('mando', 'no se pudo escribir el perfil de RetroArch', String(error)));
+    }
+    mandos?.soltarTodo();
     await esperar(PANTALLA_LANZAMIENTO_MS);
     ventana.hide();
     const resultado = await ejecutar(comando);
@@ -120,5 +152,18 @@ function crearVentana() {
 // Sin menú tampoco existen sus atajos (recargar, herramientas de desarrollo, zoom).
 Menu.setApplicationMenu(null);
 console.log(`Neo Arcade ${app.getVersion()} en ${DESARROLLO ? 'modo desarrollo' : 'versión final'}`);
-app.whenReady().then(crearVentana);
+app.whenReady().then(() => {
+  crearVentana();
+  // Con un emulador abierto el mando es del juego: Neo Arcade no reacciona hasta que se cierre.
+  mandos = iniciarMandos({
+    mapa: configuracion.mapaMando,
+    perfilGuardado: (clave) => mapeos[clave] ?? null,
+    alAccion: (accion) => enJuego || enviar('mando-accion', accion),
+    alControl: (cambio) => enJuego || enviar('mando-control', cambio),
+    alCrudo: (suceso) => enJuego || enviar('mando-crudo', suceso),
+    alCambio: (lista) => enviar('mandos', lista),
+    anotar: (...partes) => registro.anotar(...partes),
+  });
+});
 app.on('window-all-closed', () => app.quit());
+app.on('will-quit', () => mandos?.detener());
