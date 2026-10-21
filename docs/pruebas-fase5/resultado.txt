@@ -1,0 +1,7 @@
+SNES (gamelist en media/): «SUPER MARIO WORLD», 3 carátulas cargadas, vídeo corriendo al instante: false
+Tras 3 s en el mismo juego, vídeo corriendo: true
+Ficha: «Estudio de prueba • 1990 • Plataformas»
+Carátula horizontal: «THE LEGEND OF ZELDA: A LINK TO THE PAST», vídeo corriendo: false (no tiene)
+ARCADE (carátula del gamelist que no existe): «STREET FIGHTER II: THE WORLD WARRIOR», 1 carátulas cargadas
+NEO GEO (sin gamelist, por carpetas): «METAL SLUG», 3 carátulas cargadas, vídeo corriendo: true
+PLAYSTATION (gamelist en roms/, solo <image>): «METAL GEAR SOLID», 3 carátulas cargadas

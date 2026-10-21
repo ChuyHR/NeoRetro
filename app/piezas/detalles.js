@@ -1,4 +1,6 @@
-// Ventana de detalles del juego. El texto va a 24 px (ajuste aprobado; el prototipo usaba 21).
+// Ventana de detalles del juego. El texto va a 24 px (ajuste aprobado; el prototipo usaba 21). La
+// portada es la carátula real si la hay (completa, sobre el color del sistema) o la de reemplazo.
+import { ponerCaratula } from '../caratulas.js';
 import { BOTONES } from '../estado.js';
 import { montar } from './dom.js';
 import { lineaDatos } from './ficha.js';
@@ -43,7 +45,16 @@ export function crearDetalles(lienzo, { despachar }) {
       const [principal, secundario] = juego.colores;
       const titulo = juego.titulo.toUpperCase();
       refs.portada.style.borderColor = principal;
-      refs.arte.style.background = fondo;
+      const reemplazo = () => {
+        refs.arte.style.background = fondo;
+        refs.tituloPortada.style.display = '';
+      };
+      if (ponerCaratula(refs.arte, juego, reemplazo)) {
+        refs.arte.style.background = juego.colores[2];
+        refs.tituloPortada.style.display = 'none';
+      } else {
+        reemplazo();
+      }
       refs.tituloPortada.textContent = titulo;
       refs.tituloPortada.style.textShadow = `3px 3px 0 ${principal}`;
       refs.banda.textContent = juego.nombreSistema;

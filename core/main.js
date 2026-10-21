@@ -1,7 +1,7 @@
 // Proceso principal de Neo Arcade: abre la ventana de la interfaz, lee los mandos y atiende lo que la
 // interfaz le pide por el puente de core/preload.cjs: la biblioteca de juegos, abrir un juego y
 // guardar el mapeo de un mando.
-import { app, BrowserWindow, ipcMain, Menu } from 'electron';
+import { app, BrowserWindow, ipcMain, Menu, protocol } from 'electron';
 import { readFile, rename, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
@@ -11,8 +11,17 @@ import { iniciarMandos } from './entrada/mandos.js';
 import { escribirPerfiles } from './entrada/perfil-retroarch.js';
 import { limpiarPerfil } from './entrada/traductor.js';
 import { escanearBiblioteca } from './escaner/escaner.js';
+import { leerMedios } from './medios/medios.js';
+import { crearServidorDeMedios } from './medios/servidor.js';
 import { armarComando, comandoLegible, ejecutar, ErrorLanzamiento, falloAlAbrir, verificar } from './lanzador/lanzador.js';
 import { crearRegistro } from './registro.js';
+
+// Los medios llegan a la página por medio://, que el navegador debe tratar como origen seguro y al que
+// debe pedir rangos (los necesita para los vídeos). Electron solo lo acepta antes de que la app esté
+// lista, por eso va aquí arriba, antes de cualquier espera.
+protocol.registerSchemesAsPrivileged([
+  { scheme: 'medio', privileges: { standard: true, secure: true, supportFetchAPI: true, stream: true } },
+]);
 
 // Empaquetada con scripts/empaquetar.sh, el ejecutable se llama neo-arcade y Electron la da por
 // empaquetada: Esc deja de cerrarla y no hay herramientas de desarrollo.
@@ -63,13 +72,19 @@ ipcMain.handle('guardar-mapeo', async (_evento, clave, perfil) => {
 ipcMain.handle('biblioteca', async () => {
   const inicio = Date.now();
   const archivoCache = path.join(app.getPath('userData'), 'biblioteca.json');
-  const { biblioteca, leidos } = await escanearBiblioteca(configuracion, archivoCache);
+  const [{ biblioteca, leidos }, medios] = await Promise.all([
+    escanearBiblioteca(configuracion, archivoCache),
+    leerMedios(configuracion),
+  ]);
+  const datos = datosParaInterfaz(configuracion, biblioteca, medios);
   const conteo = conteoPorSistema(configuracion, biblioteca)
     .filter(({ juegos }) => juegos > 0)
     .map(({ id, juegos }) => `${id}=${juegos}`)
     .join(' ');
-  await registro.anotar('biblioteca', `${Date.now() - inicio} ms`, `${leidos} sistemas leídos del disco`, conteo || 'sin juegos');
-  return datosParaInterfaz(configuracion, biblioteca);
+  const conCaratula = datos.juegos.filter((juego) => juego.caratula).length;
+  await registro.anotar('biblioteca', `${Date.now() - inicio} ms`, `${leidos} sistemas leídos del disco`,
+    conteo || 'sin juegos', `${conCaratula} con carátula`);
+  return datos;
 });
 
 ipcMain.handle('jugar', async (_evento, id) => {
@@ -162,6 +177,7 @@ function crearVentana() {
 Menu.setApplicationMenu(null);
 console.log(`Neo Arcade ${app.getVersion()} en ${DESARROLLO ? 'modo desarrollo' : 'versión final'}`);
 app.whenReady().then(() => {
+  protocol.handle('medio', crearServidorDeMedios(configuracion));
   crearVentana();
   // Con un emulador abierto el mando es del juego: Neo Arcade no reacciona hasta que se cierre.
   mandos = iniciarMandos({

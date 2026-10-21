@@ -1,32 +1,42 @@
 // Convierte la biblioteca escaneada en los datos que dibuja la interfaz: los juegos con lo que su
-// sistema aporta (nombre, emulador, colores de la portada de reemplazo) y la lista de sistemas, solo
-// con los que tienen juegos. Año, género y descripción llegan con la fase 5 (gamelist.xml).
+// sistema aporta (nombre, emulador, colores de la portada de reemplazo), lo que dicen sus medios
+// (core/medios/: nombre, descripción, año, carátula, vídeo…) y la lista de sistemas, solo con los que
+// tienen juegos.
 import path from 'node:path';
 
-export function datosParaInterfaz({ sistemas }, biblioteca) {
+import { datosDelJuego } from './medios/medios.js';
+
+// medios: lo que devuelve leerMedios(), un índice por sistema. Sin él, los juegos van sin medios.
+export function datosParaInterfaz(configuracion, biblioteca, medios = null) {
   const juegos = [];
-  for (const sistema of sistemas) {
+  for (const sistema of configuracion.sistemas) {
+    const indice = medios?.get(sistema.id) ?? null;
     for (const { archivo, titulo } of biblioteca.sistemas[sistema.id]?.juegos ?? []) {
+      const datos = datosDelJuego(indice, archivo, configuracion);
       juegos.push({
         id: `${sistema.id}/${archivo}`,
-        titulo,
+        // El nombre del gamelist manda sobre el del archivo: en arcade el archivo es «mslug.zip».
+        titulo: datos.titulo ?? titulo,
         sistema: sistema.id,
         nombreSistema: sistema.nombreLargo,
         emulador: sistema.nombreEmulador,
         controles: sistema.controles,
         colores: sistema.colores,
         motivo: sistema.motivo,
-        anio: null,
-        desarrollador: null,
-        genero: null,
-        jugadores: null,
-        descripcion: '',
+        anio: datos.anio,
+        desarrollador: datos.desarrollador,
+        genero: datos.genero,
+        jugadores: datos.jugadores,
+        descripcion: datos.descripcion,
+        caratula: datos.caratula,
+        captura: datos.captura,
+        video: datos.video,
       });
     }
   }
   juegos.sort((a, b) => a.titulo.localeCompare(b.titulo, 'es', { sensitivity: 'base' }) || a.id.localeCompare(b.id));
   const conJuegos = new Set(juegos.map((juego) => juego.sistema));
-  const visibles = sistemas.filter((sistema) => conJuegos.has(sistema.id)).map(({ id, nombre }) => ({ id, nombre }));
+  const visibles = configuracion.sistemas.filter((sistema) => conJuegos.has(sistema.id)).map(({ id, nombre }) => ({ id, nombre }));
   return { sistemas: juegos.length ? [{ id: 'todos', nombre: 'ALL GAMES' }, ...visibles] : [], juegos };
 }
 

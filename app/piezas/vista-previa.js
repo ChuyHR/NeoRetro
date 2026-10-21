@@ -1,6 +1,11 @@
-// Vista previa: una escena de pelea dibujada con los colores del juego y, si está activo, el efecto CRT.
-// La fase 5 la reemplaza por la captura y el vídeo del juego.
+// Vista previa: la captura del juego en cuanto se elige y su vídeo en bucle y sin sonido cuando lleva
+// un segundo elegido, completos dentro del recuadro (sin recorte; un vídeo 4:3 queda con franjas a los
+// lados). Sin medios, la escena de pelea del prototipo dibujada con los colores del juego. El efecto CRT
+// va encima de todo.
 import { montar } from './dom.js';
+
+export const ESPERA_VIDEO_MS = 1000;
+const fallidos = new Set(); // capturas y vídeos que no cargaron: no se vuelven a intentar
 
 export function crearVistaPrevia(lienzo) {
   const refs = montar(lienzo, `
@@ -28,13 +33,79 @@ export function crearVistaPrevia(lienzo) {
         <span style="font-family: 'Press Start 2P', monospace; font-size: 12px; color: #FFFFFF; text-shadow: 2px 2px 0 #000">99</span>
         <div style="flex: 1; height: 10px; background: #FFD23F; border: 2px solid #000"></div>
       </div>
+      <div data-ref="medios" aria-hidden="true" style="position: absolute; inset: 0; background: #000000; display: none">
+        <img data-ref="captura" alt="" decoding="async" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; display: none">
+        <video data-ref="video" muted loop playsinline preload="none" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; display: none"></video>
+      </div>
       <div data-ref="crt" aria-hidden="true" style="position: absolute; inset: 0; background: repeating-linear-gradient(to bottom, rgba(0,0,0,0) 0px, rgba(0,0,0,0) 2px, rgba(0,0,0,0.22) 2px, rgba(0,0,0,0.22) 3px); pointer-events: none"></div>
     </div>
   </section>`);
 
+  let actual = null; // id del juego que se está mostrando
+  let juegoActual = null;
+  let enPausa = false; // con un emulador abierto el vídeo no corre
+  let temporizador = null;
+  const { medios, captura, video } = refs;
+
+  function detenerVideo() {
+    clearTimeout(temporizador);
+    video.style.display = 'none';
+    if (video.getAttribute('src')) {
+      video.pause();
+      video.removeAttribute('src');
+      video.load(); // suelta el decodificador
+    }
+  }
+
+  function programarVideo(juego) {
+    if (!juego?.video || fallidos.has(juego.video)) return;
+    temporizador = setTimeout(() => {
+      if (actual !== juego.id || enPausa) return;
+      video.src = juego.video;
+      video.play().catch(() => {});
+    }, ESPERA_VIDEO_MS);
+  }
+
+  function mostrarMedios(juego) {
+    const conCaptura = Boolean(juego?.captura) && !fallidos.has(juego.captura);
+    const conVideo = Boolean(juego?.video) && !fallidos.has(juego.video);
+    medios.style.display = conCaptura || conVideo ? 'block' : 'none';
+    captura.style.display = conCaptura ? 'block' : 'none';
+    if (conCaptura) captura.src = juego.captura;
+    else captura.removeAttribute('src');
+  }
+
+  // Si algo no carga se olvida y se vuelve a lo que quede: la captura, o la escena del prototipo.
+  captura.addEventListener('error', () => {
+    if (!captura.getAttribute('src')) return;
+    fallidos.add(captura.getAttribute('src'));
+    captura.style.display = 'none';
+    const quedaVideo = Boolean(juegoActual?.video) && !fallidos.has(juegoActual.video);
+    if (!quedaVideo) medios.style.display = 'none';
+  });
+  video.addEventListener('playing', () => { video.style.display = 'block'; });
+  video.addEventListener('error', () => {
+    if (!video.getAttribute('src')) return;
+    fallidos.add(video.getAttribute('src'));
+    detenerVideo();
+    if (captura.style.display === 'none') medios.style.display = 'none';
+  });
+
   return {
     actualizar({ juego, marcador, estado }) {
       refs.crt.style.display = estado.crt ? '' : 'none';
+      const pausar = estado.ventana === 'lanzamiento';
+      const id = juego?.id ?? null;
+      if (id !== actual) {
+        detenerVideo();
+        actual = id;
+        juegoActual = juego;
+        mostrarMedios(juego);
+        if (!pausar) programarVideo(juego);
+      }
+      if (pausar && !enPausa) detenerVideo();
+      if (!pausar && enPausa) programarVideo(juego);
+      enPausa = pausar;
       if (!juego) return;
       const [principal, secundario, fondo] = juego.colores;
       refs.cielo.style.background = `linear-gradient(180deg, ${fondo} 0%, ${principal} 100%)`;

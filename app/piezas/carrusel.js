@@ -2,7 +2,10 @@
 // el desplazamiento se anima solo con transform y opacidad (técnica FLIP): la tarjeta gráfica lo
 // resuelve sin recalcular la página en cada cuadro, lo que importa con la GPU de la MP80.
 import { fondoPortada } from '../arte.js';
+import { ponerCaratula, precargar } from '../caratulas.js';
 import { montar } from './dom.js';
+
+const VECINOS_PRECARGA = 10; // carátulas que se piden por adelantado a cada lado de lo visible
 
 const DURACION_MS = 300; // la misma transición de 0.3 s del prototipo
 const SIN_GIRO = 'perspective(900px) rotateY(0deg)'; // equivale a 'none' y permite interpolar el giro
@@ -40,12 +43,25 @@ export function crearCarrusel(lienzo, { despachar }) {
     boton.setAttribute('style', ESTILO_CARTA);
     boton.innerHTML = MARCADO_CARTA;
     const [arte, banda] = boton.children;
-    const titulo = arte.lastElementChild;
-    arte.style.background = fondoPortada(juego);
+    const [sombra, titulo] = arte.children;
     titulo.textContent = juego.titulo;
     titulo.style.textShadow = `3px 3px 0 ${juego.colores[0]}, 0 0 16px #000`;
     banda.textContent = juego.nombreSistema;
     banda.style.color = juego.colores[1];
+    // Con carátula real: completa sobre el color oscuro del sistema y sin el título encima (ajuste
+    // aprobado). Sin ella, o si no carga, la portada de reemplazo del prototipo.
+    const reemplazo = () => {
+      arte.style.background = fondoPortada(juego);
+      sombra.style.display = '';
+      titulo.style.display = '';
+    };
+    if (ponerCaratula(arte, juego, reemplazo)) {
+      arte.style.background = juego.colores[2];
+      sombra.style.display = 'none';
+      titulo.style.display = 'none';
+    } else {
+      reemplazo();
+    }
     const carta = { boton, titulo, banda, caja: null, central: false };
     boton.addEventListener('click', () =>
       despachar(carta.central ? { tipo: 'ejecutar', valor: 'jugar' } : { tipo: 'seleccionar', valor: juego.id }));
@@ -87,7 +103,14 @@ export function crearCarrusel(lienzo, { despachar }) {
   }
 
   return {
-    actualizar({ ranuras, lista, sistemas }) {
+    actualizar({ ranuras, lista, indice, sistemas }) {
+      if (lista.length > ranuras.length) {
+        const vecinos = [];
+        for (let paso = 1; paso <= VECINOS_PRECARGA; paso += 1) {
+          vecinos.push(lista[(indice + 5 + paso) % lista.length], lista[(indice - 4 - paso + lista.length * 2) % lista.length]);
+        }
+        precargar(vecinos);
+      }
       const presentes = new Set();
       for (const ranura of ranuras) {
         presentes.add(ranura.juego.id);

@@ -1,92 +1,54 @@
 // Prueba de punta a punta sin juegos ni emuladores reales. Arma en una carpeta temporal una biblioteca
-// de archivos vacíos (uno por sistema) y un emulador falso que anota cómo lo llamaron, espera y sale;
-// abre la app de verdad (core/main.js) apuntando a ellos y la recorre con el teclado. Guarda capturas
-// en docs/pruebas-fase2/ y docs/pruebas-fase3/, y los tiempos en docs/pruebas-fase3/resultado.txt.
+// de archivos vacíos (uno por sistema), un emulador falso que anota cómo lo llamaron, espera y sale, y
+// medios propios dibujados aquí; abre la app de verdad (core/main.js) apuntando a ellos y la recorre con
+// el teclado. Guarda capturas en docs/pruebas-fase2/, docs/pruebas-fase3/ y docs/pruebas-fase5/, con
+// los resultados en el resultado.txt de cada una.
 // Nunca toca roms/, media/ ni la configuración real. Uso: npm run simulacion (en Linux).
 import { app, BrowserWindow } from 'electron';
-import { chmod, mkdir, mkdtemp, readdir, readFile, rm, writeFile } from 'node:fs/promises';
-import os from 'node:os';
+import { mkdir, readdir, readFile, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
+// El orden importa: primero la carpeta temporal y luego la app, que la lee al importarse.
+import { EMULADOR_MS, entorno, JUEGOS, TITULO_LARGO } from './simulacion-entorno.mjs';
+import '../core/main.js';
+import { ESPERA_VIDEO_MS } from '../app/piezas/vista-previa.js';
 import { controlar } from './captura.mjs';
+import { cerrarDibujo, dibujarArchivo, escribirGamelist } from './medios-de-prueba.mjs';
 
 const RAIZ = path.resolve(import.meta.dirname, '..');
 const FASE2 = path.join(RAIZ, 'docs', 'pruebas-fase2');
 const FASE3 = path.join(RAIZ, 'docs', 'pruebas-fase3');
-const EMULADOR_MS = 1500; // lo que «juega» el emulador falso antes de cerrarse
+const FASE5 = path.join(RAIZ, 'docs', 'pruebas-fase5');
 const esperar = (ms) => new Promise((listo) => setTimeout(listo, ms));
-
-// Un juego por sistema, con nombres como los que traen los archivos reales.
-const JUEGOS = {
-  arcade: 'Street Fighter II (World 910522).zip',
-  neogeo: 'Metal Slug (Set 1).zip',
-  cps: 'Final Fight (World).zip',
-  nes: 'Mega Man 2 (USA).nes',
-  snes: 'Super Mario World (USA).sfc',
-  n64: 'Super Mario 64 (USA).z64',
-  gb: 'Tetris (World) (Rev 1).gb',
-  gbc: 'Wario Land 3 (World).gbc',
-  gba: 'Metroid Fusion (USA).gba',
-  gamecube: 'Super Smash Bros Melee (USA).rvz',
-  mastersystem: 'Alex Kidd in Miracle World (USA).sms',
-  megadrive: 'Sonic_The_Hedgehog_(USA,_Europe).md',
-  segacd: 'Sonic CD/Sonic CD (USA).cue',
-  sega32x: 'Knuckles Chaotix (Japan, USA).32x',
-  gamegear: 'Shinobi (USA, Europe).gg',
-  dreamcast: 'Crazy Taxi/Crazy Taxi (USA).gdi',
-  psx: 'Metal Gear Solid/Metal Gear Solid (USA) (Disc 1).cue',
-  psp: 'Lumines (USA).iso',
-  pcengine: 'Bonk Adventure (USA).pce',
-  atari2600: 'Pitfall (USA).a26',
-  ports: 'Juego propio.sh',
-};
-// Un segundo juego de SNES, con un nombre largo, para ver cómo se acomoda el título.
-const TITULO_LARGO = 'The Legend of Zelda - A Link to the Past (USA).sfc';
-
-async function prepararEntorno() {
-  const base = await mkdtemp(path.join(os.tmpdir(), 'neo-arcade-simulacion-'));
-  const carpeta = (nombre) => path.join(base, nombre);
-  const { sistemas } = JSON.parse(await readFile(path.join(RAIZ, 'config', 'systems.json'), 'utf8'));
-
-  for (const sistema of sistemas) {
-    const archivo = path.join(carpeta('roms'), sistema.carpeta, JUEGOS[sistema.id]);
-    await mkdir(path.dirname(archivo), { recursive: true });
-    // El port sí corre de verdad: es un script que espera y sale, como un emulador.
-    await writeFile(archivo, sistema.id === 'ports' ? `sleep ${EMULADOR_MS / 1000}\n` : '');
-  }
-  await writeFile(path.join(carpeta('roms'), 'snes', TITULO_LARGO), '');
-
-  const emulador = carpeta('emulador-falso.sh');
-  await writeFile(emulador, `#!/usr/bin/env bash
-printf '%s\\n' "$*" >> '${carpeta('llamadas.txt')}'
-sleep ${EMULADOR_MS / 1000}
-date +%s%3N > '${carpeta('cierre.txt')}'
-exit 0
-`);
-  await chmod(emulador, 0o755);
-
-  // Todos los núcleos menos el de Nintendo 64, para ver el aviso de núcleo faltante.
-  await mkdir(carpeta('nucleos'));
-  for (const nucleo of new Set(sistemas.map((sistema) => sistema.nucleo).filter(Boolean))) {
-    if (nucleo !== 'mupen64plus_next') await writeFile(path.join(carpeta('nucleos'), `${nucleo}_libretro.so`), '');
-  }
-
-  // La configuración real, salvo los emuladores: RetroArch y PPSSPP son el falso y Dolphin no existe.
-  await mkdir(carpeta('config'));
-  await writeFile(path.join(carpeta('config'), 'systems.json'), JSON.stringify({ sistemas }));
-  await writeFile(path.join(carpeta('config'), 'biblioteca.json'), JSON.stringify({ roms: carpeta('roms'), medios: carpeta('media') }));
-  await writeFile(path.join(carpeta('config'), 'emulators.json'), JSON.stringify({
-    emuladores: {
-      retroarch: { nombre: 'RetroArch', comando: [emulador], carpetaNucleos: carpeta('nucleos') },
-      dolphin: { nombre: 'Dolphin', comando: [carpeta('no-instalado/dolphin-emu')] },
-      ppsspp: { nombre: 'PPSSPP', comando: [emulador] },
-      directo: { nombre: 'Ejecutable propio', comando: [] },
-    },
-  }));
-
-  process.env.NEO_ARCADE_CONFIG = carpeta('config');
-  process.env.NEO_ARCADE_DATOS = carpeta('datos');
-  return { base, carpeta, sistemas };
+// Medios de la fase 5, de las tres formas que acepta core/medios/medios.js:
+//   - SNES: gamelist.xml en media/snes/ con nombre, datos, caja vertical, captura y vídeo; el otro juego
+//     trae una caja horizontal, para ver que se muestra completa.
+//   - Arcade: el gamelist da el nombre completo («mslug» → «Metal Slug» en la vida real) y apunta a una
+//     carátula que no existe: debe quedar la portada de reemplazo, nunca una imagen rota.
+//   - Neo Geo: sin gamelist; carátula y vídeo en media/neogeo/covers/ y videos/ con el nombre del juego.
+//   - PlayStation: gamelist.xml en roms/psx/ (donde lo deja Skraper) con solo <image>, que hace de carátula.
+async function prepararMedios({ carpeta }) {
+  const medios = carpeta('media');
+  const sin = (archivo) => path.basename(archivo, path.extname(archivo));
+  const colores = { snes: ['#8B5CF6', '#FFD23F', '#1A1030'], arcade: ['#E53935', '#FFD23F', '#1A0505'], neogeo: ['#FFB020', '#1E90FF', '#1A1405'], psx: ['#5A6A7A', '#C9D2E8', '#0B1116'] };
+  await dibujarArchivo(path.join(medios, 'snes', 'covers', 'mario.png'), { tipo: 'imagen', ancho: 300, alto: 420, titulo: 'Super Mario World', colores: colores.snes });
+  await dibujarArchivo(path.join(medios, 'snes', 'screenshots', 'mario.png'), { tipo: 'imagen', ancho: 320, alto: 240, titulo: 'Pantalla de juego', colores: colores.snes });
+  await dibujarArchivo(path.join(medios, 'snes', 'videos', 'mario.webm'), { tipo: 'video', ancho: 320, alto: 240, titulo: 'Super Mario World', colores: colores.snes, segundos: 3 });
+  await dibujarArchivo(path.join(medios, 'snes', 'covers', 'zelda.png'), { tipo: 'imagen', ancho: 420, alto: 300, titulo: 'Caja horizontal', colores: colores.snes });
+  await escribirGamelist(path.join(medios, 'snes', 'gamelist.xml'), [
+    { path: `./${JUEGOS.snes}`, name: 'Super Mario World', thumbnail: './covers/mario.png', image: './screenshots/mario.png', video: './videos/mario.webm', releasedate: '19901121T000000', developer: 'Estudio de prueba', genre: 'Plataformas', players: '1-2', desc: 'Datos de prueba de Neo Arcade: la descripción sale del gamelist.xml y se corta en tres líneas para no invadir el pie.' },
+    { path: `./${TITULO_LARGO}`, name: 'The Legend of Zelda: A Link to the Past', thumbnail: './covers/zelda.png', releasedate: '19911121', genre: 'Aventura' },
+  ]);
+  await escribirGamelist(path.join(medios, 'arcade', 'gamelist.xml'), [
+    { path: `./${JUEGOS.arcade}`, name: 'Street Fighter II: The World Warrior', thumbnail: './covers/no-existe.png', developer: 'Estudio de prueba', releasedate: '1991' },
+  ]);
+  await dibujarArchivo(path.join(medios, 'neogeo', 'covers', `${sin(JUEGOS.neogeo)}.png`), { tipo: 'imagen', ancho: 300, alto: 420, titulo: 'Metal Slug', colores: colores.neogeo });
+  await dibujarArchivo(path.join(medios, 'neogeo', 'videos', `${sin(JUEGOS.neogeo)}.webm`), { tipo: 'video', ancho: 320, alto: 240, titulo: 'Metal Slug', colores: colores.neogeo, segundos: 3 });
+  await dibujarArchivo(path.join(carpeta('roms'), 'psx', 'media', 'images', 'mgs.png'), { tipo: 'imagen', ancho: 300, alto: 300, titulo: 'Metal Gear Solid', colores: colores.psx });
+  await escribirGamelist(path.join(carpeta('roms'), 'psx', 'gamelist.xml'), [
+    { path: `./${JUEGOS.psx}`, name: 'Metal Gear Solid', image: './media/images/mgs.png', genre: 'Acción' },
+  ]);
+  cerrarDibujo();
 }
 
 async function ventanaDeLaApp() {
@@ -100,12 +62,10 @@ async function ventanaDeLaApp() {
 const cuando = (emisor, evento) => new Promise((listo) => emisor.once(evento, () => listo(Date.now())));
 
 async function principal() {
-  const entorno = await prepararEntorno();
-  await import('../core/main.js');
   await app.whenReady();
   const ventana = await ventanaDeLaApp();
   const neo = await controlar(ventana);
-  await Promise.all([mkdir(FASE2, { recursive: true }), mkdir(FASE3, { recursive: true })]);
+  await Promise.all([FASE2, FASE3, FASE5].map((carpeta) => mkdir(carpeta, { recursive: true })));
   const leer = (js) => ventana.webContents.executeJavaScript(js);
   const tituloElegido = () => leer(`document.querySelector('[aria-label="Juego seleccionado"] [data-ref="titulo"]').textContent`);
   const sistemaActivo = () => leer(`document.querySelector('nav [aria-pressed="true"] span')?.textContent ?? ''`);
@@ -173,6 +133,51 @@ async function principal() {
     await guardar(FASE3, nombre);
     await neo.tecla('Enter'); // VOLVER AL INICIO
   }
+
+  // Fase 5: medios propios dibujados aquí (scripts/medios-de-prueba.mjs), de las tres formas posibles.
+  const lineas5 = [];
+  const anotar5 = (linea) => {
+    lineas5.push(linea);
+    console.log(linea);
+  };
+  await prepararMedios(entorno);
+  ventana.webContents.reload();
+  await cuando(ventana.webContents, 'did-finish-load');
+  await leer('document.fonts.ready.then(() => true)');
+  await esperar(1500);
+  const caratulasVisibles = () => leer(`[...document.querySelectorAll('img[data-caratula]')].filter((i) => i.complete && i.naturalWidth > 0).length`);
+  const videoCorriendo = () => leer(`(() => { const v = document.querySelector('[aria-label="Vista previa"] video'); return Boolean(v && v.getAttribute('src') && !v.paused && v.currentTime > 0); })()`);
+  await irA('SNES');
+  await esperar(500);
+  anotar5(`SNES (gamelist en media/): «${await tituloElegido()}», ${await caratulasVisibles()} carátulas cargadas, vídeo corriendo al instante: ${await videoCorriendo()}`);
+  await guardar(FASE5, '01-caratulas-y-captura');
+  await esperar(ESPERA_VIDEO_MS + 1500);
+  anotar5(`Tras ${(ESPERA_VIDEO_MS + 2000) / 1000} s en el mismo juego, vídeo corriendo: ${await videoCorriendo()}`);
+  await guardar(FASE5, '02-video-en-la-vista-previa');
+  anotar5(`Ficha: «${await leer(`document.querySelector('[aria-label="Juego seleccionado"] [data-ref="meta"]').textContent`)}»`);
+  await neo.tecla('Down');
+  await neo.tecla('Down');
+  await neo.tecla('Enter', 600);
+  await guardar(FASE5, '03-detalles-con-caratula');
+  await neo.tecla('Backspace');
+  await neo.tecla('Up');
+  await neo.tecla('Up');
+  await neo.tecla('Right', 600);
+  anotar5(`Carátula horizontal: «${await tituloElegido()}», vídeo corriendo: ${await videoCorriendo()} (no tiene)`);
+  await guardar(FASE5, '04-caratula-horizontal');
+  await irA('ARCADE');
+  await esperar(800);
+  anotar5(`ARCADE (carátula del gamelist que no existe): «${await tituloElegido()}», ${await caratulasVisibles()} carátulas cargadas`);
+  await guardar(FASE5, '05-caratula-rota-usa-reemplazo');
+  await irA('NEO GEO');
+  await esperar(ESPERA_VIDEO_MS + 1500);
+  anotar5(`NEO GEO (sin gamelist, por carpetas): «${await tituloElegido()}», ${await caratulasVisibles()} carátulas cargadas, vídeo corriendo: ${await videoCorriendo()}`);
+  await guardar(FASE5, '06-medios-por-carpetas');
+  await irA('PLAYSTATION');
+  await esperar(800);
+  anotar5(`PLAYSTATION (gamelist en roms/, solo <image>): «${await tituloElegido()}», ${await caratulasVisibles()} carátulas cargadas`);
+  await guardar(FASE5, '07-gamelist-en-roms');
+  await writeFile(path.join(FASE5, 'resultado.txt'), `${lineas5.join('\n')}\n`);
 
   // Fase 2 otra vez: sin ningún juego.
   for (const sistema of entorno.sistemas) {
