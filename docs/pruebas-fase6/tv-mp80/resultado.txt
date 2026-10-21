@@ -1,0 +1,58 @@
+== Favoritos
+Favoritos guardados: ['nes/Aero.nes', 'nes/Bomber.nes']
+== Recientes
+  salir con select-start: de vuelta en 1555 ms
+  salir con select-start: de vuelta en 1548 ms
+  salir con select-start: de vuelta en 1556 ms
+  salir con select-start: de vuelta en 1555 ms
+Recientes guardados: ['snes/Prueba D.sfc', 'snes/Prueba C.sfc', 'snes/Prueba B.sfc', 'snes/Prueba A.sfc']
+== Configuración
+  salir con start: de vuelta en 3240 ms
+retroarch.cfg: input_quit_gamepad_combo = "7"
+== Cerrar y volver a abrir
+Antes de cerrar: recientes snes/Prueba D.sfc naranja mantener-start
+Al volver a abrir: recientes snes/Prueba D.sfc naranja mantener-start
+
+datos-usuario.json:
+{
+  "version": 1,
+  "favoritos": [
+    "nes/Aero.nes",
+    "nes/Bomber.nes"
+  ],
+  "recientes": [
+    {
+      "id": "snes/Prueba D.sfc",
+      "fecha": "2026-10-21T01:39:03.977Z"
+    },
+    {
+      "id": "snes/Prueba C.sfc",
+      "fecha": "2026-10-21T01:38:36.570Z"
+    },
+    {
+      "id": "snes/Prueba B.sfc",
+      "fecha": "2026-10-21T01:38:28.141Z"
+    },
+    {
+      "id": "snes/Prueba A.sfc",
+      "fecha": "2026-10-21T01:38:19.735Z"
+    }
+  ],
+  "ultimoPorSistema": {
+    "todos": "snes/Prueba A.sfc",
+    "favoritos": "nes/Bomber.nes",
+    "nes": "nes/Aero.nes",
+    "snes": "snes/Prueba A.sfc",
+    "recientes": "snes/Prueba D.sfc"
+  },
+  "ultimoSistema": "recientes",
+  "perfil": "normal",
+  "ajustes": {
+    "crt": true,
+    "neon": "alto",
+    "animaciones": true,
+    "volumen": 70,
+    "tema": "naranja",
+    "salir": "mantener-start"
+  }
+}

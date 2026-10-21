@@ -1,9 +1,9 @@
-Detalles de «THE LEGEND OF ZELDA: A LINK TO THE PAST»: «» (se abrió en la prueba de la fase 3)
+Detalles de «SUPER MARIO WORLD»: «Última partida: hoy a las 19:40» (se abrió en la prueba de la fase 3)
 Filtro Favoritos: 2 juegos
 Filtro Recientes: «JUEGO PROPIO» primero
 Buscar con el teclado físico: «MET», 2 juegos coinciden
 Tras Enter: barra en ««MET»», elegido «METAL GEAR SOLID»
 Con tema magenta y neón bajo: --acento = #FF168C
-Al volver a abrir: barra en «SNES», elegido «THE LEGEND OF ZELDA: A LINK TO THE PAST» (antes: «THE LEGEND OF ZELDA: A LINK TO THE PAST»), --acento = #FF168C
+Al volver a abrir: barra en «SNES», elegido «SUPER MARIO WORLD» (antes: «SUPER MARIO WORLD»), --acento = #FF168C
 Tras RESTABLECER: --acento = #1E90FF
 datos-usuario.json: 2 favoritos, 2 recientes, último sistema «snes», ajustes {"crt":true,"neon":"alto","animaciones":true,"volumen":70,"tema":"azul","salir":"select-start"}
