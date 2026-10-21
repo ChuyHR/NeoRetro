@@ -97,6 +97,7 @@ function despachar(accion) {
   if (puente) sonidos.tocar(sonidoDelCambio(anterior, estado), estado.ajustes.volumen);
   if (puente && estado.ventana === 'lanzamiento' && anterior.ventana !== 'lanzamiento') jugar();
   efectosDelMapeo(anterior);
+  if (estado.equipo && !anterior.equipo) pedirEquipo(estado.equipo);
   guardarSiCambio();
 }
 
@@ -164,6 +165,14 @@ function efectosDelMapeo(anterior) {
   } else if (PASOS_MAPEO[ahora.paso][2]) {
     temporizadorMapeo = setTimeout(() => despachar('omitir-paso'), ESPERA_OMITIR_MS);
   }
+}
+
+// Apagar o reiniciar, ya confirmado. En la versión final el equipo se apaga y el aviso queda a la vista
+// hasta el final; en desarrollo el núcleo no hace nada y el aviso se quita al rato.
+async function pedirEquipo(accion) {
+  if (!puente) return;
+  await puente.equipo(accion);
+  setTimeout(() => despachar('equipo-hecho'), 3000);
 }
 
 // «Probar control»: B sostenido dos segundos cierra la pantalla.

@@ -1,5 +1,6 @@
 // Ventana de configuración. Del prototipo viene el efecto CRT y su estilo; lo demás (neón, animaciones,
-// volumen, color del tema, combinación para salir, el mando y Restablecer) sigue ese mismo estilo. Cada
+// volumen, color del tema, combinación para salir, el mando, apagar o reiniciar el equipo y
+// Restablecer) sigue ese mismo estilo. Cada
 // fila es un ajuste: el borde del color del tema marca la opción elegida y el brillo marca el foco.
 import { SALIDAS, TEMAS } from '../ajustes.js';
 import { BOTONES } from '../estado.js';
@@ -26,6 +27,8 @@ export function crearConfiguracion(lienzo, { despachar }) {
       <div style="${FILA}"><span>Salir del juego</span><div style="display: flex; gap: 10px">${Object.entries(SALIDAS).map(([salida, texto]) => boton(`salir-${salida}`, texto)).join('')}</div></div>
       <div style="${FILA}"><span>Control</span><div style="display: flex; gap: 10px">${boton('probar-control', 'PROBAR')}${boton('configurar-control', 'CONFIGURAR')}</div></div>
       <span data-ref="mandos" style="margin-top: -6px; font-family: 'Share Tech Mono', monospace; font-size: 24px; color: #8997B8"></span>
+      <div style="${FILA}"><span>Equipo</span><div style="display: flex; gap: 10px">${boton('apagar', 'APAGAR')}${boton('reiniciar', 'REINICIAR')}</div></div>
+      <span data-ref="aviso" style="display: none; font-family: 'Share Tech Mono', monospace; font-size: 24px; color: #FFB020"></span>
       <div style="display: flex; gap: 14px; margin-top: 10px">
         <button data-boton="restablecer" style="height: 52px; padding: 0 26px; border-radius: 10px; border: 2px solid #2A3B70; background: #0E1730; color: #F5F7FF; font-family: 'Pixelify Sans', monospace; font-weight: 600; font-size: 22px"></button>
         <button data-boton="cerrar" style="height: 52px; padding: 0 26px; border-radius: 10px; border: 3px solid var(--acento); background: #0B2350; color: #F5F7FF; font-family: 'Pixelify Sans', monospace; font-weight: 700; font-size: 22px">VOLVER AL INICIO</button>
@@ -53,9 +56,13 @@ export function crearConfiguracion(lienzo, { despachar }) {
       if (!visible) return;
       const enUso = elegidas(estado.ajustes);
       for (const [valor, elemento] of botones) {
-        if (valor === 'restablecer' || valor === 'cerrar') continue;
+        if (['restablecer', 'cerrar', 'apagar', 'reiniciar'].includes(valor)) continue;
         elemento.style.borderColor = enUso.has(valor) ? 'var(--acento)' : '#2A3B70';
       }
+      botones.get('apagar').textContent = estado.confirmar === 'apagar' ? 'PULSA OTRA VEZ PARA APAGAR' : 'APAGAR';
+      botones.get('reiniciar').textContent = estado.confirmar === 'reiniciar' ? 'PULSA OTRA VEZ PARA REINICIAR' : 'REINICIAR';
+      refs.aviso.style.display = estado.equipo ? '' : 'none';
+      refs.aviso.textContent = estado.equipo === 'apagar' ? 'Apagando el equipo…' : 'Reiniciando el equipo…';
       refs.volumen.textContent = `${estado.ajustes.volumen} %`;
       botones.get('restablecer').textContent = estado.confirmar === 'restablecer' ? 'PULSA OTRA VEZ PARA RESTABLECER' : 'RESTABLECER AJUSTES';
       const nombres = estado.mandos.map(({ nombre }) => nombre);

@@ -18,6 +18,7 @@ export const FILAS_CONFIGURACION = [
   ['tema-azul', 'tema-magenta', 'tema-violeta', 'tema-naranja'],
   ['salir-select-start', 'salir-mantener-start', 'salir-lr-select-start'],
   ['probar-control', 'configurar-control'],
+  ['apagar', 'reiniciar'],
   ['restablecer'],
   ['cerrar'],
 ];
@@ -57,7 +58,8 @@ export function estadoInicial({ seleccion = null, favoritos = [], recientes = []
     accion: 0,
     ventana: null,
     foco: 0,
-    confirmar: null, // 'restablecer' tras la primera pulsación de RESTABLECER
+    confirmar: null, // 'restablecer', 'apagar' o 'reiniciar' tras su primera pulsación
+    equipo: null, // 'apagar' o 'reiniciar' ya confirmado: app/inicio.js se lo pide al núcleo
     ajustes: { ...AJUSTES_INICIALES, ...ajustes },
     error: null, // mensaje para el usuario si un juego no se pudo abrir
     entrada: 'teclado', // lo último que se usó: el pie muestra sus teclas o sus botones
@@ -357,6 +359,8 @@ function enVentana(estado, tipo, valor, datos) {
       return estado.ventana === 'configuracion' ? cerrar(estado) : estado;
     case 'omitir-paso':
       return omitirPaso(estado);
+    case 'equipo-hecho': // en desarrollo no se apaga nada: el aviso se quita
+      return { ...estado, equipo: null };
     // Las dos siguientes las produce el lanzador, no el teclado.
     case 'juego-terminado':
       return cerrar(estado);
@@ -431,6 +435,10 @@ function pulsar(estado, boton, datos) {
       return estado.confirmar === 'restablecer'
         ? { ...estado, ajustes: { ...AJUSTES_INICIALES }, confirmar: null }
         : { ...estado, confirmar: 'restablecer' };
+    case 'apagar':
+    case 'reiniciar':
+      // También con dos pulsaciones: apagar sin querer en medio de una partida no tiene vuelta atrás.
+      return estado.confirmar === boton ? { ...estado, equipo: boton, confirmar: null } : { ...estado, confirmar: boton };
     case 'cerrar':
       return cerrar(estado);
     default:

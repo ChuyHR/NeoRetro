@@ -5,14 +5,17 @@
 # Xfce solo aplica mientras la MP80 use ese escritorio. Se puede correr otra vez sin romper nada.
 # Uso, como el usuario de la sesión (pide sudo para lo del sistema):
 #   bash scripts/instalador/sin-suspension.sh
+# Con --solo-sistema hace solo la parte del sistema (así lo llama instalar-neo-arcade.sh, como root).
 # Para deshacer lo del sistema: sudo systemctl unmask sleep.target suspend.target hibernate.target
 #   hybrid-sleep.target suspend-then-hibernate.target y borrar /etc/systemd/logind.conf.d/neoarcade.conf
 set -euo pipefail
+SUDO=sudo
+[ "$(id -u)" = 0 ] && SUDO=
 
 echo "== Sistema: suspensión e hibernación bloqueadas"
-sudo systemctl mask sleep.target suspend.target hibernate.target hybrid-sleep.target suspend-then-hibernate.target
-sudo mkdir -p /etc/systemd/logind.conf.d
-sudo tee /etc/systemd/logind.conf.d/neoarcade.conf >/dev/null <<'LOGIND'
+$SUDO systemctl mask sleep.target suspend.target hibernate.target hybrid-sleep.target suspend-then-hibernate.target
+$SUDO mkdir -p /etc/systemd/logind.conf.d
+$SUDO tee /etc/systemd/logind.conf.d/neoarcade.conf >/dev/null <<'LOGIND'
 # Neo Arcade: las teclas de suspender y la inactividad no hacen nada. El botón de encendido conserva
 # su comportamiento (apagar).
 [Login]
@@ -23,7 +26,8 @@ HandleLidSwitchExternalPower=ignore
 IdleAction=ignore
 LOGIND
 # HUP vuelve a leer la configuración sin cerrar la sesión abierta (reiniciar logind sí la cerraría).
-sudo systemctl kill -s HUP systemd-logind
+$SUDO systemctl kill -s HUP systemd-logind
+[ "${1:-}" = --solo-sistema ] && exit 0
 
 # Lo demás es de la sesión gráfica; sin ella (por ejemplo, desde un SSH sin escritorio) se omite.
 export XDG_RUNTIME_DIR="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}"

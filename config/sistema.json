@@ -1,0 +1,7 @@
+{
+  "_nota": "Comandos del sistema dedicado (fase 8). apagar y reiniciar se usan desde Configuración; en desarrollo solo se anotan en el registro, para no apagar la máquina donde se programa. terminal es la de mantenimiento, que se abre manteniendo Ctrl + Alt + Mayús + M durante los segundos de segundosTerminal (ajuste 5). Sin shell de por medio, como los emuladores.",
+  "apagar": ["systemctl", "poweroff"],
+  "reiniciar": ["systemctl", "reboot"],
+  "terminal": ["foot"],
+  "segundosTerminal": 3
+}

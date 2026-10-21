@@ -69,14 +69,14 @@ test('Configuración va por filas: arriba y abajo cambian de ajuste, izquierda y
   assert.equal(pasos([...abajo(4), 'derecha', 'derecha', 'aceptar'], configuracion).ajustes.tema, 'violeta');
   assert.equal(pasos([...abajo(5), 'derecha', 'aceptar'], configuracion).ajustes.salir, 'mantener-start');
   assert.equal(pasos([...abajo(6), 'aceptar'], configuracion).ventana, 'prueba-control');
-  assert.equal(pasos([...abajo(8), 'aceptar'], configuracion).ventana, null);
+  assert.equal(pasos([...abajo(9), 'aceptar'], configuracion).ventana, null);
 });
 
 test('Restablecer pide una segunda pulsación y devuelve los ajustes de fábrica', () => {
   const cambiados = pasos(['ajustes', 'derecha', 'aceptar', 'abajo', 'derecha', 'aceptar']);
   assert.equal(cambiados.ajustes.crt, false);
   assert.equal(cambiados.ajustes.neon, 'bajo');
-  const una = pasos(['abajo', 'abajo', 'abajo', 'abajo', 'abajo', 'abajo', 'aceptar'], cambiados);
+  const una = pasos(['abajo', 'abajo', 'abajo', 'abajo', 'abajo', 'abajo', 'abajo', 'aceptar'], cambiados);
   assert.equal(una.confirmar, 'restablecer');
   assert.equal(una.ajustes.neon, 'bajo');
   const dos = pasos(['aceptar'], una);
@@ -171,6 +171,17 @@ test('«Probar control» enciende lo que se mantiene pulsado y anota el último 
 test('el pie sigue a la última entrada usada', () => {
   assert.equal(estadoInicial().entrada, 'teclado');
   assert.equal(pasos([{ tipo: 'entrada', valor: 'mando' }]).entrada, 'mando');
+});
+
+test('Apagar y Reiniciar piden una segunda pulsación; moverse cancela la confirmación', () => {
+  const equipo = pasos(['ajustes', 'abajo', 'abajo', 'abajo', 'abajo', 'abajo', 'abajo', 'abajo']);
+  const una = pasos(['aceptar'], equipo);
+  assert.equal(una.confirmar, 'apagar');
+  assert.equal(una.equipo, null);
+  assert.equal(pasos(['aceptar'], una).equipo, 'apagar');
+  assert.equal(pasos(['derecha', 'aceptar'], una).confirmar, 'reiniciar');
+  assert.equal(pasos(['derecha', 'aceptar', 'aceptar'], una).equipo, 'reiniciar');
+  assert.equal(pasos(['equipo-hecho'], pasos(['aceptar'], una)).equipo, null);
 });
 
 test('Favoritos aparece al final de la barra cuando hay alguno y se va al quitar el último', () => {

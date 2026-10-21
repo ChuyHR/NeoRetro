@@ -2,6 +2,7 @@
 // interfaz le pide por el puente de core/preload.cjs: la biblioteca de juegos, abrir un juego y
 // guardar el mapeo de un mando.
 import { app, BrowserWindow, contentTracing, ipcMain, Menu, protocol } from 'electron';
+import { spawn } from 'node:child_process';
 import { readFile, rename, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
@@ -148,6 +149,38 @@ ipcMain.handle('jugar', async (_evento, id, opciones = {}) => {
   }
 });
 
+// Apagar o reiniciar desde Configuración. En desarrollo solo se anota: apagaría la máquina donde se
+// programa. En la versión final, la sesión de quiosco es la sesión activa del equipo y el sistema le
+// permite apagar sin contraseña.
+ipcMain.handle('equipo', async (_evento, accion) => {
+  const comando = { apagar: configuracion.sistema.apagar, reiniciar: configuracion.sistema.reiniciar }[accion];
+  if (!comando) return false;
+  await registro.anotar('equipo', accion, DESARROLLO ? 'en desarrollo no se ejecuta' : comandoLegible({ programa: comando[0], argumentos: comando.slice(1) }));
+  if (DESARROLLO) return true;
+  await almacen.vaciar();
+  spawn(comando[0], comando.slice(1), { stdio: 'ignore', detached: true }).unref();
+  return true;
+});
+
+// Terminal de mantenimiento (ajuste 5): Ctrl + Alt + Mayús + M sostenidas unos segundos. Mantener una
+// tecla repite su keyDown, así que basta con medir desde el primero; soltarla empieza de cero.
+let combinacionDesde = null;
+function vigilarTerminal(entrada) {
+  const esLaCombinacion = entrada.control && entrada.alt && entrada.shift && entrada.key.toLowerCase() === 'm';
+  if (entrada.type !== 'keyDown' || !esLaCombinacion) {
+    if (entrada.type === 'keyUp') combinacionDesde = null;
+    return;
+  }
+  combinacionDesde ??= Date.now();
+  if (combinacionDesde === -1 || Date.now() - combinacionDesde < configuracion.sistema.segundosTerminal * 1000) return;
+  combinacionDesde = -1; // una sola terminal por pulsación
+  const [programa, ...argumentos] = configuracion.sistema.terminal;
+  registro.anotar('equipo', 'terminal de mantenimiento', programa);
+  const terminal = spawn(programa, argumentos, { stdio: 'ignore', detached: true });
+  terminal.on('error', (error) => registro.anotar('error', 'no se pudo abrir la terminal', String(error)));
+  terminal.unref();
+}
+
 // Al cerrar el emulador, la ventana vuelve en el mismo juego y recupera el foco. Ponerla encima un
 // momento evita que el sistema de ventanas deje el foco en otra parte (plan, tabla de riesgos).
 function volverAlFrente() {
@@ -186,6 +219,7 @@ function crearVentana() {
 
   ventana.webContents.on('before-input-event', (_evento, entrada) => {
     if (DESARROLLO && entrada.type === 'keyDown' && entrada.key === 'Escape') app.quit();
+    vigilarTerminal(entrada);
   });
   // Solo al medir: NEO_ARCADE_CSS agrega reglas a la página, para ver cuánto pesa un efecto apagándolo.
   if (MEDIR && process.env.NEO_ARCADE_CSS) {
