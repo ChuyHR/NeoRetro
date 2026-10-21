@@ -12,6 +12,7 @@ import path from 'node:path';
 import { promisify } from 'node:util';
 
 import { expandirRuta } from './configuracion.js';
+import { agruparDiscos } from './discos.js';
 import { escanearBiblioteca } from './escaner/escaner.js';
 import { archivoDeSistema } from './lanzador/lanzador.js';
 import { revisarJuegos } from './revision-juegos.js';
@@ -122,7 +123,10 @@ async function carpetasDeJuegos(configuracion, biblioteca, carpetaBios) {
     const carpeta = path.join(configuracion.carpetaRoms, sistema.carpeta);
     const hay = await existe(carpeta);
     const legible = hay && await existe(carpeta, constants.R_OK | constants.X_OK);
-    resultado.push({ sistema: sistema.nombreLargo, carpeta, existe: hay, legible, juegos: biblioteca.sistemas[sistema.id]?.juegos.length ?? 0 });
+    // Como en la app: un juego de varios discos cuenta una vez.
+    const escaneados = biblioteca.sistemas[sistema.id]?.juegos ?? [];
+    const conDiscos = sistema.extensiones?.some((extension) => extension.toLowerCase() === '.m3u');
+    resultado.push({ sistema: sistema.nombreLargo, carpeta, existe: hay, legible, juegos: (conDiscos ? agruparDiscos(escaneados) : escaneados).length });
   }
   // Neo Geo: FBNeo necesita neogeo.zip junto a los juegos o en su carpeta de BIOS.
   const neogeo = configuracion.sistemas.find(({ id }) => id === 'neogeo');

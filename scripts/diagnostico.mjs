@@ -47,7 +47,7 @@ console.log('CARPETAS DE JUEGOS');
 console.log(`  ${casa(configuracion.carpetaRoms)}${informe.alcanceFlatpak === false ? '  (¡los emuladores de Flathub no pueden leer esta carpeta!)' : ''}`);
 for (const carpeta of informe.juegos.carpetas) {
   grave ||= carpeta.existe && !carpeta.legible;
-  const estado = !carpeta.existe ? 'no existe' : !carpeta.legible ? 'no se puede leer: revisa sus permisos' : `${carpeta.juegos} juegos`;
+  const estado = !carpeta.existe ? 'no existe' : !carpeta.legible ? 'no se puede leer: revisa sus permisos' : carpeta.juegos === 1 ? '1 juego' : `${carpeta.juegos} juegos`;
   console.log(`  ${marca(carpeta.existe && carpeta.legible)} ${carpeta.sistema.padEnd(16)} ${estado}`);
 }
 if (informe.revision) {

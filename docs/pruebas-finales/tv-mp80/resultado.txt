@@ -1,0 +1,86 @@
+== Diagnóstico de la biblioteca de prueba (npm run diagnostico -- --juegos)
+EMULADORES
+  OK    RetroArch  versión 1.22.2, Flathub
+          configuración: ~/.var/app/org.libretro.RetroArch/config/retroarch/retroarch.cfg
+          núcleos:       ~/.var/app/org.libretro.RetroArch/config/retroarch/cores
+          BIOS:          ~/.var/app/org.libretro.RetroArch/config/retroarch/system
+  OK    Dolphin    versión 2609a, Flathub
+  OK    PPSSPP     versión 1.20.4, Flathub
+NÚCLEOS DE RETROARCH
+  OK    fbneo
+  OK    mesen
+  OK    snes9x
+  OK    mupen64plus_next
+  OK    mgba
+  OK    genesis_plus_gx
+  OK    picodrive
+  OK    flycast
+  OK    swanstation
+  OK    mednafen_pce
+  OK    stella
+BIOS
+  FALTA SEGA CD: hace falta una de bios_CD_U.bin, bios_CD_E.bin, bios_CD_J.bin en ~/.var/app/org.libretro.RetroArch/config/retroarch/system
+  FALTA PLAYSTATION: hace falta una de scph5501.bin, scph5500.bin, scph5502.bin en ~/.var/app/org.libretro.RetroArch/config/retroarch/system
+  FALTA NEO GEO: neogeo.zip junto a sus juegos o en la carpeta de BIOS
+CARPETAS DE JUEGOS
+  ~/juegos-de-prueba-final/roms
+  FALTA ARCADE           no existe
+  OK    NEO GEO          1 juegos
+  FALTA CAPCOM CPS       no existe
+  FALTA NES              no existe
+  OK    SUPER NINTENDO   3 juegos
+  FALTA NINTENDO 64      no existe
+  FALTA GAME BOY         no existe
+  FALTA GAME BOY COLOR   no existe
+  FALTA GAME BOY ADVANCE no existe
+  FALTA GAMECUBE         no existe
+  FALTA MASTER SYSTEM    no existe
+  FALTA SEGA GENESIS     no existe
+  FALTA SEGA CD          no existe
+  FALTA SEGA 32X         no existe
+  FALTA GAME GEAR        no existe
+  OK    DREAMCAST        2 juegos
+  OK    PLAYSTATION      2 juegos
+  FALTA PSP              no existe
+  OK    PC ENGINE        1 juegos
+  FALTA ATARI 2600       no existe
+  FALTA PORTS            no existe
+REVISIÓN DE JUEGOS: 2 de 9 sin problemas
+  SIN BIOS  neogeo/Neo Geo de prueba.zip: falta neogeo.zip
+  DUPLICADO snes/Prueba de control (copia).sfc: posible duplicado de snes/Prueba de control (Neo Arcade).sfc
+  DUPLICADO snes/Prueba de control (Neo Arcade).sfc: posible duplicado de snes/Prueba de control (copia).sfc
+  DAÑADO    snes/Vacío.sfc: el archivo está vacío
+  SIN BIOS  psx/Disco doble (Disc 1).cue: falta la BIOS (scph5501.bin, scph5500.bin, scph5502.bin)
+  SIN BIOS  psx/Disco doble (Disc 2).cue: falta la BIOS (scph5501.bin, scph5500.bin, scph5502.bin)
+  NO SIRVE  pcengine/Pista perdida.cue: faltan: pista que no existe.bin
+  Los duplicados no se borran: decide tú cuál conservar.
+MEDIOS: ~/juegos-de-prueba-final/media 
+MANDOS CONECTADOS: ninguno
+LO QUE SE RECUERDA: (no se encontró)
+
+== Juegos de varios discos y BIOS
+OK: Disco doble sin BIOS avisó antes de abrir RetroArch
+RetroArch recibió: retroarch -f -L ~/.var/app/org.libretro.RetroArch/config/retroarch/cores/flycast_libretro.so ~/juegos-de-prueba-final/datos/listas/cee126a854b8276a.m3u
+OK: RetroArch abrió una lista .m3u; su contenido:
+    ~/juegos-de-prueba-final/roms/dreamcast/Dreamcast doble (Disc 1).gdi
+    ~/juegos-de-prueba-final/roms/dreamcast/Dreamcast doble (Disc 2).gdi
+OK: RetroArch puede leer la lista desde su caja de Flathub
+Flycast no arrancó los discos de mentira (salida 1 en 355 ms): Neo Arcade avisó
+OK: sin neogeo.zip avisó antes de abrir RetroArch
+== Tiempo jugado
+Jugando 65 s
+Partidas en datos-usuario.json:
+{
+  "snes/Prueba de control (copia).sfc": {
+    "veces": 1,
+    "segundos": 65
+  }
+}
+
+Registro de Neo Arcade:
+2026-10-21T02:43:53.350Z	biblioteca	34 ms	21 sistemas leídos del disco	neogeo=1 snes=3 dreamcast=2 psx=2 pcengine=1	0 con carátula
+2026-10-21T02:43:56.546Z	error	flatpak run org.libretro.RetroArch -f -L ~/.var/app/org.libretro.RetroArch/config/retroarch/cores/swanstation_libretro.so '~/juegos-de-prueba-final/roms/psx/Disco doble (Disc 1).cue'	Falta la BIOS de PLAYSTATION. Copia scph5501.bin, scph5500.bin o scph5502.bin en la carpeta ~/.var/app/org.libretro.RetroArch/config/retroarch/system.	
+2026-10-21T02:43:58.139Z	emuladores	RetroArch 1.22.2 (Flathub)	Dolphin 2609a (Flathub)	PPSSPP 1.20.4 (Flathub)
+2026-10-21T02:44:02.347Z	lanzamiento	flatpak run org.libretro.RetroArch -f -L ~/.var/app/org.libretro.RetroArch/config/retroarch/cores/flycast_libretro.so ~/juegos-de-prueba-final/datos/listas/cee126a854b8276a.m3u	salida 1	355 ms	proceso 36252
+2026-10-21T02:44:10.986Z	error	flatpak run org.libretro.RetroArch -f -L ~/.var/app/org.libretro.RetroArch/config/retroarch/cores/fbneo_libretro.so '~/juegos-de-prueba-final/roms/neogeo/Neo Geo de prueba.zip'	Falta neogeo.zip, el archivo de sistema de NEO GEO. Cópialo junto a sus juegos, en la carpeta ~/juegos-de-prueba-final/roms/neogeo.	
+2026-10-21T02:45:22.512Z	lanzamiento	flatpak run org.libretro.RetroArch -f -L ~/.var/app/org.libretro.RetroArch/config/retroarch/cores/snes9x_libretro.so '~/juegos-de-prueba-final/roms/snes/Prueba de control (copia).sfc'	salida 0	65357 ms	proceso 36446

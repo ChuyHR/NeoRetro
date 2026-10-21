@@ -1,0 +1,12 @@
+Neo Arcade 0.1.0 en modo desarrollo
+[35986:1020/204530.552686:ERROR:content/common/zygote/zygote_communication_linux.cc:291] Failed to send GetTerminationStatus message to zygote
+[35986:1020/204530.559535:ERROR:content/browser/network_service_instance_impl.cc:650] Network service crashed or was terminated, restarting service.
+[35986:1020/204530.583250:ERROR:content/common/zygote/zygote_communication_linux.cc:291] Failed to send GetTerminationStatus message to zygote
+[35986:1020/204530.590933:ERROR:content/browser/gpu/gpu_process_host.cc:1029] GPU process launch failed: error_code=1002
+[35986:1020/204530.594633:ERROR:content/browser/gpu/gpu_process_host.cc:1029] GPU process launch failed: error_code=1002
+[35986:1020/204530.595490:ERROR:content/browser/gpu/gpu_process_host.cc:1029] GPU process launch failed: error_code=1002
+[35986:1020/204530.596153:ERROR:content/browser/gpu/gpu_process_host.cc:1029] GPU process launch failed: error_code=1002
+[35986:1020/204530.596723:ERROR:content/browser/gpu/gpu_process_host.cc:1029] GPU process launch failed: error_code=1002
+[35986:1020/204530.597257:ERROR:content/browser/gpu/gpu_process_host.cc:1029] GPU process launch failed: error_code=1002
+[35986:1020/204530.597271:FATAL:content/browser/gpu/gpu_data_manager_impl_private.cc:417] GPU process isn't usable. Goodbye.
+/home/arcade/NeoRetro/node_modules/electron/dist/electron exited with signal SIGTRAP
