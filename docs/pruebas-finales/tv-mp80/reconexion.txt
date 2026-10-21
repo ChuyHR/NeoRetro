@@ -1,0 +1,9 @@
+Primer mando: 3 pasos a la derecha
+Mando reconectado: 3 pasos a la derecha
+OK: el mando sigue funcionando tras desconectarlo y volver a conectarlo
+
+Registro de Neo Arcade:
+2026-10-21T02:50:01.004Z	mando	conectado	Microsoft X-Box 360 pad	045e:028e:Microsoft X-Box 360 pad	estandar
+2026-10-21T02:50:05.295Z	mando	desconectado	Microsoft X-Box 360 pad
+2026-10-21T02:50:07.798Z	mando	conectado	Microsoft X-Box 360 pad	045e:028e:Microsoft X-Box 360 pad	estandar
+2026-10-21T02:50:12.211Z	mando	desconectado	Microsoft X-Box 360 pad

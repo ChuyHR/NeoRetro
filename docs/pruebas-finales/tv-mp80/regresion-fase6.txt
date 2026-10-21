@@ -1,0 +1,16 @@
+== Favoritos
+Favoritos guardados: ['nes/Aero.nes', 'nes/Bomber.nes']
+== Recientes
+  salir con select-start: de vuelta en 1547 ms
+  salir con select-start: de vuelta en 1551 ms
+  salir con select-start: de vuelta en 1546 ms
+  salir con select-start: de vuelta en 1554 ms
+Recientes guardados: ['snes/Prueba D.sfc', 'snes/Prueba C.sfc', 'snes/Prueba B.sfc', 'snes/Prueba A.sfc']
+== Configuración
+  salir con start: de vuelta en 3249 ms
+retroarch.cfg: input_quit_gamepad_combo = "7"
+== Cerrar y volver a abrir
+Antes de cerrar: recientes snes/Prueba D.sfc naranja mantener-start
+Al volver a abrir: recientes snes/Prueba D.sfc naranja mantener-start
+
+datos-usuario.json:

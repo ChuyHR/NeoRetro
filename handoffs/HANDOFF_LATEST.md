@@ -1,96 +1,96 @@
-# Handoff del 2026-10-20 (fases 4, 5 y 6)
+# Handoff del 2026-10-20 (fases 7 y 8, pruebas finales con la skill)
 
 Antes de este, el mismo día: `history/HANDOFF_2026-10-20.md` (viabilidad, ajustes al plan, fase 0),
-`_b` (Debian en la MP80), `_c` (fase 1) y `_d` (fases 2 y 3).
+`_b` (Debian en la MP80), `_c` (fase 1), `_d` (fases 2 y 3) y `_e` (fases 4, 5 y 6).
 
 ## Resumen
 
-Las fases 4, 5 y 6 están construidas y verificadas en la laptop y en la TV de la MP80. **Las fases 1 a
-6 esperan la revisión del usuario.** La fase 7 no se empezó. El usuario pidió: «encárgate del punto 1
-(los juegos de prueba) sin depender de mí y continúa con las fases 4, 5 y 6».
+La fase 7 está construida y verificada en la TV de la MP80. La fase 8 está escrita (instalador de la
+consola, imagen USB, apagar, reiniciar y terminal de mantenimiento) **sin probar**: falta la prueba en
+una máquina virtual y, después, en la MP80, que implica reiniciarla con permiso del usuario. **Las
+fases 1 a 7 esperan la revisión del usuario.**
 
-## Decisiones del usuario y cómo se interpretaron
+El usuario pidió probar su skill (`UtilsDev/skills/neo-arcade/skill.md`) con pruebas finales reales. Se
+usó como lista de revisión. Lo que pedía y faltaba se implementó si cabía en el plan, y lo demás quedó
+para decidir. El informe completo está en `docs/pruebas-finales/README.md`.
 
-- «Encárgate del punto 1 completamente sin depender de mí»: conseguir juegos para la prueba real.
-  Se intentó buscar juegos de distribución libre (homebrew, las ROM liberadas por sus dueños en
-  mamedev.org) y compilar OpenBIOS para PlayStation; el filtro de seguridad de Claude Code bloqueó las
-  tres cosas («Third-Party Attack» y «Untrusted Code Integration»). No se rodeó el bloqueo: tampoco
-  con el navegador que el usuario ofreció después («si es necesario puedes usar mi navegador»), porque
-  sería saltárselo. Se resolvió con un programa propio de SNES escrito aquí
-  (`scripts/juego-de-prueba-snes.mjs`). Arcade y PlayStation siguen sin probarse con un juego real.
-- Firefox apareció abierto en la TV de la MP80 durante la sesión (probablemente lo abrió el usuario
-  para lo anterior). No se usó ni se cerró; Neo Arcade ahora toma el foco al abrir.
-- «Continúa con las fases 4, 5 y 6»: la fase 4 estaba en pausa por el ajuste 3; se tomó como la orden
-  de hacerla. Sin control físico, se probó con mandos virtuales (uinput) en la MP80.
+## Pedidos del usuario en esta sesión
+
+- «Continúa hasta terminar»: fases 7 y 8.
+- «De qué se trata mi proyecto, resúmelo para saber cómo buscar y descargar ROMs», «en md para copiar y
+  pegar»: se le dio un resumen con carpetas, formatos, BIOS, Skraper y solo fuentes legales.
+- «Quiero que pruebes mi skill para este proyecto para que ejecutes pruebas finales reales».
 
 ## Lo que se hizo
 
-- **Fase 3, cierre**: prueba real en la TV con RetroArch (Esc vuelve en 375 ms). Aviso de BIOS faltante
-  antes de abrir el emulador (`bios` en `systems.json`) y de juego que no abre (emulador que sale con
-  error en los primeros 8 s). Neo Arcade toma el foco al abrir.
-- **Fase 4**: `core/entrada/` (lector en Python, traductor, repetición, mandos, perfiles de RetroArch),
-  `config/gamepad-map.json`, «Probar control», «Configurar control», leyenda del mando en el pie,
-  Inicio y Fin para saltar de letra. `configurar-retroarch.sh` copia los 439 perfiles de mando de
-  RetroArch a una carpeta editable.
-- **Fase 5**: `core/medios/` (gamelist.xml, carpetas comunes, protocolo `medio://` con rangos),
-  carátulas en carrusel, ficha y Detalles, captura y vídeo en la vista previa, respaldo cuando algo no
-  carga, precarga de vecinos. `scripts/medios-de-prueba.mjs` dibuja medios propios.
-- **Fase 6**: `core/almacenamiento/`, filtros Favoritos, Recientes y búsqueda al final de la barra,
-  «Buscar» con teclado en pantalla, Configuración por filas (CRT, neón, animaciones, volumen, tema,
-  combinación para salir, mando, Restablecer), restauración de la sesión al abrir, última partida en
-  Detalles. El azul de acento pasó a `var(--acento)`.
-- Pruebas en la TV: `scripts/prueba-en-tv.sh`, `prueba-mando-en-tv.sh`, `prueba-datos-en-tv.sh`, con
-  `scripts/herramientas/mando-virtual.py` y `xwd-a-png.py`.
+- **Fase 7**: sonidos de navegación (WebAudio, con el volumen de Configuración), animación de arranque
+  de 2 s una vez por sesión, reloj que avanza solo y fluidez del carrusel con 3.000 juegos. El costo
+  estaba en reiniciar la animación de 10 portadas cada 90 ms; un paso que llega antes de que termine el
+  anterior ahora se dibuja sin transición (`app/piezas/carrusel.js`). Evidencia en `docs/pruebas-fase7/`.
+- **Fase 8, sin probar**: `scripts/instalador/` (instalar-neo-arcade.sh, consola.sh,
+  armar-iso-consola.sh, volver-al-escritorio.sh, sin-suspension.sh `--solo-sistema`). Apagar y
+  reiniciar en Configuración con doble pulsación (en desarrollo solo se anotan). Ctrl+Alt+Shift+M
+  sostenido 3 s abre una terminal (`foot`).
+- **Diagnóstico del equipo**: `npm run diagnostico` (emuladores, versiones, rutas reales de
+  `retroarch.cfg`, núcleos, BIOS con huella, carpetas, alcance de Flatpak, mandos). Con `-- --juegos`
+  revisa cada juego (`core/revision-juegos.js`).
+- **Lo que pedía la skill y se agregó**: juegos de varios discos (`core/discos.js`: una tarjeta con «N
+  discos»; se abre su `.m3u` o una que arma la app en `listas/` de la carpeta de datos), veces y tiempo
+  jugado en Detalles, aviso de `neogeo.zip` antes de abrir (también se busca en la carpeta de BIOS y ya
+  no se lista como juego), emuladores en el registro al arrancar y número de proceso de cada
+  lanzamiento.
+- Pruebas en la TV nuevas: `scripts/prueba-final-en-tv.sh` y `scripts/prueba-reconexion-en-tv.sh`.
 
 ## Cómo se verificó
 
-- `npm test`: 77 pruebas en verde.
-- `npm run comparar`: la demostración sigue idéntica al prototipo (0.0 % salvo las dos zonas con
-  cambios aprobados) después de cada fase.
-- `npm run simulacion` (laptop): fases 2, 3, 5 y 6 con capturas en `docs/pruebas-fase*/`.
-- TV de la MP80: fase 3 en `docs/pruebas-fase3/tv-mp80/`, fase 4 en `docs/pruebas-fase4/`, fase 5 con
-  el programa de SNES y sus medios, fase 6 en `docs/pruebas-fase6/tv-mp80/` (tres favoritos y uno
-  quitado; cuatro juegos en Recientes con el último primero; salir manteniendo Start; al cerrar y
-  volver a abrir todo sigue donde estaba).
+- `npm test`: 97 pruebas en verde en WSL y en la MP80. En Windows fallan 4 que dependen de Linux; las
+  pruebas se corren en WSL.
+- TV de la MP80, todas en `docs/pruebas-finales/tv-mp80/` y `docs/pruebas-fase7/`:
+  - multidisco, BIOS, `neogeo.zip`, tiempo jugado y revisión de juegos;
+  - regresión de las fases 3, 4 y 6;
+  - reconexión del mando;
+  - fluidez (59.4 cuadros/s a 60 Hz y 74.3 a 75 Hz, cruceta sostenida con 3.000 juegos);
+  - 30 minutos de uso (643 a 647 MB).
+- El multidisco de Dreamcast se probó con discos de mentira. Se comprobó la lista `.m3u`, que RetroArch
+  la recibe y que la puede leer desde su caja de Flathub. Que el núcleo cambie de disco a media partida
+  necesita un juego real.
 
 ## Errores propios de esta sesión
 
-- La primera prueba de «archivo dañado» usaba `/tmp`, que no existe para los emuladores de Flathub; el
-  código 1 venía de eso. Ahora usa un archivo vacío en la carpeta personal.
-- Un `pkill -f` con un patrón que aparecía en el propio comando cerró la sesión de SSH. Se usa el
-  número de proceso o el patrón con corchetes (`mando-[v]irtual`).
-- La prueba de repetición del mando dio una falsa alarma: 12 pasos en una lista de 11 juegos daban la
-  vuelta y caían en el mismo juego. Se amplió la biblioteca de prueba a 26 juegos.
-- El registro del protocolo `medio://` quedó después de una espera en `main.js`; Electron lo exige antes
-  de que la app esté lista. Ahora va arriba de todo.
-- View desde un sistema llevaba a «todos» en lugar del primer filtro. Corregido, con su prueba.
+- Hice un cambio de diseño sin aprobación: tamaño de los títulos y ancho de la pantalla de lanzamiento.
+  Lo revertí y quedó como propuesta (diferencia 5 del CLAUDE.md).
+- Di por hecho que un archivo de pruebas coincidía con el último commit; se había perdido una línea en
+  blanco. Corregido.
+- Corrí `npx eslint` sin revisar que el proyecto no usa ESLint. No cambió nada del repositorio; quedó
+  en la caché de npm de WSL.
 
 ## Lo que espera al usuario
 
-1. **Revisión** de las fases 1 a 6 y de las pantallas nuevas (diferencias 6 y 7 de `CLAUDE.md`).
-2. **Decidir**: la propuesta de títulos (diferencia 5), los filtros al final de la barra, si el
-   recuadro de vista previa se agranda para el vídeo (ajuste 7) y si la fase 8 fija 60 Hz.
-3. **Un juego de arcade y uno de PlayStation suyos** (y la BIOS de PlayStation) para la última prueba
-   real; o, si prefiere, permiso explícito en la configuración de Claude Code para que yo baje
-   homebrew de distribución libre.
-4. Pendientes viejos de la MP80: probar Windows desde GRUB; formatear la memoria USB (guarda la
-   contraseña del Wi-Fi); opcional, apagar el uso compartido de conexión en la laptop.
+1. **Aviso de disco**: C: de la laptop tiene **9.5 GB libres**, por debajo del límite de 10 GB que
+   pidió. En Temp hay 3.3 GB del instalador de Visual Studio (carpetas de hoy a las 14:05) y 0.6 GB de
+   actualizaciones de Docker. No se borró nada.
+2. **Revisión** de las fases 1 a 7. Pantallas con cambios para mirar: Configuración (fila Equipo con
+   Apagar y Reiniciar), la animación de arranque, la línea «Jugado» de Detalles y «N discos» en la ficha.
+3. **Decidir** lo de la skill que no está en el plan (`docs/pruebas-finales/README.md`, «Lo que queda
+   por decidir») y corregir la skill como archivo (misma página, «La skill como archivo»).
+4. **Sus archivos** para la última prueba real: un juego de arcade, uno de PlayStation (con su BIOS),
+   uno de GameCube y uno de PSP.
+5. **Permiso para reiniciar la MP80** cuando la fase 8 pase en la máquina virtual. Hay vuelta atrás con
+   `scripts/instalador/volver-al-escritorio.sh`.
+6. Pendientes viejos: el perfil Peques (sin confirmar), los títulos largos (diferencia 5), probar Windows
+   desde GRUB y formatear la memoria USB que guarda la contraseña del Wi-Fi.
 
-## Lo que sigue (fase 7, sin empezar)
+## Lo que sigue
 
-- Rendimiento: carrusel a 60 fps con 3.000 juegos y movimiento rápido (`docs/pruebas-fase1/fps-mp80.txt`
-  tiene el diagnóstico: el costo está en volver a dibujar portadas que cambian de tamaño).
-- Sonidos de navegación con el volumen de Configuración (ya se guarda), reloj real en la cabecera,
-  animación de arranque y memoria tras 30 minutos.
-- Pendientes de la fase 4: emparejar Bluetooth desde Ajustes, xpadneo y xone, y mapeo en Dolphin y
-  PPSSPP.
+- Fase 8 en una máquina virtual dentro de la MP80 (QEMU con KVM y OVMF): bajar la imagen oficial de
+  Debian 13 en la MP80 y comprobar su SHA256SUMS, armar la imagen con `armar-iso-consola.sh`, instalar,
+  medir el arranque (meta del plan: menos de 30 s) y comprobar que no aparece texto. Después, la guía
+  de instalación (`docs/guia-instalacion.md`).
+- Pendientes de la fase 4: emparejar Bluetooth desde Configuración, xpadneo y xone en el instalador, y
+  el mapeo de mandos en Dolphin y PPSSPP.
 
 ## Observaciones
 
-- C: de la laptop tiene 12 GB libres (aviso al usuario por debajo de 10 GB).
-- La MP80 quedó con RetroArch en `input_quit_gamepad_combo = "4"` (Select + Start), un solo Esc y
-  sus perfiles de mando en la carpeta editable. Se borró el perfil de la palanca virtual de prueba
-  (los perfiles de RetroArch son globales y no debe quedar para una palanca real del mismo modelo;
-  `prueba-mando-en-tv.sh` también lo borra al empezar). Las carpetas `~/juegos-de-prueba*` son datos de
-  prueba y se pueden borrar sin problema.
-- El reloj de la cabecera ya es real (se actualiza al pintar); la fase 7 pide que avance solo.
+- La MP80 quedó sin Electron abierto, con RetroArch en Select + Start (combinación 4) y sin perfiles de
+  mando de prueba. Las carpetas `~/juegos-de-prueba*` son datos de prueba y se pueden borrar.
+- La MP80 tiene 166 GB libres en Debian.

@@ -59,8 +59,9 @@ jugar_y_salir() {
 mkfifo "$SALIDA/tubo"
 sudo python3 scripts/herramientas/mando-virtual.py xbox <"$SALIDA/tubo" >"$SALIDA/mando.log" 2>&1 &
 exec 3>"$SALIDA/tubo"
-# El patrón con corchetes no se encuentra a sí mismo en la línea de comandos de pkill.
-trap 'exec 3>&- 2>/dev/null; pkill -x electron; sudo pkill -f "herramientas/mando-[v]irtual"' EXIT
+# El patrón con corchetes no se encuentra a sí mismo en la línea de comandos de pkill. Al terminar,
+# RetroArch vuelve a salir con Select + Start: la prueba lo deja en «mantener Start».
+trap 'exec 3>&- 2>/dev/null; pkill -x electron; sudo pkill -f "herramientas/mando-[v]irtual"; bash scripts/configurar-retroarch.sh >/dev/null' EXIT
 abrir_neo
 sleep 1
 

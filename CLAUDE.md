@@ -17,8 +17,8 @@ sección «Ajustes al plan» de este archivo manda sobre el plan y sobre los pro
 
 ## Estado actual
 
-Verificado el 2026-10-20. La fase 0 quedó aprobada por el usuario. **Las fases 1 a 6 están construidas
-y verificadas y esperan su revisión.** La fase 7 (pulido y rendimiento) no se ha empezado. Lo verificado:
+Verificado el 2026-10-20. La fase 0 quedó aprobada por el usuario. **Las fases 1 a 7 están construidas
+y verificadas y esperan su revisión.** La fase 8 está escrita y **sin probar** (ver abajo). Lo verificado:
 
 - Fase 1: la pantalla del prototipo está reproducida por piezas, con 0.0 % de píxeles distintos salvo
   en las dos zonas con cambios aprobados, y se recorre entera con el teclado (`docs/pruebas-fase1/`).
@@ -36,7 +36,20 @@ y verificadas y esperan su revisión.** La fase 7 (pulido y rendimiento) no se h
   (`npm run simulacion`, `docs/pruebas-fase5/`), también en la TV.
 - Fase 6: favoritos, recientes, búsqueda, Configuración completa y todo se recupera al cerrar y volver a
   abrir (`scripts/prueba-datos-en-tv.sh`, `docs/pruebas-fase6/`).
-- `npm test` pasa (77 pruebas) en la laptop y en la MP80.
+- Fase 7: sonidos de navegación, animación de arranque, reloj que avanza solo y fluidez con 3.000
+  juegos en la TV: 59.4 cuadros/s a 60 Hz y 74.3 a 75 Hz con la cruceta sostenida; 30 minutos de uso
+  sin aumento de memoria, de 643 a 647 MB (`docs/pruebas-fase7/`).
+- Pruebas finales con la skill del usuario (`docs/pruebas-finales/README.md`): juegos de varios
+  discos, avisos de BIOS y de `neogeo.zip`, tiempo jugado, revisión de juegos, reconexión del mando y
+  regresión de las fases 3, 4 y 6 en la TV. Ahí está también qué pide la skill que el plan no tiene.
+- `npm test` pasa (97 pruebas) en WSL y en la MP80. En Windows fallan 4 que dependen de Linux.
+
+**Fase 8, sin probar.** El instalador de la consola (`scripts/instalador/instalar-neo-arcade.sh`), la
+imagen USB (`armar-iso-consola.sh` con `consola.sh`), la vuelta atrás (`volver-al-escritorio.sh`),
+Apagar y Reiniciar en Configuración (en desarrollo solo se anotan) y la terminal de mantenimiento
+(Ctrl + Alt + Mayús + M sostenido 3 s) están escritos. Falta probar la instalación en una máquina
+virtual dentro de la MP80 y medir el arranque. Instalarla en la MP80 de verdad implica reiniciarla:
+**se le pregunta antes al usuario.**
 
 **Juegos reales.** Las pruebas usan programas y medios propios, no juegos de terceros. El 2026-10-20 el
 usuario pidió conseguir los juegos de prueba sin depender de él; el filtro de seguridad de Claude Code
@@ -278,19 +291,31 @@ Electron con JavaScript sin framework ni paso de compilación: lo que está en `
 - `core/escaner/escaner.js` recorre `roms/<carpeta>/` hasta tres niveles, filtra por extensión,
   limpia el nombre (quita paréntesis y corchetes salvo el número de disco, y los guiones bajos) y
   guarda el resultado en `biblioteca.json` de la carpeta de datos. Un sistema se vuelve a leer solo si
-  cambió la fecha de alguna de sus carpetas. `core/biblioteca.js` lo convierte en lo que dibuja la
-  interfaz (el id de un juego es `<sistema>/<archivo>`) y bloquea cualquier id que salga de la
-  carpeta de su sistema.
+  cambió la fecha de alguna de sus carpetas; los `noSonJuegos` de `systems.json` (`neogeo.zip`) no
+  se listan. `core/biblioteca.js` lo convierte en lo que dibuja la interfaz (el id de un juego es
+  `<sistema>/<archivo>`) y bloquea cualquier id que salga de la carpeta de su sistema. En los sistemas
+  que abren listas `.m3u`, `core/discos.js` junta «Juego (Disc 1)», «(Disc 2)»… en un solo juego con
+  `discos`. Si hay una `Juego.m3u` en esa carpeta o más arriba, se abre esa. Si no, `main.js` arma una
+  con rutas completas en `listas/` de la carpeta de datos, que RetroArch de Flathub sí alcanza; en
+  `/tmp` no la alcanzaría.
+- `core/diagnostico.js` (`npm run diagnostico`) revisa el equipo sin cambiar nada. Lee las rutas de
+  RetroArch de su `retroarch.cfg` y no las supone. `core/revision-juegos.js` (`-- --juegos`) revisa
+  cada archivo: vacío, sin la firma de su formato (zip cortado, 7z, CHD, NES), listas `.cue`, `.gdi` o
+  `.m3u` con archivos que faltan o con otras mayúsculas, BIOS y duplicados por SHA-256. Para los
+  duplicados compara primero el tamaño y el principio y el final del archivo, y no lee entera una
+  biblioteca de GameCube. Nunca borra ni mueve nada.
 - `core/lanzador/lanzador.js` arma el comando reemplazando `{emulador}`, `{nucleo}` y `{juego}`, sin
   shell (los espacios del nombre no importan). Antes de lanzar comprueba que existan el juego, el
   programa, la app de Flathub, el núcleo y, si el sistema la pide, una de sus BIOS (sin BIOS,
-  SwanStation deja la pantalla en negro sin cerrarse); si algo falta, lanza `ErrorLanzamiento` con un
-  mensaje para el usuario. Un emulador que sale con error en los primeros 8 s no abrió el juego y
+  SwanStation deja la pantalla en negro sin cerrarse) o su `archivoDeSistema` (`neogeo.zip`, junto al
+  juego o en la carpeta de BIOS, donde también lo busca FBNeo); si algo falta, lanza
+  `ErrorLanzamiento` con un mensaje para el usuario. Un emulador que sale con error en los primeros 8 s no abrió el juego y
   también se avisa. `main.js` escribe antes en RetroArch la combinación para salir
   (`retroarch-cfg.js`) y los perfiles de los mandos, deja ver «Abriendo…» 1.2 s, oculta la ventana,
   espera a que el emulador cierre y la vuelve a mostrar con foco (encima de todo durante 300 ms, como
   pide la tabla de riesgos; también al abrir la app). `core/registro.js` anota cada lectura,
-  lanzamiento, mando y error en `registros/neo-arcade.log`.
+  lanzamiento (con código de salida, duración y número de proceso), mando y error en
+  `registros/neo-arcade.log`, y los emuladores con su versión cinco segundos después de abrir.
 - `core/entrada/` lee los mandos (ajuste 4). `lector-mandos.py` (solo biblioteca estándar de Python)
   abre los dispositivos de entrada que son mandos, consulta el rango real de cada eje y escribe una
   línea JSON por suceso; va aparte porque Node no puede hacer esa consulta (ioctl) ni esperar a varios
@@ -308,12 +333,13 @@ Electron con JavaScript sin framework ni paso de compilación: lo que está en `
   página por el protocolo `medio://` (`servidor.js`, con rangos para los vídeos), que se registra
   antes de que la app esté lista y solo sirve archivos de las carpetas de medios y de juegos; la CSP
   de `app/index.html` lo permite para imágenes y vídeo.
-- `core/almacenamiento/` guarda `datos-usuario.json` (favoritos, recientes, último juego por sistema,
-  último sistema, perfil y ajustes), juntando los cambios seguidos y escribiendo aparte y renombrando.
+- `core/almacenamiento/` guarda `datos-usuario.json` (favoritos, recientes, veces y segundos jugados
+  por juego, último juego por sistema, último sistema, perfil y ajustes), juntando los cambios seguidos
+  y escribiendo aparte y renombrando. El tiempo de una partida es lo que tardó el emulador en cerrarse.
   Lo que manda la interfaz se limpia antes de guardarse; al cerrar la app se escribe lo pendiente.
 - `scripts/empaquetar.sh` copia el motor de `node_modules/electron/dist`, renombra el ejecutable y
   pone la app en `resources/app`, que Electron carga en lugar de su app de ejemplo. En la MP80,
-  `chrome-sandbox` necesita dueño root y permiso 4755 (lo hará `install.sh` en la fase 8).
+  `chrome-sandbox` necesita dueño root y permiso 4755 (lo pone `scripts/instalador/instalar-neo-arcade.sh`).
 
 ## Ajustes al plan (decididos con el usuario el 2026-10-20)
 
@@ -447,6 +473,12 @@ guarda dentro del proyecto.
      salir y RESTABLECER con confirmación; «Última partida» en Detalles (`docs/pruebas-fase6/`).
    - El perfil Peques (ajuste 9) no se hizo: sigue como propuesta sin confirmar. El perfil se guarda,
      siempre «normal».
+8. **Pantallas nuevas de las fases 7 y 8 y de las pruebas finales, pendientes de aprobación.** La
+   animación de arranque (2 s, una vez por sesión, `docs/pruebas-fase7/arranque-*.png`); la fila Equipo
+   en Configuración con Apagar y Reiniciar y su doble pulsación; en Detalles, la línea «Jugado: 5
+   veces, 3 h 20 min»; y en la línea de datos de la ficha, «• 2 discos» al final
+   (`docs/pruebas-finales/tv-mp80/`). Las líneas nuevas de Detalles solo aparecen con datos, así que la
+   demostración del prototipo no cambia.
 
 ## Reglas del proyecto
 

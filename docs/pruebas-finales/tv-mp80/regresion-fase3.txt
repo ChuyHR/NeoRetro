@@ -1,0 +1,6 @@
+Al abrir, foco en: Neo Arcade
+RetroArch arrancó 1446 ms después de Enter; foco en: RetroArch Snes9x 1.63 fae2fea
+Esc → RetroArch cerrado en 360 ms; Neo Arcade visible en 376 ms
+Al volver, foco en: Neo Arcade
+
+Registro de Neo Arcade:

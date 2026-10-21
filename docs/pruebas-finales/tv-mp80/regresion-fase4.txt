@@ -1,0 +1,8 @@
+== Mando de Xbox
+Select + Start → Neo Arcade visible en 1351 ms
+== Palanca de arcade
+Mapeo guardado: {"0079:0006:DragonRiseInc.GenericUSBJoystick":{"botones":{"288":"y","289":"b","290":"a","291":"x","292":"lb","293":"rb","296":"view","297":"menu"},"ejes":{"0":["izquierda","derecha"],"1":["arriba","abajo"]}}}
+Perfil de RetroArch escrito: neo-arcade-0079-0006-dragonrise-inc-generic-usb-joystick.cfg
+Select + Start de la palanca → Neo Arcade visible en 1358 ms
+
+Registro de Neo Arcade:
