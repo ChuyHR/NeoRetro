@@ -6,4 +6,4 @@ node_modules/
 dist/
 
 # Contraseñas y llaves locales: nunca van al repositorio
-credenciales/
+credenciales/__pycache__/
