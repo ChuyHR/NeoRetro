@@ -42,7 +42,7 @@ for (const sistema of informe.bios) {
     console.log(`          ${archivo.nombre}: SHA-256 ${archivo.sha256}${aviso}`);
   }
 }
-console.log(`  ${marca(informe.juegos.neogeoZip)} NEO GEO: neogeo.zip en la carpeta de Neo Geo`);
+console.log(`  ${marca(informe.juegos.neogeoZip)} NEO GEO: neogeo.zip junto a sus juegos o en la carpeta de BIOS`);
 console.log('CARPETAS DE JUEGOS');
 console.log(`  ${casa(configuracion.carpetaRoms)}${informe.alcanceFlatpak === false ? '  (¡los emuladores de Flathub no pueden leer esta carpeta!)' : ''}`);
 for (const carpeta of informe.juegos.carpetas) {
