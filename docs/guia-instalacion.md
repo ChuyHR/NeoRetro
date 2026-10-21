@@ -86,7 +86,21 @@ scp -r "Mis juegos de SNES/." arcade@<ip-de-la-consola>:NeoRetro/roms/snes/
 
 Neo Arcade lee los juegos nuevos al volver a abrirse (o al reiniciar la consola).
 
-## 5. Mantenimiento
+## 5. Mandos y tableros arcade
+
+- **Mandos de Xbox y compatibles** (USB): funcionan al conectarlos, sin configurar nada.
+- **Tableros y palancas arcade** con placa USB (las «Zero Delay» y parecidas): no necesitan
+  controladores. La primera vez que mueves su palanca o aprietas un botón, Neo Arcade abre «Configurar
+  control» y te pide, uno por uno, mover la palanca y apretar cada botón; si tu tablero no tiene ese
+  botón, espera 6 segundos y se salta solo. Lo que configures sirve en el menú y dentro de los juegos.
+- **Dos tableros**: conecta los dos y configura cada uno una vez. Si los dos son del mismo modelo,
+  comparten la configuración.
+- **Para volver a configurar** un mando: Configuración → Control → Configurar. Probar muestra en
+  pantalla cada botón que aprietas.
+- **Para salir de un juego**: Select + Start (en Configuración puedes cambiarlo a mantener Start o a
+  LB + RB + Select + Start), o Esc en el teclado.
+
+## 6. Mantenimiento
 
 - **Terminal**: mantén **Ctrl + Alt + Mayús + M** durante 3 segundos. Puede tardar unos segundos en
   aparecer. Al cerrarla (`exit`), vuelves a Neo Arcade.

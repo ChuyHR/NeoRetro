@@ -1,6 +1,7 @@
-# Juegos y medios del usuario: nunca van al repositorio
-roms/
-media/
+# Juegos y medios del usuario: nunca van al repositorio. Sin «/» al final para que también cubra un
+# enlace (en la MP80, roms y media apuntan a ~/NeoRetro/roms y ~/NeoRetro/media de la consola).
+/roms
+/media
 
 node_modules/
 dist/
