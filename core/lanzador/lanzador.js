@@ -100,14 +100,23 @@ export function falloAlAbrir({ codigo, duracionMs }) {
   return codigo !== 0 && codigo !== null && duracionMs < CIERRE_TEMPRANO_MS;
 }
 
-// Ejecuta el emulador y espera a que se cierre. Devuelve el código de salida, cuánto duró y el número
-// de proceso, para el registro.
+// Lo último que escribió el emulador en su salida de errores: si no abre el juego, es la única pista
+// (en la consola instalada no hay terminal donde verla). Se queda con los últimos caracteres.
+const MAX_ERRORES = 2000;
+
+// Ejecuta el emulador y espera a que se cierre. Devuelve el código de salida, cuánto duró, el número de
+// proceso y el final de su salida de errores, para el registro.
 export function ejecutar({ programa, argumentos }) {
   return new Promise((listo, fallo) => {
     const inicio = Date.now();
-    const proceso = spawn(programa, argumentos, { stdio: 'ignore' });
+    const proceso = spawn(programa, argumentos, { stdio: ['ignore', 'ignore', 'pipe'] });
+    let errores = '';
+    proceso.stderr.setEncoding('utf8');
+    proceso.stderr.on('data', (trozo) => {
+      errores = (errores + trozo).slice(-MAX_ERRORES);
+    });
     proceso.once('error', () => fallo(new ErrorLanzamiento('No se pudo abrir el emulador.')));
-    proceso.once('exit', (codigo, senal) => listo({ codigo, senal, duracionMs: Date.now() - inicio, pid: proceso.pid }));
+    proceso.once('close', (codigo, senal) => listo({ codigo, senal, duracionMs: Date.now() - inicio, pid: proceso.pid, errores: errores.trim() }));
   });
 }
 

@@ -151,6 +151,8 @@ ipcMain.handle('jugar', async (_evento, id, opciones = {}) => {
     const { codigo, senal, duracionMs, pid } = resultado;
     await registro.anotar('lanzamiento', comandoLegible(comando), `salida ${codigo ?? senal}`, `${duracionMs} ms`, `proceso ${pid}`);
     if (falloAlAbrir(resultado)) {
+      // En un renglón, para que el registro siga siendo uno por evento.
+      if (resultado.errores) await registro.anotar('error', 'salida de errores del emulador', resultado.errores.replace(/\s*\n\s*/g, ' | '));
       return { ok: false, mensaje: `${ubicado.sistema.nombreEmulador} se cerró al abrir el juego. Puede que el archivo esté dañado o que no sea de ${ubicado.sistema.nombreLargo}.` };
     }
     return { ok: true, codigo, duracionMs };
@@ -192,8 +194,16 @@ function vigilarTerminal(entrada) {
   combinacionDesde = -1; // una sola terminal por pulsación
   const [programa, ...argumentos] = configuracion.sistema.terminal;
   registro.anotar('equipo', 'terminal de mantenimiento', programa);
-  const terminal = spawn(programa, argumentos, { stdio: 'ignore', detached: true });
+  const terminal = spawn(programa, argumentos, { stdio: ['ignore', 'ignore', 'pipe'], detached: true });
+  let errores = '';
+  terminal.stderr.setEncoding('utf8');
+  terminal.stderr.on('data', (trozo) => {
+    errores = (errores + trozo).slice(-2000);
+  });
   terminal.on('error', (error) => registro.anotar('error', 'no se pudo abrir la terminal', String(error)));
+  terminal.on('close', (codigo) => {
+    if (codigo) registro.anotar('error', `la terminal se cerró con código ${codigo}`, errores.trim().replace(/\s*\n\s*/g, ' | '));
+  });
   terminal.unref();
 }
 
