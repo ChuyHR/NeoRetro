@@ -14,6 +14,9 @@ La fuente de verdad es el plan, [docs/plan-desarrollo.md](docs/plan-desarrollo.m
 cinco criterios de terminado, la tabla de requisitos técnicos, las nueve fases (0 a 8) con su prueba
 de aceptación, el prompt de cada fase, las pruebas del producto final y la tabla de riesgos. La
 sección «Ajustes al plan» de este archivo manda sobre el plan y sobre los prompts cuando choquen.
+La skill `neo-arcade` (`.claude/skills/neo-arcade/SKILL.md`) es la especificación que escribió el
+usuario. Donde choca con el plan (carpetas en `~/NeoRetro/`, Start y Select), mandan el plan y sus
+ajustes; lo que pide y el plan no tiene espera su decisión (`docs/pruebas-finales/README.md`).
 
 ## Estado actual
 

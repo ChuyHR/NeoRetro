@@ -161,7 +161,11 @@ Además, dos puntos de la skill chocan con lo aprobado y conviene corregirlos en
 
 ## La skill como archivo
 
-Como está, Claude Code no la reconoce como skill:
+Resuelto el 2026-10-20, a pedido del usuario: los puntos 1 a 3 están aplicados en
+`.claude/skills/neo-arcade/SKILL.md` (las líneas 2 a 2009 del original, sin cambiar el texto). El
+original en `UtilsDev/skills/neo-arcade/skill.md` quedó como estaba. El punto 4 sigue abierto.
+
+Como estaba, Claude Code no la reconocía como skill:
 
 1. Todo el texto está dentro de un bloque ```` ```md ````. El encabezado `---` con `name` y
    `description` debe ser lo primero del archivo, sin nada antes.
