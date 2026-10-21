@@ -1,0 +1,4 @@
+Neo Arcade visible 1018 ms después de arrancar
+577 ms	21 sistemas leídos del disco	arcade=598 neogeo=126 nes=761 snes=442 n64=83 gb=159 gbc=225 gba=296 mastersystem=245 megadrive=468 gamegear=22 pcengine=217	3624 con carátula
+Esc → Neo Arcade visible en 372 ms
+flatpak run org.libretro.RetroArch -f -L ~/.var/app/org.libretro.RetroArch/config/retroarch/cores/fbneo_libretro.so ~/NeoRetro/roms/arcade/1on1gov.zip	salida 0	10582 ms	proceso 49278

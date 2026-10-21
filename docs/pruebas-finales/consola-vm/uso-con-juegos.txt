@@ -1,0 +1,65 @@
+App actualizada desde el repositorio (0b19a5a wip: la prueba de la consola encendida puede usar juegos reales)
+== 1. Juegos reales en la biblioteca: mastersystem gamegear snes
+Registro: biblioteca	767 ms	3 sistemas leídos del disco	snes=442 mastersystem=245 gamegear=22	707 con carátula
+== 2. Abrir el juego y volver
+RetroArch abrió 1802 ms después de Enter
+Esc: RetroArch cerró en 816 ms
+Registro: lanzamiento	flatpak run org.libretro.RetroArch -f -L ~/.var/app/org.libretro.RetroArch/config/retroarch/cores/snes9x_libretro.so '~/NeoRetro/roms/snes/3 Ninjas Kick Back.zip'	salida 0	8746 ms	proceso 1335
+== 3. Terminal de mantenimiento
+OK: la terminal se abrió 16755 ms después de empezar a mantener la combinación
+FALLA: la terminal no se cerró
+== 4. Diagnóstico dentro de la consola
+  EMULADORES
+    OK    RetroArch  versión 1.22.2, Flathub
+            configuración: ~/.var/app/org.libretro.RetroArch/config/retroarch/retroarch.cfg
+            núcleos:       ~/.var/app/org.libretro.RetroArch/config/retroarch/cores
+            BIOS:          ~/.var/app/org.libretro.RetroArch/config/retroarch/system
+    OK    Dolphin    versión 2609a, Flathub
+    OK    PPSSPP     versión 1.20.4, Flathub
+  NÚCLEOS DE RETROARCH
+    OK    fbneo
+    OK    mesen
+    OK    snes9x
+    OK    mupen64plus_next
+    OK    mgba
+    OK    genesis_plus_gx
+    OK    picodrive
+    OK    flycast
+    OK    swanstation
+    OK    mednafen_pce
+    OK    stella
+  BIOS
+    FALTA SEGA CD: hace falta una de bios_CD_U.bin, bios_CD_E.bin, bios_CD_J.bin en ~/.var/app/org.libretro.RetroArch/config/retroarch/system
+    FALTA PLAYSTATION: hace falta una de scph5501.bin, scph5500.bin, scph5502.bin en ~/.var/app/org.libretro.RetroArch/config/retroarch/system
+    FALTA NEO GEO: neogeo.zip junto a sus juegos o en la carpeta de BIOS
+  CARPETAS DE JUEGOS
+    ~/NeoRetro/roms
+    OK    ARCADE           0 juegos
+    OK    NEO GEO          0 juegos
+    OK    CAPCOM CPS       0 juegos
+    OK    NES              0 juegos
+    OK    SUPER NINTENDO   442 juegos
+    OK    NINTENDO 64      0 juegos
+    OK    GAME BOY         0 juegos
+    OK    GAME BOY COLOR   0 juegos
+    OK    GAME BOY ADVANCE 0 juegos
+    OK    GAMECUBE         0 juegos
+    OK    MASTER SYSTEM    245 juegos
+    OK    SEGA GENESIS     0 juegos
+    OK    SEGA CD          0 juegos
+    OK    SEGA 32X         0 juegos
+    OK    GAME GEAR        22 juegos
+    OK    DREAMCAST        0 juegos
+    OK    PLAYSTATION      0 juegos
+    OK    PSP              0 juegos
+    OK    PC ENGINE        0 juegos
+    OK    ATARI 2600       0 juegos
+    OK    PORTS            0 juegos
+  REVISIÓN DE JUEGOS: 709 de 709 sin problemas
+  MEDIOS: ~/NeoRetro/media 
+  MANDOS CONECTADOS: ninguno
+  LO QUE SE RECUERDA: ~/NeoRetro/config/datos-usuario.json
+  REGISTRO: ~/NeoRetro/logs/neo-arcade.log
+polkit: active
+== 5. Apagar desde Configuración
+OK: la máquina se apagó 1 s después de confirmar

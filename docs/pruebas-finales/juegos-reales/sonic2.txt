@@ -1,0 +1,1 @@
+megadrive/Sonic The Hedgehog 2 (Europe).gen: OK: abrió en 255 ms, seguía abierto a los 15 s, cerró con Esc (salida 0); captura 01-Sonic_The_Hedgehog_2__Europe_.gen_.png

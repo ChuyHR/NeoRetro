@@ -1,0 +1,187 @@
+Imagen: /home/arcade/vm-consola/consola.iso (1.1G), SHA-256 8a38388cc78141cb…
+== instalar: empieza a las 21:17:17
+== instalar: terminó a las 21:29:13, en 715 s (salida de QEMU 0)
+== primer-arranque: empieza a las 21:29:13
+== primer-arranque: terminó a las 21:35:43, en 390 s (salida de QEMU 0)
+== consola: empieza a las 21:35:43
+
+== Línea de tiempo del arranque (capturas cada 0.5 s desde que se enciende la máquina)
+   0.5 a    0.5 s  negro                          negro 100.0 %  claro  0.0 %  color   0.0 %  1280x800
+   1.0 a    2.5 s  texto o logotipo sobre negro   negro  98.1 %  claro  1.7 %  color   0.1 %  1280x800
+   3.0 a    8.5 s  negro                          negro 100.0 %  claro  0.0 %  color   0.0 %  1280x800
+   9.0 a    9.0 s  texto o logotipo sobre negro   negro  99.3 %  claro  0.0 %  color   0.0 %  1280x800
+   9.5 a   10.5 s  texto o logotipo sobre negro   negro  94.2 %  claro  2.8 %  color   2.0 %  1280x800
+  11.0 a  119.6 s  color                          negro  59.6 %  claro  1.6 %  color   5.6 %  1280x800
+
+== Dentro de la consola
+systemd-analyze: Startup finished in 1.992s (kernel) + 2.299s (userspace) = 4.291s 
+neo-arcade.service: active, desde 4.0 s del arranque del núcleo
+Línea del núcleo: BOOT_IMAGE=/boot/vmlinuz-6.12.113+deb13-amd64 root=UUID=0257409e-16e7-4ba9-bab8-96985e600af8 ro quiet loglevel=3 systemd.show_status=false rd.udev.log_level=3 udev.log_level=3 vt.global_cursor_default=0
+GRUB: GRUB_TIMEOUT=1 GRUB_TIMEOUT_STYLE=hidden 
+Emuladores: org.DolphinEmu.dolphin-emu 2609a,org.libretro.RetroArch 1.22.2,org.ppsspp.PPSSPP 1.20.4,
+Núcleos: 11
+RetroArch guarda en: savefile_directory = "~/NeoRetro/saves" savestate_directory = "~/NeoRetro/states" 
+~/NeoRetro: backups config logs media metadata roms saves states 
+~/NeoRetro/roms: 21 carpetas
+~/NeoRetro/config: biblioteca.json 
+Configuración de la sesión: XDG_SESSION_TYPE=wayland NEO_ARCADE_CONFIG=/home/arcade/NeoRetro/config
+Registro de Neo Arcade (~/NeoRetro/logs/neo-arcade.log):
+  2026-10-21T09:35:51.575Z	biblioteca	46 ms	21 sistemas leídos del disco	sin juegos	0 con carátula
+  2026-10-21T09:35:56.666Z	emuladores	RetroArch 1.22.2 (Flathub)	Dolphin 2609a (Flathub)	PPSSPP 1.20.4 (Flathub)
+Arranque del núcleo: 2026-10-20 21:35:47
+Errores del arranque (journalctl -p err -b):
+== Fin: 21:37:48
+== consola: empieza a las 21:39:46
+
+== Línea de tiempo del arranque (capturas cada 0.5 s desde que se enciende la máquina)
+   0.0 a    0.5 s  negro                          negro  99.9 %  claro  0.1 %  color   0.0 %  640x480
+   1.0 a    2.5 s  texto o logotipo sobre negro   negro  98.1 %  claro  1.7 %  color   0.1 %  1280x800
+   3.0 a    8.5 s  negro                          negro 100.0 %  claro  0.0 %  color   0.0 %  1280x800
+   9.0 a   10.0 s  texto o logotipo sobre negro   negro  94.2 %  claro  2.8 %  color   2.0 %  1280x800
+  10.5 a   10.5 s  otro                           negro  56.1 %  claro  1.3 %  color   4.6 %  1280x800
+  11.0 a  119.6 s  color                          negro  60.4 %  claro  1.6 %  color   5.6 %  1280x800
+
+== Dentro de la consola
+systemd-analyze: Startup finished in 1.818s (kernel) + 2.437s (userspace) = 4.256s 
+neo-arcade.service: active, desde 3.9 s del arranque del núcleo
+Línea del núcleo: BOOT_IMAGE=/boot/vmlinuz-6.12.113+deb13-amd64 root=UUID=0257409e-16e7-4ba9-bab8-96985e600af8 ro quiet loglevel=3 systemd.show_status=false rd.udev.log_level=3 udev.log_level=3 vt.global_cursor_default=0
+GRUB: GRUB_TIMEOUT=1 GRUB_TIMEOUT_STYLE=hidden 
+Emuladores: org.DolphinEmu.dolphin-emu 2609a,org.libretro.RetroArch 1.22.2,org.ppsspp.PPSSPP 1.20.4,
+Núcleos: 11
+RetroArch guarda en: savefile_directory = "~/NeoRetro/saves" savestate_directory = "~/NeoRetro/states" 
+~/NeoRetro: backups config logs media metadata roms saves states 
+~/NeoRetro/roms: 21 carpetas
+~/NeoRetro/config: biblioteca.json 
+Configuración de la sesión: XDG_SESSION_TYPE=wayland NEO_ARCADE_CONFIG=/home/arcade/NeoRetro/config
+Registro de Neo Arcade (~/NeoRetro/logs/neo-arcade.log):
+  2026-10-21T09:35:51.575Z	biblioteca	46 ms	21 sistemas leídos del disco	sin juegos	0 con carátula
+  2026-10-21T09:35:56.666Z	emuladores	RetroArch 1.22.2 (Flathub)	Dolphin 2609a (Flathub)	PPSSPP 1.20.4 (Flathub)
+  2026-10-21T03:39:54.316Z	biblioteca	20 ms	0 sistemas leídos del disco	sin juegos	0 con carátula
+  2026-10-21T03:39:59.388Z	emuladores	RetroArch 1.22.2 (Flathub)	Dolphin 2609a (Flathub)	PPSSPP 1.20.4 (Flathub)
+Arranque del núcleo: 2026-10-20 21:39:50
+Errores del arranque (journalctl -p err -b):
+== La consola sigue encendida (QEMU 42269): SSH en 127.0.0.1:2222, QMP en /home/arcade/vm-consola/qmp.sock
+== consola: empieza a las 21:56:04
+
+== Línea de tiempo del arranque (capturas cada 0.5 s desde que se enciende la máquina)
+   0.0 a    0.5 s  negro                          negro  99.9 %  claro  0.1 %  color   0.0 %  640x480
+   1.0 a    2.5 s  texto o logotipo sobre negro   negro  98.1 %  claro  1.7 %  color   0.1 %  1280x800
+   3.0 a    8.5 s  negro                          negro 100.0 %  claro  0.0 %  color   0.0 %  1280x800
+   9.0 a   10.0 s  texto o logotipo sobre negro   negro  94.0 %  claro  2.7 %  color   2.1 %  1280x800
+  10.5 a   10.5 s  color                          negro  50.7 %  claro  1.3 %  color   6.9 %  1280x800
+  11.0 a  119.6 s  color                          negro  51.7 %  claro  3.0 %  color  10.3 %  1280x800
+
+== Dentro de la consola
+systemd-analyze: Startup finished in 1.848s (kernel) + 2.068s (userspace) = 3.917s 
+neo-arcade.service: active, desde 3.9 s del arranque del núcleo
+Línea del núcleo: BOOT_IMAGE=/boot/vmlinuz-6.12.113+deb13-amd64 root=UUID=0257409e-16e7-4ba9-bab8-96985e600af8 ro quiet loglevel=3 systemd.show_status=false rd.udev.log_level=3 udev.log_level=3 vt.global_cursor_default=0
+GRUB: GRUB_TIMEOUT=1 GRUB_TIMEOUT_STYLE=hidden 
+Emuladores: org.DolphinEmu.dolphin-emu 2609a,org.libretro.RetroArch 1.22.2,org.ppsspp.PPSSPP 1.20.4,
+Núcleos: 12
+RetroArch guarda en: savefile_directory = "~/NeoRetro/saves" savestate_directory = "~/NeoRetro/states" 
+~/NeoRetro: backups config logs media metadata roms saves states 
+~/NeoRetro/roms: 21 carpetas
+~/NeoRetro/config: biblioteca.json datos-usuario.json 
+Configuración de la sesión: XDG_SESSION_TYPE=wayland NEO_ARCADE_CONFIG=/home/arcade/NeoRetro/config
+Registro de Neo Arcade (~/NeoRetro/logs/neo-arcade.log):
+  2026-10-21T09:35:51.575Z	biblioteca	46 ms	21 sistemas leídos del disco	sin juegos	0 con carátula
+  2026-10-21T09:35:56.666Z	emuladores	RetroArch 1.22.2 (Flathub)	Dolphin 2609a (Flathub)	PPSSPP 1.20.4 (Flathub)
+  2026-10-21T03:39:54.316Z	biblioteca	20 ms	0 sistemas leídos del disco	sin juegos	0 con carátula
+  2026-10-21T03:39:59.388Z	emuladores	RetroArch 1.22.2 (Flathub)	Dolphin 2609a (Flathub)	PPSSPP 1.20.4 (Flathub)
+  2026-10-21T03:42:36.581Z	biblioteca	26 ms	1 sistemas leídos del disco	snes=1	0 con carátula
+  2026-10-21T03:42:41.627Z	emuladores	RetroArch 1.22.2 (Flathub)	Dolphin 2609a (Flathub)	PPSSPP 1.20.4 (Flathub)
+  2026-10-21T03:42:52.608Z	lanzamiento	flatpak run org.libretro.RetroArch -f -L /home/arcade/.var/app/org.libretro.RetroArch/config/retroarch/cores/snes9x_libretro.so '/home/arcade/NeoRetro/roms/snes/Prueba de control (Neo Arcade).sfc'	salida 1	51 ms	proceso 1282
+  2026-10-21T03:43:36.474Z	equipo	terminal de mantenimiento	foot
+  2026-10-21T03:46:32.256Z	biblioteca	21 ms	0 sistemas leídos del disco	snes=1	0 con carátula
+  2026-10-21T03:46:37.304Z	emuladores	RetroArch 1.22.2 (Flathub)	Dolphin 2609a (Flathub)	PPSSPP 1.20.4 (Flathub)
+  2026-10-21T03:46:48.087Z	lanzamiento	flatpak run org.libretro.RetroArch -f -L /home/arcade/.var/app/org.libretro.RetroArch/config/retroarch/cores/snes9x_libretro.so '/home/arcade/NeoRetro/roms/snes/Prueba de control (Neo Arcade).sfc'	salida 1	121 ms	proceso 2465
+  2026-10-21T03:46:48.088Z	error	salida de errores del emulador	bwrap: Unexpected capabilities but not setuid, old file caps config? | error: Fallo al sincronizar con el proxy de dbus
+  2026-10-21T03:47:30.839Z	biblioteca	22 ms	0 sistemas leídos del disco	snes=1	0 con carátula
+  2026-10-21T03:47:35.876Z	emuladores	RetroArch 1.22.2 (Flathub)	Dolphin 2609a (Flathub)	PPSSPP 1.20.4 (Flathub)
+  2026-10-21T03:47:57.844Z	biblioteca	23 ms	0 sistemas leídos del disco	snes=1	0 con carátula
+  2026-10-21T03:48:02.905Z	emuladores	RetroArch 1.22.2 (Flathub)	Dolphin 2609a (Flathub)	PPSSPP 1.20.4 (Flathub)
+  2026-10-21T03:48:46.484Z	lanzamiento	flatpak run org.libretro.RetroArch -f -L /home/arcade/.var/app/org.libretro.RetroArch/config/retroarch/cores/snes9x_libretro.so '/home/arcade/NeoRetro/roms/snes/Prueba de control (Neo Arcade).sfc'	salida 0	29895 ms	proceso 2916
+  2026-10-21T03:48:52.427Z	biblioteca	27 ms	0 sistemas leídos del disco	snes=1	0 con carátula
+  2026-10-21T03:48:57.480Z	emuladores	RetroArch 1.22.2 (Flathub)	Dolphin 2609a (Flathub)	PPSSPP 1.20.4 (Flathub)
+  2026-10-21T03:49:17.061Z	lanzamiento	flatpak run org.libretro.RetroArch -f -L /home/arcade/.var/app/org.libretro.RetroArch/config/retroarch/cores/snes9x_libretro.so '/home/arcade/NeoRetro/roms/snes/Prueba de control (Neo Arcade).sfc'	salida 0	8673 ms	proceso 3193
+  2026-10-21T03:49:35.432Z	equipo	terminal de mantenimiento	foot
+  2026-10-21T03:52:06.249Z	biblioteca	20 ms	0 sistemas leídos del disco	snes=1	0 con carátula
+  2026-10-21T03:52:11.295Z	emuladores	RetroArch 1.22.2 (Flathub)	Dolphin 2609a (Flathub)	PPSSPP 1.20.4 (Flathub)
+  2026-10-21T03:52:28.729Z	lanzamiento	flatpak run org.libretro.RetroArch -f -L /home/arcade/.var/app/org.libretro.RetroArch/config/retroarch/cores/snes9x_libretro.so '/home/arcade/NeoRetro/roms/snes/Prueba de control (Neo Arcade).sfc'	salida 0	6799 ms	proceso 3549
+  2026-10-21T03:53:19.362Z	biblioteca	19 ms	0 sistemas leídos del disco	snes=1	0 con carátula
+  2026-10-21T03:53:24.403Z	emuladores	RetroArch 1.22.2 (Flathub)	Dolphin 2609a (Flathub)	PPSSPP 1.20.4 (Flathub)
+  2026-10-21T03:53:41.930Z	lanzamiento	flatpak run org.libretro.RetroArch -f -L /home/arcade/.var/app/org.libretro.RetroArch/config/retroarch/cores/snes9x_libretro.so '/home/arcade/NeoRetro/roms/snes/Prueba de control (Neo Arcade).sfc'	salida 0	6882 ms	proceso 3788
+  2026-10-21T03:54:08.781Z	biblioteca	18 ms	0 sistemas leídos del disco	snes=1	0 con carátula
+  2026-10-21T03:54:13.842Z	emuladores	RetroArch 1.22.2 (Flathub)	Dolphin 2609a (Flathub)	PPSSPP 1.20.4 (Flathub)
+  2026-10-21T03:54:33.419Z	lanzamiento	flatpak run org.libretro.RetroArch -f -L /home/arcade/.var/app/org.libretro.RetroArch/config/retroarch/cores/snes9x_libretro.so '/home/arcade/NeoRetro/roms/snes/Prueba de control (Neo Arcade).sfc'	salida 0	8699 ms	proceso 4074
+  2026-10-21T03:54:51.809Z	equipo	terminal de mantenimiento	foot
+  2026-10-21T03:55:16.259Z	equipo	apagar	systemctl poweroff
+  2026-10-21T03:55:16.308Z	mando	el lector se cerró	código null	se reinicia en 3000 ms
+  2026-10-21T03:56:12.335Z	biblioteca	33 ms	0 sistemas leídos del disco	snes=1	0 con carátula
+  2026-10-21T03:56:17.389Z	emuladores	RetroArch 1.22.2 (Flathub)	Dolphin 2609a (Flathub)	PPSSPP 1.20.4 (Flathub)
+Arranque del núcleo: 2026-10-20 21:56:08
+Errores del arranque (journalctl -p err -b):
+== La consola sigue encendida (QEMU 45447): SSH en 127.0.0.1:2222, QMP en /home/arcade/vm-consola/qmp.sock
+== consola: empieza a las 23:22:18
+
+== Línea de tiempo del arranque (capturas cada 0.5 s desde que se enciende la máquina)
+   0.0 a    0.5 s  negro                          negro  99.9 %  claro  0.1 %  color   0.0 %  640x480
+   1.0 a    2.5 s  texto o logotipo sobre negro   negro  98.1 %  claro  1.7 %  color   0.1 %  1280x800
+   3.0 a   10.5 s  negro                          negro 100.0 %  claro  0.0 %  color   0.0 %  1280x800
+  11.0 a   12.0 s  texto o logotipo sobre negro   negro  94.2 %  claro  2.6 %  color   1.9 %  1280x800
+  12.5 a   12.5 s  otro                           negro  62.1 %  claro  2.7 %  color   4.6 %  1280x800
+  13.0 a  119.6 s  color                          negro  52.0 %  claro  3.0 %  color  10.3 %  1280x800
+
+== Dentro de la consola
+systemd-analyze: Startup finished in 2.006s (kernel) + 2.294s (userspace) = 4.300s 
+neo-arcade.service: active, desde 4.3 s del arranque del núcleo
+Línea del núcleo: BOOT_IMAGE=/boot/vmlinuz-6.12.113+deb13-amd64 root=UUID=0257409e-16e7-4ba9-bab8-96985e600af8 ro quiet loglevel=3 systemd.show_status=false rd.udev.log_level=3 udev.log_level=3 vt.global_cursor_default=0
+GRUB: GRUB_TIMEOUT=1 GRUB_TIMEOUT_STYLE=hidden 
+Emuladores: org.DolphinEmu.dolphin-emu 2609a,org.libretro.RetroArch 1.22.2,org.ppsspp.PPSSPP 1.20.4,
+Núcleos: 12
+RetroArch guarda en: savefile_directory = "~/NeoRetro/saves" savestate_directory = "~/NeoRetro/states" 
+~/NeoRetro: backups config logs media metadata roms saves states 
+~/NeoRetro/roms: 21 carpetas
+~/NeoRetro/config: biblioteca.json datos-usuario.json 
+Configuración de la sesión: XDG_SESSION_TYPE=wayland NEO_ARCADE_CONFIG=/home/arcade/NeoRetro/config
+Registro de Neo Arcade (~/NeoRetro/logs/neo-arcade.log):
+  2026-10-21T09:35:51.575Z	biblioteca	46 ms	21 sistemas leídos del disco	sin juegos	0 con carátula
+  2026-10-21T09:35:56.666Z	emuladores	RetroArch 1.22.2 (Flathub)	Dolphin 2609a (Flathub)	PPSSPP 1.20.4 (Flathub)
+  2026-10-21T03:39:54.316Z	biblioteca	20 ms	0 sistemas leídos del disco	sin juegos	0 con carátula
+  2026-10-21T03:39:59.388Z	emuladores	RetroArch 1.22.2 (Flathub)	Dolphin 2609a (Flathub)	PPSSPP 1.20.4 (Flathub)
+  2026-10-21T03:42:36.581Z	biblioteca	26 ms	1 sistemas leídos del disco	snes=1	0 con carátula
+  2026-10-21T03:42:41.627Z	emuladores	RetroArch 1.22.2 (Flathub)	Dolphin 2609a (Flathub)	PPSSPP 1.20.4 (Flathub)
+  2026-10-21T03:42:52.608Z	lanzamiento	flatpak run org.libretro.RetroArch -f -L /home/arcade/.var/app/org.libretro.RetroArch/config/retroarch/cores/snes9x_libretro.so '/home/arcade/NeoRetro/roms/snes/Prueba de control (Neo Arcade).sfc'	salida 1	51 ms	proceso 1282
+  2026-10-21T03:43:36.474Z	equipo	terminal de mantenimiento	foot
+  2026-10-21T03:46:32.256Z	biblioteca	21 ms	0 sistemas leídos del disco	snes=1	0 con carátula
+  2026-10-21T03:46:37.304Z	emuladores	RetroArch 1.22.2 (Flathub)	Dolphin 2609a (Flathub)	PPSSPP 1.20.4 (Flathub)
+  2026-10-21T03:46:48.087Z	lanzamiento	flatpak run org.libretro.RetroArch -f -L /home/arcade/.var/app/org.libretro.RetroArch/config/retroarch/cores/snes9x_libretro.so '/home/arcade/NeoRetro/roms/snes/Prueba de control (Neo Arcade).sfc'	salida 1	121 ms	proceso 2465
+  2026-10-21T03:46:48.088Z	error	salida de errores del emulador	bwrap: Unexpected capabilities but not setuid, old file caps config? | error: Fallo al sincronizar con el proxy de dbus
+  2026-10-21T03:47:30.839Z	biblioteca	22 ms	0 sistemas leídos del disco	snes=1	0 con carátula
+  2026-10-21T03:47:35.876Z	emuladores	RetroArch 1.22.2 (Flathub)	Dolphin 2609a (Flathub)	PPSSPP 1.20.4 (Flathub)
+  2026-10-21T03:47:57.844Z	biblioteca	23 ms	0 sistemas leídos del disco	snes=1	0 con carátula
+  2026-10-21T03:48:02.905Z	emuladores	RetroArch 1.22.2 (Flathub)	Dolphin 2609a (Flathub)	PPSSPP 1.20.4 (Flathub)
+  2026-10-21T03:48:46.484Z	lanzamiento	flatpak run org.libretro.RetroArch -f -L /home/arcade/.var/app/org.libretro.RetroArch/config/retroarch/cores/snes9x_libretro.so '/home/arcade/NeoRetro/roms/snes/Prueba de control (Neo Arcade).sfc'	salida 0	29895 ms	proceso 2916
+  2026-10-21T03:48:52.427Z	biblioteca	27 ms	0 sistemas leídos del disco	snes=1	0 con carátula
+  2026-10-21T03:48:57.480Z	emuladores	RetroArch 1.22.2 (Flathub)	Dolphin 2609a (Flathub)	PPSSPP 1.20.4 (Flathub)
+  2026-10-21T03:49:17.061Z	lanzamiento	flatpak run org.libretro.RetroArch -f -L /home/arcade/.var/app/org.libretro.RetroArch/config/retroarch/cores/snes9x_libretro.so '/home/arcade/NeoRetro/roms/snes/Prueba de control (Neo Arcade).sfc'	salida 0	8673 ms	proceso 3193
+  2026-10-21T03:49:35.432Z	equipo	terminal de mantenimiento	foot
+  2026-10-21T03:52:06.249Z	biblioteca	20 ms	0 sistemas leídos del disco	snes=1	0 con carátula
+  2026-10-21T03:52:11.295Z	emuladores	RetroArch 1.22.2 (Flathub)	Dolphin 2609a (Flathub)	PPSSPP 1.20.4 (Flathub)
+  2026-10-21T03:52:28.729Z	lanzamiento	flatpak run org.libretro.RetroArch -f -L /home/arcade/.var/app/org.libretro.RetroArch/config/retroarch/cores/snes9x_libretro.so '/home/arcade/NeoRetro/roms/snes/Prueba de control (Neo Arcade).sfc'	salida 0	6799 ms	proceso 3549
+  2026-10-21T03:53:19.362Z	biblioteca	19 ms	0 sistemas leídos del disco	snes=1	0 con carátula
+  2026-10-21T03:53:24.403Z	emuladores	RetroArch 1.22.2 (Flathub)	Dolphin 2609a (Flathub)	PPSSPP 1.20.4 (Flathub)
+  2026-10-21T03:53:41.930Z	lanzamiento	flatpak run org.libretro.RetroArch -f -L /home/arcade/.var/app/org.libretro.RetroArch/config/retroarch/cores/snes9x_libretro.so '/home/arcade/NeoRetro/roms/snes/Prueba de control (Neo Arcade).sfc'	salida 0	6882 ms	proceso 3788
+  2026-10-21T03:54:08.781Z	biblioteca	18 ms	0 sistemas leídos del disco	snes=1	0 con carátula
+  2026-10-21T03:54:13.842Z	emuladores	RetroArch 1.22.2 (Flathub)	Dolphin 2609a (Flathub)	PPSSPP 1.20.4 (Flathub)
+  2026-10-21T03:54:33.419Z	lanzamiento	flatpak run org.libretro.RetroArch -f -L /home/arcade/.var/app/org.libretro.RetroArch/config/retroarch/cores/snes9x_libretro.so '/home/arcade/NeoRetro/roms/snes/Prueba de control (Neo Arcade).sfc'	salida 0	8699 ms	proceso 4074
+  2026-10-21T03:54:51.809Z	equipo	terminal de mantenimiento	foot
+  2026-10-21T03:55:16.259Z	equipo	apagar	systemctl poweroff
+  2026-10-21T03:55:16.308Z	mando	el lector se cerró	código null	se reinicia en 3000 ms
+  2026-10-21T03:56:12.335Z	biblioteca	33 ms	0 sistemas leídos del disco	snes=1	0 con carátula
+  2026-10-21T03:56:17.389Z	emuladores	RetroArch 1.22.2 (Flathub)	Dolphin 2609a (Flathub)	PPSSPP 1.20.4 (Flathub)
+  2026-10-21T05:22:28.300Z	biblioteca	64 ms	0 sistemas leídos del disco	snes=1	0 con carátula
+  2026-10-21T05:22:33.268Z	emuladores	RetroArch 1.22.2 (Flathub)	Dolphin 2609a (Flathub)	PPSSPP 1.20.4 (Flathub)
+Arranque del núcleo: 2026-10-20 23:22:21
+Errores del arranque (journalctl -p err -b):
+== La consola sigue encendida (QEMU 50031): SSH en 127.0.0.1:2222, QMP en /home/arcade/vm-consola/qmp.sock

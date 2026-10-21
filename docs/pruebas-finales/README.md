@@ -7,12 +7,31 @@ El usuario pidió usar su skill (`UtilsDev/skills/neo-arcade/skill.md`) para cor
 reales. Este documento cruza cada sección de la skill y cada prueba del producto final del plan
 (`docs/plan-desarrollo.md`) con lo que hay en el código y con lo que se probó en la TV.
 
-Las pruebas usan programas y archivos propios, nunca juegos de terceros, y nunca tocan `roms/` ni
-`media/`. Lo que necesita un juego comercial o una BIOS queda marcado como pendiente del usuario.
+La primera ronda usó programas y archivos propios. Después, el usuario puso su biblioteca
+(un paquete de RetroBat) y pidió organizarla en la MP80 y probar con ella: ver «Biblioteca real del
+usuario». La consola instalada se probó en una máquina virtual dentro de la MP80: ver «Consola
+instalada».
 
 ## Resumen
 
-Todo lo que se pudo probar sin juegos de terceros pasó en la TV de la MP80. Eso incluye:
+**Con la biblioteca real** (3 616 juegos de 12 sistemas, 3 624 archivos con carátula):
+
+- abren y se juegan 14 juegos de 11 sistemas;
+- la versión final empaquetada funciona entera con el mando;
+- la consola instalada arranca sola en 11 s, abre juegos, vuelve y se apaga desde el menú.
+
+Hallazgos de esa ronda, todos corregidos:
+
+- **En la consola instalada no abría ningún emulador.** systemd daba a la sesión `CAP_WAKE_ALARM` y la
+  caja de Flatpak la rechazaba. Ahora Cage arranca con `setpriv`.
+- **Al volver de un juego, la pantalla se quedaba en «Abriendo…».** En Wayland, la ventana ya no se
+  oculta mientras se juega.
+- Se veía el puntero del ratón.
+- El instalador preguntaba por otros discos de instalación.
+- Neo Arcade no respetaba los juegos ocultos del `gamelist.xml`.
+- La revisión de juegos daba por dañados los juegos de NES en formato UNIF.
+
+**Primera ronda, sin juegos de terceros.** Todo pasó en la TV de la MP80:
 
 - lanzamiento y regreso al menú;
 - avisos de BIOS y de `neogeo.zip` antes de abrir el emulador;
@@ -36,11 +55,70 @@ Para cumplir la skill se agregaron en esta tanda:
 
 Quedan tres grupos:
 
-- **Lo que necesita tus archivos.** Un juego real de arcade, PlayStation, GameCube y PSP, y las BIOS
-  de PlayStation y Sega CD.
-- **Lo que necesita tu permiso.** Probar la instalación como consola y apagar desde el menú implica
-  reiniciar o apagar la MP80.
+- **Lo que necesita tus archivos.** Juegos de PlayStation, GameCube y PSP: el paquete de RetroBat no
+  los trae. Las BIOS de PlayStation y Sega CD ya están instaladas.
+- **Lo que necesita tu permiso.** Instalar la consola en la MP80 misma implica reiniciarla.
 - **Lo que la skill pide y el plan no tiene.** Ver «Lo que queda por decidir».
+
+## Biblioteca real del usuario
+
+El usuario bajó un paquete de RetroBat en 12 partes RAR (23.5 GB) y pidió copiarlo a la MP80,
+descomprimirlo y organizarlo. Lo que se hizo:
+
+- **Las partes 01, 04, 05 y 06 bajaron cortadas.** Se comprobó recorriendo los bloques del formato
+  RAR5 y con la prueba de WinRAR («Final inesperado del archivo»). La 04 se volvió a bajar completa.
+  Cada corte se detuvo en un punto distinto entre el 98.4 % y el 99.6 %: el servidor manda bien los
+  datos y la conexión se cierra cerca del final.
+- **Se descomprimió aceptando las pérdidas**, a pedido del usuario, por tramos: se aparta la parte
+  cortada anterior para que `unrar` no se detenga en ella. Se perdieron 6 archivos: 2 juegos de arcade
+  (`cybrcycc`, `cybstorm`), 2 adornos de MAME y 2 imágenes. El archivo no es sólido, así que el daño
+  no pasó al resto.
+- **Cuenta verificada**: el RAR trae 3 644 juegos de los 12 sistemas que maneja Neo Arcade y en la
+  MP80 hay 3 642; faltan los 2 de arcade. Las listas de RetroBat mencionan 7 513 juegos porque
+  describen una colección más grande.
+- **Organización** en `~/NeoRetro/roms/` (se movieron, no se copiaron): `mame`→`arcade`, y `neogeo`,
+  `nes`, `snes`, `n64`, `gb`, `gbc`, `gba`, `megadrive`, `mastersystem`, `gamegear` y `pcengine` con
+  su mismo nombre, cada uno con su `gamelist.xml`, imágenes y videos.
+- **8 juegos venían dentro de un `.rar`** (1 de SNES, 3 de N64, 4 de GBA). Se sacaron junto a los
+  demás; los `.rar` quedaron en `~/descargas-retrobat/rar-internos/`. `st-z0rr-2.smc` se renombró a
+  «Star Fox 2.smc».
+- **Sonic 2 y Sonic 3 eran colecciones `.7z`** de 96 y 19 versiones y modificaciones de aficionados,
+  y RetroArch abría la primera, una modificación de Sonic 1. Se sacó la versión original de cada uno
+  (`(W) (REV01) [!]` y `(E) [!]`); las colecciones quedaron en `~/descargas-retrobat/colecciones/`.
+- **BIOS** de PlayStation, Sega CD, Dreamcast y GBA copiadas a la carpeta de RetroArch. `neogeo.zip`
+  se quedó junto a los juegos de Neo Geo y de arcade.
+- **No se trajo** lo que es de Windows (RetroBat, sus emuladores, DirectX) ni las carpetas `ports`,
+  `ps5`, `singe`, `sonicmania` y `sonicretro`. Todo sigue en `~/descargas-retrobat/extraido/`.
+
+Diagnóstico con revisión (`npm run diagnostico -- --juegos`, 4 s): 3 540 de 3 642 archivos sin
+avisos. Los avisos son 48 juegos de Neo Geo que RetroBat trae en `mame` y en `neogeo`, un juego de NES
+con dos nombres, y 3 juegos de NES sin cabecera (Adventures of Lolo, Captain Comic y Swamp Thing).
+Adventures of Lolo, en efecto, no abre.
+
+| Prueba en la TV | Resultado | Evidencia |
+| --- | --- | --- |
+| 14 juegos de 11 sistemas con el comando de Neo Arcade | Todos abren y se ven: Super Mario Bros. 3, Super Mario World, Super Mario 64, Tetris, Zelda Link's Awakening DX, Mario Kart Super Circuit, Sonic 2, Alex Kidd, Bonk, Metal Slug (Neo Geo y arcade), Street Fighter II, Donkey Kong y Mortal Kombat II (que pide un botón la primera vez, como la placa real) | `juegos-reales/` |
+| Biblioteca completa en Neo Arcade | 3 642 juegos leídos en 577 ms, 3 624 con carátula, descripciones en español. Un juego abierto desde el menú y Esc de vuelta en 372 ms | `juegos-reales/1-todos.png` a `5-detalles.png` |
+| Versión final empaquetada, con el mando | Abre en 0.4 s; sistemas con RB, carrusel rápido, salto de letra, favorito, buscar «sonic», juego abierto y Select + Start de vuelta en 1.75 s; Esc ya no la cierra; Configuración reconoce el mando | `version-final/` |
+| Compatibilidad de arcade y Neo Geo | Barrido de los 724 juegos con FinalBurn Neo en curso | `compatibilidad.txt` (al terminar) |
+
+## Consola instalada
+
+La imagen USB (`armar-iso-consola.sh` con la oficial de Debian 13.7.0, huella comprobada) se instaló en
+una máquina virtual dentro de la MP80 (`scripts/instalador/probar-en-maquina-virtual.sh`: QEMU, KVM,
+UEFI, 4 núcleos y 4 GB), sin tocar la MP80. Las pruebas de uso las hace
+`scripts/instalador/probar-consola-encendida.sh`.
+
+| Prueba | Resultado | Evidencia |
+| --- | --- | --- |
+| Instalación automática | 12 min. Se detiene una sola vez, en el particionado, a propósito: el resumen de lo que se escribirá en el disco queda a la vista. La pregunta por otros discos de instalación ya no sale | `consola-vm/resultado.txt` |
+| Primer arranque | 6.5 min: instala Neo Arcade, los tres emuladores y los 11 núcleos, y reinicia solo | `consola-vm/resultado.txt` |
+| Arranque | Neo Arcade completo a los **11 s** de encender (meta del plan: 30 s). Sin menú ni textos del sistema; lo único que se ve antes es el logotipo del firmware y la animación de Neo Arcade. Sin errores en el diario | `consola-vm/arranque-*.png` |
+| Carpetas | `~/NeoRetro` con sus ocho carpetas; RetroArch guarda en `saves/` y `states/`; la sesión lee `~/NeoRetro/config` | `consola-vm/resultado.txt` |
+| Juegos reales en la consola | 709 juegos de SNES, Master System y Game Gear, 707 con carátula; un juego abierto desde el menú en 1.8 s y cerrado con Esc en 0.8 s | `consola-vm/con-juegos-*.png` |
+| Terminal de mantenimiento | Abre con Ctrl + Alt + Mayús + M y cierra con `exit`. En la máquina virtual, sin tarjeta gráfica, tardó 16 s en aparecer; falta medirla en la MP80 | `consola-vm/uso-4-terminal.png` |
+| Diagnóstico dentro de la consola | Corre con el Electron de la app como Node | `consola-vm/uso-con-juegos.txt` |
+| Apagar desde Configuración | La máquina se apaga 1 s después de confirmar; el registro anota «equipo · apagar» y el apagado es limpio | `consola-vm/uso-con-juegos.txt` |
 
 ## Resultados en la TV
 
