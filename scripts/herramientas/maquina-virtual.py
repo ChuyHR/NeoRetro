@@ -11,7 +11,9 @@ Lo usa scripts/instalador/probar-en-maquina-virtual.sh:
   captura <socket> <salida.png>
         una captura suelta, en PNG reducido a la mitad
   teclas <socket> <tecla> [<tecla>…]
-        pulsa teclas en la máquina (nombres de QEMU: down, up, tab, ret, spc, esc…)
+        pulsa teclas en la máquina, una tras otra (nombres de QEMU: down, up, tab, ret, spc, esc…)
+  combinacion <socket> <ms> <tecla> [<tecla>…]
+        pulsa esas teclas juntas y las mantiene <ms> milisegundos
 """
 import json
 import os
@@ -154,5 +156,10 @@ if __name__ == "__main__":
         for tecla in sys.argv[3:]:
             qmp(sys.argv[2], "send-key", {"keys": [{"type": "qcode", "data": tecla}]})
             time.sleep(0.4)
+    elif orden == "combinacion":
+        espera = int(sys.argv[3])
+        teclas = [{"type": "qcode", "data": tecla} for tecla in sys.argv[4:]]
+        qmp(sys.argv[2], "send-key", {"keys": teclas, "hold-time": espera})
+        time.sleep(espera / 1000 + 0.3)  # send-key vuelve antes de soltar
     else:
         sys.exit(__doc__)
