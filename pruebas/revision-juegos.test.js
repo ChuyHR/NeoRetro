@@ -54,6 +54,7 @@ test('cada juego queda con su estado y el motivo', async () => {
   await escribir(roms, 'snes/Copia.sfc', 'contenido');
   await escribir(roms, 'snes/Vacío.sfc', '');
   await escribir(roms, 'nes/Sin cabecera.nes', 'esto no es NES');
+  await escribir(roms, 'nes/En UNIF.nes', 'UNIF\x07\0\0\0 resto del juego');
   await escribir(roms, 'arcade/cortado.zip', 'PK\x03\x04 a medias');
   await escribir(roms, 'psx/Juego/Juego.cue', 'FILE "juego.bin" BINARY\n');
   await escribir(roms, 'psx/Juego/Juego.bin', 'x');
@@ -81,6 +82,7 @@ test('cada juego queda con su estado y el motivo', async () => {
   assert.match(estado['snes/Bueno.sfc'][1], /posible duplicado de snes\/Copia\.sfc/);
   assert.equal(estado['snes/Vacío.sfc'][0], 'CORRUPTED');
   assert.equal(estado['nes/Sin cabecera.nes'][0], 'CORRUPTED');
+  assert.equal(estado['nes/En UNIF.nes'][0], 'VALID');
   assert.equal(estado['arcade/cortado.zip'][0], 'CORRUPTED');
   assert.equal(estado['psx/Juego/Juego.cue'][0], 'INVALID');
   assert.match(estado['psx/Juego/Juego.cue'][1], /juego\.bin \(está como Juego\.bin\)/);

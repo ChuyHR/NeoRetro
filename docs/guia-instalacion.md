@@ -88,9 +88,15 @@ Neo Arcade lee los juegos nuevos al volver a abrirse (o al reiniciar la consola)
 
 ## 5. Mantenimiento
 
-- **Terminal**: mantén **Ctrl + Alt + Mayús + M** durante 3 segundos. Al cerrarla, vuelves a Neo
-  Arcade.
-- **Diagnóstico**: PENDIENTE_DIAGNOSTICO
+- **Terminal**: mantén **Ctrl + Alt + Mayús + M** durante 3 segundos. Puede tardar unos segundos en
+  aparecer. Al cerrarla (`exit`), vuelves a Neo Arcade.
+- **Diagnóstico**: desde la terminal, revisa emuladores, núcleos, BIOS, carpetas y cada juego (archivos
+  vacíos o cortados, pistas que faltan, posibles duplicados). Usa el Electron de la app como Node:
+
+  ```bash
+  NEO_ARCADE_CONFIG=~/NeoRetro/config ELECTRON_RUN_AS_NODE=1 /opt/neo-arcade/neo-arcade \
+    /opt/neo-arcade-instalador/scripts/diagnostico.mjs --juegos
+  ```
 - **Menú de arranque**: aparece si mantienes Esc o Mayús durante el primer segundo de arranque. Sirve
   para elegir otro sistema instalado.
 - **Volver al escritorio** (si la PC tenía uno): `sudo bash

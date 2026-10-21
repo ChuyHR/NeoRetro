@@ -46,7 +46,10 @@ async function firmaCorrecta(ruta, extension, tamano) {
     }
     if (extension === '.7z') return (await leer(0, 6)).equals(Buffer.from([0x37, 0x7a, 0xbc, 0xaf, 0x27, 0x1c]));
     if (extension === '.chd') return (await leer(0, 8)).toString('latin1') === 'MComprHD';
-    if (extension === '.nes') return (await leer(0, 4)).equals(Buffer.from([0x4e, 0x45, 0x53, 0x1a]));
+    // NES: cabecera iNES («NES» + 0x1A) o formato UNIF, que también usan algunos .nes (visto en la
+    // biblioteca de RetroBat).
+    if (extension === '.nes') return ['NES\x1a', 'UNIF'].includes((await leer(0, 4)).toString('latin1'));
+    if (extension === '.unf' || extension === '.unif') return (await leer(0, 4)).toString('latin1') === 'UNIF';
     return true;
   } finally {
     await archivo.close();
@@ -155,7 +158,7 @@ export async function revisarJuegos(configuracion, biblioteca, { biosPorSistema,
         continue;
       }
       if (!(await firmaCorrecta(ruta, extension, tamano))) {
-        Object.assign(juego, { estado: 'CORRUPTED', detalle: [`no tiene la forma de un archivo ${extension}: puede estar incompleto o dañado`] });
+        Object.assign(juego, { estado: 'CORRUPTED', detalle: [`no empieza como un archivo ${extension} (le falta su cabecera): puede estar incompleto o dañado`] });
         continue;
       }
       if (['.cue', '.gdi', '.m3u'].includes(extension)) {
