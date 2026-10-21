@@ -53,6 +53,12 @@ function medirMemoria() {
 // Tiempo mínimo de «Abriendo…» en pantalla antes de ocultar la ventana, para que alcance a leerse.
 const PANTALLA_LANZAMIENTO_MS = 1200;
 
+// En un escritorio X11 la ventana se oculta mientras se juega: no compite con el emulador y no se
+// queda con el foco. En Wayland (la consola instalada, con Cage) no: Cage dibuja solo la ventana de
+// arriba, y una ventana de Electron que se ocultó vuelve mostrando su último cuadro, «Abriendo…», sin
+// dibujar otro hasta que algo la obliga (se vio en la máquina virtual de la fase 8).
+const OCULTAR_AL_JUGAR = process.env.XDG_SESSION_TYPE !== 'wayland';
+
 // En las pruebas, NEO_ARCADE_DATOS aparta la carpeta de datos (caché, registros y lo que se recuerda)
 // de la real.
 if (process.env.NEO_ARCADE_DATOS) app.setPath('userData', expandirRuta(process.env.NEO_ARCADE_DATOS));
@@ -146,7 +152,7 @@ ipcMain.handle('jugar', async (_evento, id, opciones = {}) => {
     }
     mandos?.soltarTodo();
     await esperar(PANTALLA_LANZAMIENTO_MS);
-    ventana.hide();
+    if (OCULTAR_AL_JUGAR) ventana.hide();
     const resultado = await ejecutar(comando);
     const { codigo, senal, duracionMs, pid } = resultado;
     await registro.anotar('lanzamiento', comandoLegible(comando), `salida ${codigo ?? senal}`, `${duracionMs} ms`, `proceso ${pid}`);
@@ -214,14 +220,7 @@ function volverAlFrente() {
   if (!ventana.isVisible()) ventana.show();
   ventana.focus();
   ventana.setAlwaysOnTop(true);
-  // En Wayland (la consola instalada, con Cage) la ventana vuelve mostrando el último cuadro que dibujó
-  // antes de ocultarse, «Abriendo…», hasta que algo la obliga a dibujar otro: se le pide uno nuevo.
-  ventana.webContents.invalidate();
-  setTimeout(() => {
-    if (!ventana || ventana.isDestroyed()) return;
-    ventana.setAlwaysOnTop(false);
-    ventana.webContents.invalidate();
-  }, 300);
+  setTimeout(() => ventana?.setAlwaysOnTop(false), 300);
 }
 
 async function capturar(ruta) {
