@@ -19,7 +19,7 @@ SALIDA=/tmp/prueba-mando
 PERFILES=$HOME/.var/app/org.libretro.RetroArch/config/retroarch/autoconfig/udev
 rm -rf "$SALIDA" "$BASE" && mkdir -p "$SALIDA" "$BASE/roms/snes" "$BASE/roms/nes"
 node scripts/juego-de-prueba-snes.mjs "$BASE/roms/snes" >/dev/null
-# Una letra por juego y bastantes para que la repetición no dé la vuelta: sostener 1.25 s son 12 pasos.
+# Una letra por juego y bastantes para que la repetición no dé la vuelta: sostener 1.25 s son 11 pasos.
 for titulo in Aero Bomber Castillo Dragon Eclipse Fuego Galaxia Halcon Isla Jungla Koala Lince Mamut Nube \
   Ocaso Pirata Quasar Rayo Sable Trueno Union Vortex Waka Xenon Yeti Zafiro; do : >"$BASE/roms/nes/$titulo.nes"; done
 bash scripts/configurar-retroarch.sh >/dev/null
@@ -53,8 +53,8 @@ captura 01-inicio-con-teclado
 informe "== Mando de Xbox"
 conectar xbox 3
 xbox pulsar derecha; sleep 0.5; captura 02-una-derecha # Bomber
-xbox bajar derecha; sleep 1.0; xbox subir derecha; sleep 0.5; captura 03-derecha-sostenida # 12 pasos más: Nube
-xbox pulsar lt; sleep 0.5; captura 04-letra-anterior # Mamut
+xbox bajar derecha; sleep 1.0; xbox subir derecha; sleep 0.5; captura 03-derecha-sostenida # 11 pasos más: Mamut
+xbox pulsar lt; sleep 0.5; captura 04-letra-anterior # Lince
 xbox pulsar x; sleep 0.5; captura 05-favorito
 xbox pulsar abajo; xbox pulsar abajo; xbox pulsar a; sleep 0.6; captura 05b-detalles
 xbox pulsar b; xbox pulsar arriba; xbox pulsar arriba; sleep 0.5

@@ -1,0 +1,15 @@
+== Mando de Xbox
+Select + Start → Neo Arcade visible en 1357 ms
+== Palanca de arcade
+Mapeo guardado: {"0079:0006:DragonRiseInc.GenericUSBJoystick":{"botones":{"288":"y","289":"b","290":"a","291":"x","292":"lb","293":"rb","296":"view","297":"menu"},"ejes":{"0":["izquierda","derecha"],"1":["arriba","abajo"]}}}
+Perfil de RetroArch escrito: neo-arcade-0079-0006-dragonrise-inc-generic-usb-joystick.cfg
+Select + Start de la palanca → Neo Arcade visible en 1356 ms
+
+Registro de Neo Arcade:
+2026-10-21T01:06:08.516Z	biblioteca	30 ms	21 sistemas leídos del disco	nes=26 snes=1
+2026-10-21T01:06:12.219Z	mando	conectado	Microsoft X-Box 360 pad	045e:028e:Microsoft X-Box 360 pad	estandar
+2026-10-21T01:06:41.016Z	lanzamiento	flatpak run org.libretro.RetroArch -f -L ~/.var/app/org.libretro.RetroArch/config/retroarch/cores/snes9x_libretro.so '~/juegos-de-prueba-mando/roms/snes/Prueba de control (Neo Arcade).sfc'	salida 0	7065 ms
+2026-10-21T01:06:43.306Z	mando	desconectado	Microsoft X-Box 360 pad
+2026-10-21T01:06:45.810Z	mando	conectado	DragonRise Inc. Generic USB Joystick	0079:0006:DragonRise Inc. Generic USB Joystick	sin-configurar
+2026-10-21T01:07:05.041Z	mando	mapeo guardado	0079:0006:DragonRise Inc. Generic USB Joystick
+2026-10-21T01:07:17.720Z	lanzamiento	flatpak run org.libretro.RetroArch -f -L ~/.var/app/org.libretro.RetroArch/config/retroarch/cores/snes9x_libretro.so '~/juegos-de-prueba-mando/roms/snes/Prueba de control (Neo Arcade).sfc'	salida 0	7079 ms
