@@ -61,6 +61,7 @@ Guiones en `scripts/`. Capturas y salidas en `tv-mp80/`.
 | Reconexión del mando | 3 pasos con el primer mando, desconexión, otro mando y 3 pasos más, sin reiniciar la app. | `reconexion.txt`, `9-tras-reconectar-el-mando.png` |
 | 30 minutos de uso con 3.000 juegos | Memoria total de 643 MB en el primer minuto y 647 MB en el último. Desde el minuto 4, entre 645 y 649 MB. | `../pruebas-fase7/memoria-30-min.txt` |
 | Fluidez con 3.000 juegos | Con la cruceta sostenida, 59.4 cuadros/s a 60 Hz y 74.3 a 75 Hz. | `../pruebas-fase7/fluidez.txt` |
+| Carpetas de la consola (`~/NeoRetro`) | Con un NeoRetro de prueba configurado como lo deja el instalador: los juegos salen de `roms/`, lo recordado va a `config/`, el registro a `logs/` y el estado guardado con F2 a `states/Snes9x/`. Nada de eso quedó en la carpeta de datos de Electron. | `carpetas-neoretro.txt`, `10-biblioteca-desde-neoretro.png`, `11-estado-guardado-en-states.png` |
 
 ## La skill, sección por sección
 
@@ -72,7 +73,7 @@ en el plan), **Parcial**, **No está** y **Choca con el plan** (el plan manda, s
 | 1 | Propósito | Parcial | Todo menos importar juegos desde la app y descargar contenido legal (§33–37). |
 | 2 | Hardware independiente | Cumple | Se adapta a cualquier pantalla; el instalador no depende de la MP80. |
 | 3 | RetroArch, Dolphin y PPSSPP | Cumple | `config/emulators.json`; los tres probados en el diagnóstico de la MP80. |
-| 4 | Carpetas `~/NeoRetro/{roms,media,saves,…}` | Choca con el plan | En la consola los juegos van en `~/roms` y `~/media`; los datos de la app, en `~/.config/neo-arcade`. En la MP80, `~/NeoRetro` es el repositorio. |
+| 4 | Carpetas `~/NeoRetro/{roms,media,saves,…}` | Cumple | Decidido por el usuario: en la consola instalada, las ocho carpetas de la skill. Dolphin y PPSSPP guardan en sus propias carpetas (de Flathub solo leen la carpeta personal). En desarrollo, en la MP80, `~/NeoRetro` es el repositorio. |
 | 5 | Nombres de las 21 carpetas | Cumple | Los mismos 21 nombres; el instalador las crea. En desarrollo no se crean solas. |
 | 6 | Formatos | Cumple distinto | Mismos formatos, salvo `.bin` suelto en Sega CD y PlayStation: es una pista de un `.cue`, y listarlo duplicaría el juego. |
 | 7 | Subcarpetas | Cumple | El escáner baja tres niveles. |
@@ -86,7 +87,7 @@ en el plan), **Parcial**, **No está** y **Choca con el plan** (el plan manda, s
 | 16 | Los 13 pasos del lanzamiento | Cumple | `core/main.js` (`jugar`). |
 | 17 | Pantalla completa | Cumple | Cada emulador con su propia opción (`-f`, `Fullscreen=True`, `--fullscreen`). |
 | 18 | Regreso al menú | Cumple | La app se oculta, sigue viva y vuelve al frente al cerrar el emulador. |
-| 19 | Controles | Choca con el plan | La skill pone Start = Iniciar y Select = Menú. El plan pone A = elegir, Start = Configuración y View = filtros. Select + Start y Esc para salir sí coinciden. |
+| 19 | Controles | Choca con el plan | Decidido por el usuario: mandan los del plan (A = elegir, Start = Configuración, View = filtros). Select + Start y Esc para salir sí coinciden. |
 | 20 | Mando | Cumple | Detección al conectar, Probar control y Configurar control para mandos sin estándar. |
 | 21–22 | Biblioteca y tarjeta | Cumple | ALL GAMES, sistemas, FAVORITOS y RECIENTES; carátula, nombre, sistema, año, género y jugadores. |
 | 23 | Favoritos | Cumple | Referencias por id, sin copiar archivos. |
@@ -104,13 +105,13 @@ en el plan), **Parcial**, **No está** y **Choca con el plan** (el plan manda, s
 | 40–41 | PlayStation y Sega CD | Cumple | BIOS en la carpeta real del núcleo; multidisco. |
 | 42 | Ports | Cumple | Se ejecutan con `bash`, con la ruta validada dentro de su carpeta. |
 | 43 | Seguridad | Cumple | Sin shell, rutas validadas, `medio://` limitado a dos carpetas, aislamiento de contexto. |
-| 44 | `~/NeoRetro/config/` | Choca con el plan | `config/` va con la app y lo del usuario en su carpeta de datos. |
+| 44 | `~/NeoRetro/config/` | Cumple | En la consola, lo que se recuerda, los mapeos de mandos y cualquier archivo de configuración que se quiera cambiar; los que no estén ahí salen de la app. |
 | 45–46 | Respaldos y base de datos | No está | Lo recordado son archivos JSON legibles que se escriben sin riesgo de corte. |
 | 47–49 | Arquitectura y procesos | Cumple distinto | `core/` (servicios) y `app/` (interfaz) separados; cada lanzamiento anota comando, código de salida, duración y número de proceso. |
 | 50–52 | Instalación, Flatpak y permisos | Cumple | `flatpak info`, permisos de la caja, aviso si una carpeta no se puede leer (en el diagnóstico). |
 | 53–54 | Arranque y quiosco | Parcial | Instalador de la fase 8 escrito (Cage, sin escritorio). Falta probarlo en una máquina virtual. |
 | 55 | Actualizaciones | No está | No se actualiza nada solo; tampoco avisa de versiones nuevas. |
-| 56 | Registros | Cumple distinto | En `~/.config/neo-arcade/registros/`, no en `~/NeoRetro/logs/`. |
+| 56 | Registros | Cumple | En la consola, `~/NeoRetro/logs/neo-arcade.log`; en desarrollo, en la carpeta de datos de la app. |
 | 57 | Pruebas automáticas | Cumple | 97 pruebas; Dolphin y PPSSPP se prueban por su comando, no abriendo un juego. |
 | 58 | Fases | Choca con el plan | El proyecto sigue las nueve fases del plan. |
 | 60 | Comandos `/neo-arcade …` | Parcial | `scan`, `detect-emulators`, `verify` y `bios` son `npm run diagnostico [-- --juegos]`; `test` es `npm test`. |
@@ -152,12 +153,12 @@ para después de la primera versión, salvo que decidas otra cosa:
    al abrir.
 5. **Avisar de versiones nuevas de los emuladores** (§55).
 
-Además, dos puntos de la skill chocan con lo aprobado y conviene corregirlos en la skill:
+Los dos choques de la skill con lo aprobado los decidió el usuario el 2026-10-20:
 
-- **Carpetas (§4, §44, §56).** La skill pone todo en `~/NeoRetro/`. En la MP80 esa carpeta es el
-  repositorio, y en la consola instalada los juegos van en `~/roms` y `~/media`.
-- **Botones (§19).** La skill pone Start = Iniciar y Select = Menú. El plan aprobado pone A = elegir,
-  Start = Configuración y View = filtros.
+- **Carpetas (§4, §44, §56): como la skill.** En la consola instalada todo va en `~/NeoRetro/`
+  (ajuste 10 del CLAUDE.md). Probado sin instalar la consola: `tv-mp80/carpetas-neoretro.txt`.
+- **Botones (§19): como el plan.** A = elegir, Start = Configuración y View = filtros. La §19 de la
+  skill (Start = Iniciar, Select = Menú) conviene corregirla para que no vuelva a chocar.
 
 ## La skill como archivo
 

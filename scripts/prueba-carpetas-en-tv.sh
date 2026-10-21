@@ -36,7 +36,9 @@ grep -E "^($(echo $CLAVES | tr ' ' '|')) = " "$CFG" >"$SALIDA/retroarch-antes.tx
 rm -rf "$DATOS_APP.respaldo-prueba"
 [ -d "$DATOS_APP" ] && cp -a "$DATOS_APP" "$DATOS_APP.respaldo-prueba"
 restaurar() {
+  # Electron escribe su caché al cerrarse: se espera a que termine antes de devolver la carpeta.
   pkill -x electron
+  for _ in $(seq 50); do pgrep -x electron >/dev/null || break; sleep 0.2; done
   while IFS= read -r linea; do
     clave=${linea%% =*}
     sed -i "s|^$clave = .*|$linea|" "$CFG"

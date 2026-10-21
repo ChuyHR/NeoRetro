@@ -1,0 +1,29 @@
+Carpeta de prueba: ~/prueba-consola/NeoRetro
+Juegos leídos de roms/: snes=1
+config/datos-usuario.json: sí
+logs/neo-arcade.log: sí
+Estados en states/: states/Snes9x/Prueba de control (Neo Arcade).state states/Snes9x/Prueba de control (Neo Arcade).state.png 
+En la carpeta de datos de Electron: biblioteca.json blob_storage Cache Code Cache Crashpad DawnGraphiteCache DawnWebGPUCache declarative_performance_observer.db declarative_performance_observer.db-journal Dictionaries DIPS DIPS-wal GPUCache GPUPersistentCache Local State Local Storage Network Persistent State Preferences Session Storage Shared Dictionary Trust Tokens Trust Tokens-journal 
+  (ahí solo deben quedar la caché biblioteca.json y, si hubo discos, listas/)
+OK: cada cosa quedó en su carpeta de NeoRetro
+
+datos-usuario.json (recientes y partidas):
+{
+  "recientes": [
+    {
+      "id": "snes/Prueba de control (Neo Arcade).sfc",
+      "fecha": "2026-10-21T03:06:30.202Z"
+    }
+  ],
+  "partidas": {
+    "snes/Prueba de control (Neo Arcade).sfc": {
+      "veces": 1,
+      "segundos": 8
+    }
+  }
+}
+
+Registro:
+2026-10-21T03:06:17.886Z	biblioteca	27 ms	21 sistemas leídos del disco	snes=1	0 con carátula
+2026-10-21T03:06:22.793Z	emuladores	RetroArch 1.22.2 (Flathub)	Dolphin 2609a (Flathub)	PPSSPP 1.20.4 (Flathub)
+2026-10-21T03:06:30.188Z	lanzamiento	flatpak run org.libretro.RetroArch -f -L ~/.var/app/org.libretro.RetroArch/config/retroarch/cores/snes9x_libretro.so '~/prueba-consola/NeoRetro/roms/snes/Prueba de control (Neo Arcade).sfc'	salida 0	8025 ms	proceso 39672

@@ -15,8 +15,9 @@ cinco criterios de terminado, la tabla de requisitos técnicos, las nueve fases 
 de aceptación, el prompt de cada fase, las pruebas del producto final y la tabla de riesgos. La
 sección «Ajustes al plan» de este archivo manda sobre el plan y sobre los prompts cuando choquen.
 La skill `neo-arcade` (`.claude/skills/neo-arcade/SKILL.md`) es la especificación que escribió el
-usuario. Donde choca con el plan (carpetas en `~/NeoRetro/`, Start y Select), mandan el plan y sus
-ajustes; lo que pide y el plan no tiene espera su decisión (`docs/pruebas-finales/README.md`).
+usuario. En sus dos choques con el plan decidió el 2026-10-20: las carpetas, como la skill (ajuste 10);
+los botones, como el plan. Lo que pide y el plan no tiene espera su decisión
+(`docs/pruebas-finales/README.md`).
 
 ## Estado actual
 
@@ -144,6 +145,7 @@ npm run diagnostico                    # emuladores, núcleos, BIOS, carpetas y 
 npm run diagnostico -- --juegos        # además cada juego: vacío, cortado, pistas, BIOS, duplicados
 bash scripts/instalar-nucleos.sh       # núcleos de RetroArch de systems.json (--actualizar los renueva)
 bash scripts/configurar-retroarch.sh   # salir con Select + Start o un solo Esc; perfiles de mando editables
+                                       #   --partidas y --estados: dónde guarda (la consola: ~/NeoRetro)
 ```
 
 En la MP80, con la sesión gráfica abierta (también por SSH), pruebas en la TV con RetroArch de
@@ -157,6 +159,8 @@ bash scripts/prueba-datos-en-tv.sh     # fase 6: favoritos, recientes, Configura
 bash scripts/prueba-fluidez-en-tv.sh   # fase 7: fluidez con 3.000 juegos a 60 y 75 Hz (pide sudo)
 bash scripts/prueba-memoria-en-tv.sh   # fase 7: 30 minutos de uso, memoria minuto a minuto (pide sudo)
 bash scripts/prueba-final-en-tv.sh     # final: multidisco, BIOS, neogeo.zip, tiempo jugado, revisión
+bash scripts/prueba-reconexion-en-tv.sh # desconectar y volver a conectar el mando (pide sudo)
+bash scripts/prueba-carpetas-en-tv.sh  # carpetas de la consola (~/NeoRetro) sin instalarla
 ```
 
 Herramientas que usan esas pruebas, también sueltas: `node scripts/juego-de-prueba-snes.mjs <carpeta>`
@@ -175,8 +179,10 @@ o el siguiente `git push` será rechazado. Al cerrar una tanda, descarta las cap
 cambiaron por la hora del reloj.
 
 Para probar con otra configuración o con otras carpetas sin tocar las reales: `NEO_ARCADE_CONFIG`
-(carpeta con los JSON), `NEO_ARCADE_ROMS` (juegos), `NEO_ARCADE_MEDIOS` (medios) y `NEO_ARCADE_DATOS`
-(caché, registros, `mandos.json` y `datos-usuario.json`, en lugar de la carpeta de datos de Electron).
+(carpeta con los JSON que cambian; los que falten salen de `config/`), `NEO_ARCADE_ROMS` (juegos),
+`NEO_ARCADE_MEDIOS` (medios) y `NEO_ARCADE_DATOS` (caché, registros, `mandos.json` y
+`datos-usuario.json`, en lugar de la carpeta de datos de Electron; manda sobre `datos` y `registros`
+de `biblioteca.json`).
 En desarrollo, `NEO_ARCADE_DEPURAR=1` escribe en la terminal cada acción que llega del mando, y lo que
 la página escribe en su consola sale siempre en la terminal.
 
@@ -288,9 +294,13 @@ Electron con JavaScript sin framework ni paso de compilación: lo que está en `
 - `core/configuracion.js` lee `config/systems.json` (21 sistemas: carpeta, extensiones, emulador,
   núcleo, BIOS que necesita y plantilla de comando), `config/emulators.json` (comando de cada emulador
   de Flathub y sus carpetas de núcleos, BIOS, perfiles de mando y `retroarch.cfg`),
-  `config/biblioteca.json` (carpetas de juegos y medios) y `config/gamepad-map.json` (qué hace cada
-  control del mando y qué código de Linux es cada uno en los mandos estándar). `~` es la carpeta del
-  usuario y una ruta relativa parte de la raíz del repositorio.
+  `config/biblioteca.json` (carpetas de juegos y medios y, opcionales, `datos` y `registros`) y
+  `config/gamepad-map.json` (qué hace cada control del mando y qué código de Linux es cada uno en los
+  mandos estándar). `~` es la carpeta del usuario y una ruta relativa parte de la raíz del
+  repositorio. Con `NEO_ARCADE_CONFIG` cada archivo se busca primero en esa carpeta y, si no está, en
+  `config/`; un archivo que está pero tiene un error se avisa y no se cambia por el de la app. La
+  consola instalada lo usa para `~/NeoRetro/config` (ajuste 10). `carpetasDelUsuario` decide dónde van
+  lo que se recuerda y el registro.
 - `core/escaner/escaner.js` recorre `roms/<carpeta>/` hasta tres niveles, filtra por extensión,
   limpia el nombre (quita paréntesis y corchetes salvo el número de disco, y los guiones bajos) y
   guarda el resultado en `biblioteca.json` de la carpeta de datos. Un sistema se vuelve a leer solo si
@@ -395,6 +405,14 @@ Electron con JavaScript sin framework ni paso de compilación: lo que está en `
 8. **Carrusel animado con `transform` y opacidad**, no con posición y tamaño como el prototipo, para
    sostener 60 fps con la GPU de la MP80. El resultado visual es el mismo.
 9. **Perfil Peques en la fase 6**, junto con la persistencia (propuesta, sin confirmar).
+10. **Carpetas de la consola como la skill** (decidido el 2026-10-20). En la consola instalada todo lo
+    del usuario va en `~/NeoRetro/`: `roms/` y `media/` por sistema; `saves/` y `states/` para las
+    partidas de RetroArch; `logs/` para el registro; `config/` para lo que se recuerda, los mapeos de
+    mandos y cualquier archivo de `config/` que se quiera cambiar; `metadata/` y `backups/` quedan
+    listas. Dolphin y PPSSPP siguen guardando en sus carpetas, porque de Flathub solo leen la carpeta
+    personal. En desarrollo nada cambia: en la MP80, `~/NeoRetro` es el repositorio, y su `roms/` y su
+    `media/` coinciden con los de la consola. Por eso el instalador se detiene si `~/NeoRetro` tiene
+    `.git`. Los botones del mando siguen el plan, no la skill (Start = Configuración).
 
 ## Cómo está hecho el prototipo
 
