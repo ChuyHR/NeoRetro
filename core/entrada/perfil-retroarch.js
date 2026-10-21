@@ -31,15 +31,28 @@ export function indicesRetroArch({ botones = [], ejes = {} }) {
   };
 }
 
-export function textoPerfil(info, perfil) {
+// RetroArch elige el perfil que más se parece al mando (task_autodetect.c): fabricante y producto
+// suman 30, el nombre exacto 20 y el puerto USB 10, y un empate lo gana el archivo que lee primero.
+// Sus perfiles de fábrica no traen puerto: con él, este gana siempre, aunque uno de ellos tenga el
+// mismo modelo y nombre (al tablero Zero Delay le tocaba el «DragonRise N64», sin Select). Cada
+// tablero igual conectado lleva su propia entrada (_alt1 … _alt9) con su puerto.
+export function textoPerfil(info, perfil, fisicos = [info.fisico]) {
   const { boton, eje } = indicesRetroArch(info);
+  const nombre = (info.nombreExacto ?? info.nombre).replaceAll('"', '');
   const lineas = [
     `# Escrito por Neo Arcade con el mapeo de «${info.nombre}». Se vuelve a escribir antes de cada juego.`,
     'input_driver = "udev"',
-    `input_device = "${info.nombre.replaceAll('"', '')}"`,
-    `input_vendor_id = "${parseInt(info.vendor || '0', 16)}"`,
-    `input_product_id = "${parseInt(info.producto || '0', 16)}"`,
   ];
+  const puertos = fisicos.filter(Boolean).slice(0, 10);
+  (puertos.length ? puertos : ['']).forEach((fisico, indice) => {
+    const sufijo = indice ? `_alt${indice}` : '';
+    lineas.push(
+      `input_device${sufijo} = "${nombre}"`,
+      `input_vendor_id${sufijo} = "${parseInt(info.vendor || '0', 16)}"`,
+      `input_product_id${sufijo} = "${parseInt(info.producto || '0', 16)}"`,
+    );
+    if (fisico) lineas.push(`input_phys${sufijo} = "${fisico.replaceAll('"', '')}"`);
+  });
   for (const [codigo, control] of Object.entries(perfil.botones ?? {})) {
     const nombre = RETROPAD[control];
     if (nombre && boton.has(Number(codigo))) lineas.push(`input_${nombre}_btn = "${boton.get(Number(codigo))}"`);
@@ -87,13 +100,20 @@ export async function escribirPerfiles(carpetaPerfiles, conectados) {
   const carpeta = path.join(carpetaPerfiles, 'udev');
   await mkdir(carpeta, { recursive: true });
   const existentes = await perfilesExistentes(carpeta);
+  // Dos tableros del mismo modelo comparten clave y archivo: van juntos, cada uno con su puerto.
+  const porClave = new Map();
+  for (const conectado of conectados) {
+    if (porClave.has(conectado.clave)) porClave.get(conectado.clave).push(conectado);
+    else porClave.set(conectado.clave, [conectado]);
+  }
   const escritos = [];
-  for (const { info, clave, perfil, origen } of conectados) {
+  for (const [clave, grupo] of porClave) {
+    const { info, perfil, origen } = grupo[0];
     if (!perfil) continue;
     const par = `${parseInt(info.vendor || '0', 16)}:${parseInt(info.producto || '0', 16)}`;
     if (origen === 'estandar' && existentes.has(par)) continue;
     const archivo = path.join(carpeta, archivoDe(clave));
-    await writeFile(archivo, textoPerfil(info, perfil));
+    await writeFile(archivo, textoPerfil(info, perfil, grupo.map((conectado) => conectado.info.fisico)));
     escritos.push(archivo);
   }
   return escritos;

@@ -7,7 +7,8 @@ Va en un proceso aparte porque Node no puede consultar el rango de cada eje (ioc
 esperar a varios dispositivos sin ocupar un hilo de su reserva por cada uno.
 
 Sucesos que escribe:
-  {"tipo": "conectado", "id": "event5", "nombre": "...", "vendor": "045e", "producto": "028e",
+  {"tipo": "conectado", "id": "event5", "nombre": "...", "nombreExacto": "... ", "fisico": "usb-…/input0",
+   "vendor": "045e", "producto": "028e",
    "botones": [304, ...], "ejes": {"0": [mínimo, máximo, zona muerta, valor al conectarse], ...}}
   {"tipo": "desconectado", "id": "event5"}
   {"tipo": "sin-permiso", "id": "event5", "nombre": "..."}
@@ -35,12 +36,15 @@ def eviocgabs(eje):
     return (2 << 30) | (INFO_EJE.size << 16) | (ord("E") << 8) | (0x40 + eje)
 
 
-def leer(ruta, omision=""):
+def leer(ruta, omision="", exacto=False):
     try:
         with open(ruta, encoding="utf-8", errors="replace") as archivo:
-            return archivo.read().strip()
+            texto = archivo.read()
     except OSError:
         return omision
+    # RetroArch compara el nombre tal cual lo da el núcleo, con espacios al final si los trae (los
+    # tableros Zero Delay traen dos): para su perfil hace falta así, sin recortar.
+    return texto.removesuffix("\n") if exacto else texto.strip()
 
 
 def bits(ruta):
@@ -95,6 +99,7 @@ def revisar():
         abiertos[nombre] = descriptor
         escribir({
             "tipo": "conectado", "id": nombre, "nombre": leer(f"{base}/name", nombre),
+            "nombreExacto": leer(f"{base}/name", nombre, exacto=True), "fisico": leer(f"{base}/phys"),
             "vendor": leer(f"{base}/id/vendor"), "producto": leer(f"{base}/id/product"),
             "botones": sorted(botones), "ejes": ejes,
         })

@@ -1,9 +1,11 @@
 import assert from 'node:assert/strict';
-import { readFile } from 'node:fs/promises';
+import { mkdtemp, readFile, rm } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import path from 'node:path';
 import { test } from 'node:test';
 
 import { crearNavegacion } from '../core/entrada/navegacion.js';
-import { indicesRetroArch, textoPerfil } from '../core/entrada/perfil-retroarch.js';
+import { escribirPerfiles, indicesRetroArch, textoPerfil } from '../core/entrada/perfil-retroarch.js';
 import { claveDeMando, crearTraductor, limpiarPerfil, normalizar, sigueLaNorma } from '../core/entrada/traductor.js';
 
 const MAPA = JSON.parse(await readFile(new URL('../config/gamepad-map.json', import.meta.url), 'utf8'));
@@ -119,14 +121,16 @@ test('RetroArch numera los botones del Xbox 360 como su propio perfil (A=0, B=1,
   assert.equal(eje.has(16), false); // las crucetas van aparte, como h0
 });
 
+// Un tablero Zero Delay como lo describe el lector: el núcleo le da dos espacios al final del nombre.
+const PALANCA = {
+  nombre: 'DragonRise Inc.   Generic   USB  Joystick', nombreExacto: 'DragonRise Inc.   Generic   USB  Joystick  ',
+  fisico: 'usb-0000:00:14.0-2/input0', vendor: '0079', producto: '0006',
+  botones: [288, 289, 290, 291, 292, 293, 294, 295, 296, 297], ejes: { 0: [0, 255, 15, 127], 1: [0, 255, 15, 127] },
+};
+
 test('el perfil de RetroArch de una palanca de arcade usa su numeración y la cruceta como ejes', () => {
-  const palanca = {
-    nombre: 'DragonRise Inc. Generic USB Joystick', vendor: '0079', producto: '0006',
-    botones: [288, 289, 290, 291, 292, 293, 294, 295, 296, 297], ejes: { 0: [0, 255, 15, 127], 1: [0, 255, 15, 127] },
-  };
   const perfil = { botones: { 290: 'a', 289: 'b', 297: 'menu', 296: 'view' }, ejes: { 0: ['izquierda', 'derecha'], 1: ['arriba', 'abajo'] } };
-  const texto = textoPerfil(palanca, perfil);
-  assert.match(texto, /^input_device = "DragonRise Inc\. Generic USB Joystick"$/m);
+  const texto = textoPerfil(PALANCA, perfil);
   assert.match(texto, /^input_vendor_id = "121"$/m);
   assert.match(texto, /^input_b_btn = "2"$/m); // A de Xbox es B del RetroPad (abajo)
   assert.match(texto, /^input_a_btn = "1"$/m);
@@ -134,6 +138,45 @@ test('el perfil de RetroArch de una palanca de arcade usa su numeración y la cr
   assert.match(texto, /^input_select_btn = "8"$/m);
   assert.match(texto, /^input_left_axis = "-0"$/m);
   assert.match(texto, /^input_down_axis = "\+1"$/m);
+});
+
+// RetroArch trae «DragonRise N64» con el mismo fabricante, producto y nombre que el Zero Delay (50
+// puntos) y sin Select: la moneda no entraba. Con el nombre exacto y el puerto, este suma 60.
+test('el perfil lleva el nombre exacto y el puerto, para ganarle a los de fábrica del mismo modelo', () => {
+  const texto = textoPerfil(PALANCA, { botones: { 297: 'view' }, ejes: {} });
+  assert.match(texto, /^input_device = "DragonRise Inc\.   Generic   USB  Joystick  "$/m);
+  assert.match(texto, /^input_phys = "usb-0000:00:14\.0-2\/input0"$/m);
+  assert.doesNotMatch(texto, /_alt1/);
+});
+
+test('dos tableros iguales van en el mismo perfil, cada uno con su puerto', () => {
+  const texto = textoPerfil(PALANCA, { botones: {}, ejes: {} }, ['usb-0000:00:14.0-2/input0', 'usb-0000:00:14.0-3/input0']);
+  assert.match(texto, /^input_phys = "usb-0000:00:14\.0-2\/input0"$/m);
+  assert.match(texto, /^input_device_alt1 = "DragonRise Inc\.   Generic   USB  Joystick  "$/m);
+  assert.match(texto, /^input_vendor_id_alt1 = "121"$/m);
+  assert.match(texto, /^input_phys_alt1 = "usb-0000:00:14\.0-3\/input0"$/m);
+});
+
+test('al abrir un juego, dos tableros iguales conectados dejan un solo archivo con los dos puertos', async () => {
+  const carpeta = await mkdtemp(path.join(tmpdir(), 'perfiles-'));
+  const perfil = { botones: { 297: 'view' }, ejes: {} };
+  const clave = '0079:0006:DragonRise Inc.   Generic   USB  Joystick';
+  const conectados = ['usb-0000:00:14.0-2/input0', 'usb-0000:00:14.0-3/input0']
+    .map((fisico) => ({ info: { ...PALANCA, fisico }, clave, perfil, origen: 'configurado' }));
+  try {
+    const escritos = await escribirPerfiles(carpeta, conectados);
+    assert.equal(escritos.length, 1);
+    const texto = await readFile(escritos[0], 'utf8');
+    assert.match(texto, /^input_phys_alt1 = "usb-0000:00:14\.0-3\/input0"$/m);
+  } finally {
+    await rm(carpeta, { recursive: true, force: true });
+  }
+});
+
+test('sin puerto conocido el perfil sale igual, sin input_phys', () => {
+  const texto = textoPerfil({ ...PALANCA, fisico: '' }, { botones: {}, ejes: {} });
+  assert.match(texto, /^input_device = /m);
+  assert.doesNotMatch(texto, /input_phys/);
 });
 
 test('la cruceta de un perfil propio se escribe como h0 en RetroArch', () => {
