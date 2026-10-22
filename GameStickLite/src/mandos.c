@@ -35,6 +35,7 @@ typedef struct {
   int tablero;
   int usb;  // 1 si se lee por usbfs en lugar de evdev
   uint8_t reporte[64];
+  uint8_t reporte_previo[8];  // para saber si el reporte nuevo trae algo que cuente como uso
   int reportes_anotados;
   int botones[KEY_CNT];
   int ejes[ABS_CNT];
@@ -154,8 +155,14 @@ static void abrir_tableros_usb(void) {
   closedir(d);
 }
 
-static void traducir_reporte(Mando *m, const uint8_t *r, int n) {
-  if (n < 7) return;
+// Devuelve true si cambió algo que la persona maneja (botones, cruceta o la palanca fuera del centro).
+// El byte 2 (Z) de este tablero es un eje sin conectar que cambia solo: no cuenta como uso.
+static bool traducir_reporte(Mando *m, const uint8_t *r, int n) {
+  if (n < 7) return false;
+  bool cambio = (r[5] != m->reporte_previo[5]) || (r[6] != m->reporte_previo[6]) ||
+                (abs((int)r[0] - 127) > 64) != (abs((int)m->reporte_previo[0] - 127) > 64) ||
+                (abs((int)r[1] - 127) > 64) != (abs((int)m->reporte_previo[1] - 127) > 64);
+  memcpy(m->reporte_previo, r, 8);
   m->ejes[ABS_X] = r[0];
   m->ejes[ABS_Y] = r[1];
   m->ejes[ABS_Z] = r[2];
@@ -167,6 +174,7 @@ static void traducir_reporte(Mando *m, const uint8_t *r, int n) {
   m->ejes[ABS_HAT0Y] = cruceta < 8 ? hy[cruceta] : 0;
   unsigned botones = (r[5] >> 4) | ((unsigned)r[6] << 4);
   for (int b = 0; b < 12; b++) m->botones[288 + b] = (botones >> b) & 1;
+  return cambio;
 }
 
 int abrir_mandos(void (*registrar)(const char *formato, ...)) {
@@ -208,15 +216,14 @@ bool leer_mandos(void) {
     if (m->usb) {
       struct usbdevfs_urb *listo = NULL;
       while (m->fd >= 0 && ioctl(m->fd, USBDEVFS_REAPURBNDELAY, &listo) == 0 && listo) {
-        if (listo->status == 0 && listo->actual_length > 0) {
-          if (m->reportes_anotados < 20 && anotar_mandos) {  // los primeros, para revisar el formato
+        if (listo->status == 0 && listo->actual_length > 0 && traducir_reporte(m, m->reporte, listo->actual_length)) {
+          hubo = true;
+          if (m->reportes_anotados < 20 && anotar_mandos) {  // los primeros con uso, para revisar el mapeo
             char hex[3 * 16 + 1] = "";
             for (int k = 0; k < listo->actual_length && k < 16; k++) sprintf(hex + 3 * k, "%02x ", m->reporte[k]);
             anotar_mandos("control %d: reporte %s", i + 1, hex);
             m->reportes_anotados++;
           }
-          traducir_reporte(m, m->reporte, listo->actual_length);
-          hubo = true;
         }
         if (listo->status == -ENODEV || listo->status == -ESHUTDOWN || pedir_reporte(m) < 0) {
           if (anotar_mandos) anotar_mandos("control %d: desconectado (%d)", i + 1, listo->status);
