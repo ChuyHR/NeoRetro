@@ -51,7 +51,16 @@ Detalle de la placa y del arranque en [docs/fase0.md](docs/fase0.md); lo constru
 - **Descartado por el usuario:** el menú hecho con capturas de Neo Arcade, porque cada juego nuevo
   pedía la laptop («no es viable para nadie»). Su código se quitó; queda en el historial de git.
 
-**Pendiente, en orden:**
+**En pausa desde el 2026-10-22 por la tarde.** El usuario: «de momento este proyecto Game Stick lo
+veo ya todo bien, volvamos a Neo Arcade». Se le ofreció seguir con cualquiera de estas, y no eligió
+ninguna:
+
+- leer `.zip` (en la MP80 casi todo está así);
+- arcade y Neo Geo;
+- Master System, Game Gear y PC Engine;
+- las pruebas pospuestas.
+
+**Pendiente, en orden, si se retoma:**
 
 1. Que el usuario pruebe el menú nuevo en el aparato y medir allí la velocidad del carrusel. Ya está en
    la tarjeta (2026-10-22, 16:40) con `arranque.sh`, los `gamelist.xml` de la MP80 en
