@@ -109,6 +109,16 @@ static void abrir_tableros_usb(void) {
       continue;
     }
     unsigned interfaz = 0;
+    // usbhid sí toma la interfaz del tablero, aunque después no le dé driver de control: se le pide al
+    // kernel que la suelte antes de tomarla.
+    struct usbdevfs_getdriver conductor = {.interface = 0};
+    if (ioctl(fd, USBDEVFS_GETDRIVER, &conductor) == 0) {
+      struct usbdevfs_ioctl soltar = {.ifno = 0, .ioctl_code = USBDEVFS_DISCONNECT, .data = NULL};
+      int r = ioctl(fd, USBDEVFS_IOCTL, &soltar);
+      if (anotar_mandos)
+        anotar_mandos("control USB %s: la interfaz 0 la tenía «%s»; %s", e->d_name, conductor.driver,
+                      r < 0 ? strerror(errno) : "se soltó");
+    }
     if (ioctl(fd, USBDEVFS_CLAIMINTERFACE, &interfaz) < 0) {
       if (anotar_mandos) anotar_mandos("control USB %s: no se pudo tomar la interfaz 0 (%s)", e->d_name, strerror(errno));
       close(fd);
