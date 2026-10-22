@@ -180,6 +180,8 @@ static void jugar(void) {
   }
   anotar("jugar: %s", juego);
   limpiar_pantalla();
+  // El tablero por USB directo solo lo puede tener un programa a la vez: se suelta para el emulador.
+  cerrar_mandos();
   long inicio = ahora_ms();
   pid_t hijo = fork();
   if (hijo == 0) {
@@ -190,6 +192,7 @@ static void jugar(void) {
   if (hijo > 0) waitpid(hijo, &estado, 0);
   anotar("fin del juego: salida %d tras %ld s", WIFEXITED(estado) ? WEXITSTATUS(estado) : -1,
          (ahora_ms() - inicio) / 1000);
+  abrir_mandos(anotar);
   if (!WIFEXITED(estado) || WEXITSTATUS(estado) != 0) avisar("El juego no pudo abrirse. Revisa el registro.");
 }
 

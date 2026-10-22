@@ -91,6 +91,49 @@ Para gpSP, `neo/sistema/gba_bios.bin` es la BIOS del usuario, copiada de la MP80
   con la palanca girada; otros controles usan un mapeo genérico.
 - **Salir:** Select + Start (moneda + Start) o tras 5 minutos sin uso.
 
+## El tablero del usuario no aparece como control en el Game Stick (2026-10-22)
+
+En la primera prueba en el aparato, la pantalla y el menú funcionaron (OSD de 1280x720 a 16 bits,
+RGB565), pero el tablero no respondía. Lo dijeron `neo/diagnostico.txt` y `dmesg`:
+
+- el tablero se enumera bien (`usb 2-1: … idVendor=0079, idProduct=0006`, «DragonRise Inc. Generic
+  USB Joystick»), pero no se crea ningún dispositivo de entrada: `/dev/input` no existe y
+  `/proc/bus/input/devices` está vacío;
+- la causa: el kernel 3.0 pone al DragonRise 0079:0006 en `hid_have_special_driver`, así que
+  `generic-usb` no lo toma, y `CONFIG_HID_DRAGONRISE` no está compilado. Ningún driver lo maneja. Por
+  eso tampoco funcionaba en el menú de fábrica.
+
+**Solución en `mandos.c`:** el tablero se lee directo por usbfs.
+
+- Lo busca en `/sys/bus/usb/devices` (0079:0006) y abre `/dev/bus/usb/BBB/DDD`, que existe por
+  `CONFIG_USB_DEVICE_CLASS=y`. Si falta el nodo, lo crea en `/tmp` con major 189.
+- Toma la interfaz 0 y pide reportes de interrupción con `USBDEVFS_SUBMITURB`, que recoge sin bloquear
+  con `USBDEVFS_REAPURBNDELAY`.
+- Traduce cada reporte a los códigos que da Linux cuando sí lo maneja: ejes 0 a 5, cruceta 16 y 17,
+  botones 288 a 299. Con eso sirve el mapeo de la MP80.
+- El menú suelta el tablero (`cerrar_mandos`) antes de abrir un juego y lo vuelve a tomar al regresar,
+  porque solo un programa a la vez puede tener la interfaz.
+- Los primeros 20 reportes quedan en el registro, para revisar el formato.
+
+**Formato del reporte**, confirmado con el tablero en la laptop: lectura de 40 s con la API HID de
+Windows, que antepone el byte de reporte 00. Son 8 bytes:
+
+| Bytes | Contenido |
+|---|---|
+| 0 y 1 | X e Y, de 00 a FF, con centro 7F |
+| 2 | Z: eje sin conectar que cambia solo, entre 84 y 88 |
+| 3 y 4 | Z y Rz |
+| 5, bits bajos | Cruceta (0F es centro; este tablero trabaja con ejes) |
+| 5, bits altos | Botones 1 a 4 |
+| 6 | Botones 5 a 12 |
+| 7 | C0 fijo |
+
+- **Botones**, físicamente de izquierda a derecha: 1, 2, 3, 4, 11, 12, 6 y 5. Moneda es el 10 y Start
+  el 9. Coincide con el mapeo de la MP80.
+- **Palanca:** pedida en el orden arriba, abajo, izquierda y derecha, dio X=00, X=FF, Y=00 e Y=FF.
+  El mapeo de la MP80 dice que la derecha es Y-. Con ese mapeo el usuario jugó Metal Slug sin
+  notar nada, así que se dejó así. **Por confirmar en el Game Stick.**
+
 ## Probar en la laptop
 
 En el Debian de WSL, con `qemu-user-static`, `binfmt-support`, `e2fsprogs`, `lzop` y
