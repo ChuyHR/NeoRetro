@@ -13,15 +13,15 @@
 # Se corre en el Debian de WSL (sfdisk, mkfs.fat y mtools; no hace falta montar nada).
 #
 # Uso: bash scripts/armar-imagen.sh [--tamano-mb 2048] [--roms <carpeta>] [--medios <carpeta>]
-#                                   [--bios <carpeta>] [--diseno <carpeta>] [--salida <archivo.img>]
-# --diseno es la carpeta neo/diseno que arma scripts/convertir-diseno.py (las pantallas de Neo Arcade y
-# la portada); sin ella el menú usa su dibujo propio.
+#                                   [--bios <carpeta>] [--salida <archivo.img>]
+# Las carpetas de --roms pueden traer su gamelist.xml e images/, como las de RetroBat en la MP80: el
+# menú los lee en el aparato.
 set -euo pipefail
 
 RAIZ="$(cd "$(dirname "$0")/.." && pwd)"
 FABRICA="$RAIZ/fabrica"
 TAMANO_MB=2048
-ROMS="" MEDIOS="" BIOS="" DISENO=""
+ROMS="" MEDIOS="" BIOS=""
 SALIDA="$RAIZ/compilado/gamestick.img"
 while [ $# -gt 0 ]; do
   case "$1" in
@@ -29,7 +29,6 @@ while [ $# -gt 0 ]; do
     --roms) ROMS="$2"; shift ;;
     --medios) MEDIOS="$2"; shift ;;
     --bios) BIOS="$2"; shift ;;
-    --diseno) DISENO="$2"; shift ;;
     --salida) SALIDA="$2"; shift ;;
     *) echo "Opción desconocida: $1" >&2; exit 2 ;;
   esac
@@ -73,10 +72,6 @@ done
 mcopy "${P[@]}" "$RAIZ"/compilado/neo-* ::neo/
 [ -n "$BIOS" ] && mcopy "${P[@]}" -s "$BIOS"/. ::neo/sistema/
 [ -n "$MEDIOS" ] && mcopy "${P[@]}" -s "$MEDIOS"/. ::neo/medios/
-if [ -n "$DISENO" ]; then
-  mmd "${P[@]}" ::neo/diseno
-  mcopy "${P[@]}" -s "$DISENO"/. ::neo/diseno/
-fi
 if [ -n "$ROMS" ]; then
   mcopy "${P[@]}" -s "$ROMS"/. ::roms/
 else

@@ -73,3 +73,10 @@ por software.
 
 El prompt para pedir el diseño a GPT con estas restricciones está en
 [prompt-diseno-gpt.md](prompt-diseno-gpt.md).
+
+## Lo que se hizo (2026-10-22)
+
+El diseño que propuso GPT es plano: rectángulos redondeados, halos, imágenes y texto. Se construyó con
+dibujo por software en C, sin la Mali, porque así no depende de `libMali.so` ni de su glibc. En QEMU
+un cuadro tarda de 26 a 37 ms. Si en el aparato el carrusel no se mueve con fluidez, el siguiente paso
+es OpenGL ES 2.0. Detalle en [sistema-propio.md](sistema-propio.md).

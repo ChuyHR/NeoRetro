@@ -11,6 +11,7 @@ typedef struct {
   size_t tam;
   int ancho, alto, bpp, paso;
   int simulada;
+  int fd, doble, pagina;  // con doble búfer se dibuja en la página que no se ve y luego se muestra
   struct fb_var_screeninfo var;
 } Pantalla;
 
@@ -24,5 +25,10 @@ void rectangulo(int x, int y, int w, int h, uint32_t c);
 void marco(int x, int y, int w, int h, int grosor, uint32_t c);
 int texto(int x, int y, int escala, uint32_t c, const char *utf8);
 void mostrar(void);
-void limpiar_pantalla(void);  // negro en el lienzo y en el framebuffer
+void limpiar_pantalla(void);  // negro en el lienzo y en el framebuffer (en sus dos páginas)
+// Si el framebuffer tiene dos páginas, mostrar() alterna entre ellas: el cuadro cambia de una vez,
+// sin verse a medio pintar. Lo usa el menú, que anima el carrusel.
+void activar_doble_bufer(void);
+// Otro programa (un emulador) dejó a la vista la primera página.
+void pantalla_tras_otro_programa(void);
 void guardar_png(const char *ruta);

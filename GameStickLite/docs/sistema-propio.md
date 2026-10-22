@@ -38,9 +38,8 @@ la laptop sin rearmar `DATA03`.
 
 `neo/arranque.sh` corre en orden, cada paso con límite de tiempo (`timeout` de busybox):
 
-1. `neo-menu --portada`, hasta 10 s. Pinta la portada de Neo Arcade (`neo/diseno/portada.frm`) y
-   sale sin borrarla, para tapar cuanto antes la imagen del fabricante. Se queda a la vista hasta que
-   el menú dibuja.
+1. `neo-menu --portada`, hasta 10 s. Pinta el logotipo grande de Neo Arcade y sale sin borrarlo, para
+   tapar cuanto antes la imagen del fabricante. Se queda a la vista hasta que el menú dibuja.
 2. `diagnostico.sh`, hasta 60 s. Escribe `neo/diagnostico.txt`.
 3. `neo-prueba`, hasta 200 s, **solo la primera vez**. Muestra la pantalla, los controles y el
    sonido y escribe `neo/registro-prueba.txt`. Al terminar deja `neo/prueba-hecha`; si se borra, la
@@ -63,71 +62,70 @@ Debian de WSL) con `scripts/compilar.sh`.
 - al primer botón reproduce un `.wav` de fábrica con `/usr/res/bin/aplay`;
 - se cierra al mantener un botón 5 s, tras 60 s sin uso o a los 3 minutos.
 
-**`neo-menu`** (`src/menu.c` + `pantalla.c` + `mandos.c`), al estilo de Neo Arcade:
+**`neo-menu`** se dibuja entero en el aparato, con el diseño que el usuario eligió (propuesto por GPT
+con [prompt-diseno-gpt.md](prompt-diseno-gpt.md)):
 
-- **Pestañas:** los sistemas con juegos, más FAVORITOS y RECIENTES cuando tienen algo.
-- **Lista y ficha:** la lista va a la izquierda, con los títulos sin extensión ni marcas entre
-  paréntesis y `*` en los favoritos. A la derecha van la carátula y la ficha: nombre, año, género,
-  jugadores, desarrollador y la descripción partida en renglones.
-- **Botones** (con los nombres de Neo Arcade):
-  - arriba y abajo eligen el juego, con repetición al mantener;
-  - izquierda y derecha, o LB y RB, cambian de sistema;
-  - LT y RT saltan de letra;
-  - A juega y X marca favorito;
-  - Select solo pasa por Favoritos, Recientes y el sistema de antes;
-  - Select + Start mantenidos 2 s salen al menú de fábrica.
-- **Start no abre juegos:** un Start un instante antes del Select abriría uno al querer salir.
-- **Sin controles:** sale al menú de fábrica a los 30 s. No sale por inactividad.
-- **Datos guardados:** favoritos y recientes (20) quedan en `neo/datos-usuario.txt`. Se escribe
-  aparte y se renombra.
-- **Carátulas y fichas:** `neo/medios/<carpeta>/<juego>.img` (RGB565 con cabecera `NEOI`) y `.txt`.
-  Las prepara `scripts/preparar-medios.py` con el `gamelist.xml` y las imágenes de Neo Arcade de la
-  MP80. Hay 59 de los 60 juegos copiados.
-- **Velocidad:** solo redibuja cuando cambia algo, porque pintar 1280x720 en cada cuadro es lento en
-  el Cortex-A9.
+- logotipo;
+- barra de sistemas;
+- carrusel;
+- ficha con JUGAR y FAVORITO;
+- pie con los botones.
 
-### El menú con el diseño de Neo Arcade (`src/diseno.c`)
+No usa capturas de nada: agregar un juego es copiarlo a la tarjeta. El 2026-10-22 se descartó un
+menú anterior hecho con capturas de Neo Arcade, porque cada juego nuevo pedía la laptop.
 
-Con `neo/diseno/` en la tarjeta, el menú se ve igual que Neo Arcade en la MP80. El Game Stick no
-puede correr la interfaz de Neo Arcade (Electron), así que se usan sus propias pantallas, capturadas
-en la laptop:
+| Pieza | Qué hace |
+|---|---|
+| `biblioteca.c` | Busca los juegos en `roms/<carpeta>/`, con el nombre del Game Stick o el de la MP80 (`fc` o `nes`, `sfc` o `snes`, `md` o `megadrive`). Del `gamelist.xml` de esa carpeta toma nombre, desarrollador, año, género, descripción e imágenes. Sin gamelist, usa las fichas viejas de `neo/medios/` o el nombre del archivo. Favoritos y recientes van en `neo/datos-usuario.txt`. |
+| `imagenes.c` | Lee PNG y JPG con stb_image, y también las `.img` de `neo/medios/`. Las ajusta al tamaño de cada lugar y las guarda en memoria (hasta 14 MB) y en `neo/cache/`. Lo transparente se mezcla con el color de las tarjetas. |
+| `texto.c` | Bungee, Pixelify Sans y Share Tech Mono con stb_truetype. Cada letra se guarda ya dibujada. |
+| `dibujo.c` | Rectángulos redondeados con bordes suaves, halos, degradados, círculos, íconos e imágenes, en RGB565. |
+| `interfaz.c` | Dibuja la pantalla, como se explica abajo. |
+| `scripts/generar-recursos.py` | Al compilar, pasa las fuentes de Neo Arcade (`app/fuentes`, licencia OFL) a TrueType y rasteriza los íconos. Todo va dentro de `neo-menu`. |
 
-1. `scripts/preparar-diseno.py` arma en WSL una biblioteca de Neo Arcade con los juegos, las carátulas
-   y las fichas de la tarjeta, más un favorito y un reciente de muestra.
-2. `scripts/capturar-diseno.mjs` abre el Electron de Neo Arcade con esa biblioteca y lo maneja por el
-   protocolo de depuración de Chromium. Captura a 1920×1080:
-   - cada sistema y ALL GAMES, juego por juego, comprobando que el juego del centro sea el esperado;
-   - la barra con FAVORITOS y RECIENTES activos;
-   - el menú de acciones en sus cuatro estados (JUGAR o FAVORITOS elegido, estrella encendida o no);
-   - la portada, el cuadro final de la animación de arranque (`app/piezas/arranque.js`).
+**Cómo dibuja `interfaz.c`:** lo fijo se dibuja una vez al abrir (fondo, logotipo, barra, marco de la
+ficha y pie). En cada cuadro se copia y encima se pintan la pestaña activa, el carrusel, la ficha y el
+aviso.
 
-   Antes de cada captura cambia lo que no aplica en el Game Stick: el reloj por «LITE / GAME STICK
-   4K», la versión por «NEO ARCADE LITE / LINUX 3.0» y la leyenda del pie por los botones del
-   tablero. Con `--solo-portada` captura solo la portada.
-3. `scripts/convertir-diseno.py` las reduce a 1280×720 y las guarda como `.frm`: cabecera `NEOF`,
-   posición y tamaño en 16 bits, largo en 32 bits y los píxeles en RGB565 comprimidos con LZ4 en
-   bloque. Escribe también `indice.txt` con las vistas y el juego de cada pantalla. Con 62 juegos
-   ocupa 31.8 MB.
+**Imágenes de cada juego.** RetroBat deja `images/<juego>.png` (la captura con el logotipo) e
+`images/<juego>-image.png` (la captura sola). El menú las busca en este orden:
 
-En el aparato, `diseno.c` lee `indice.txt` y descomprime cada pantalla en el lienzo. Guarda en memoria
-las 8 últimas piezas y adelanta las de los juegos vecinos, que son las que se piden después. Encima de
-la pantalla del juego pinta la barra (en FAVORITOS y RECIENTES, que se arman con lo guardado y reusan
-las pantallas de ALL GAMES), el menú de acciones y los avisos en el pie.
+- **tarjeta:** `<thumbnail>` del gamelist, `images/<juego>.png` o `.jpg`, `covers/`, `<image>`,
+  `images/<juego>-image.*` y la `.img` de `neo/medios/`;
+- **ficha:** `<image>`, `images/<juego>-image.*`, `screenshots/` o la de la tarjeta.
 
-Botones en este modo:
+Sin ninguna, se genera una portada con el título sobre el color del sistema.
 
-- izquierda y derecha mueven el carrusel, con repetición al mantener;
-- LB y RB cambian de sistema;
-- arriba y abajo eligen JUGAR o FAVORITOS, y A lo ejecuta;
+**Carrusel.** Como en Neo Arcade, el juego elegido va grande al centro con borde rosa, con hasta tres
+más a cada lado. Los de la orilla van girados y atenuados.
+
+- Al moverse, las tarjetas se deslizan durante 170 ms.
+- Mientras se mueve, solo usa imágenes en memoria o en `neo/cache/`. Al detenerse lee las que falten,
+  y si no hay botones apretados adelanta las de los vecinos.
+- Con menos de cinco juegos, o en el lado que queda sin tarjetas, aparece el atardecer del diseño.
+- Al llegar al final da la vuelta, como Neo Arcade.
+
+**Botones:**
+
+- izquierda y derecha mueven el carrusel, con repetición;
+- arriba y abajo eligen JUGAR o FAVORITO, y A lo ejecuta;
 - X marca o quita el favorito;
+- LB y RB cambian de sistema;
 - LT y RT saltan de letra;
 - Select pasa por Favoritos y Recientes;
 - Select + Start mantenidos 2 s salen al menú de fábrica.
 
-El modo se usa solo si la pantalla es de 1280×720 en RGB565 y **todos** los juegos de la tarjeta
-tienen pantalla. Un juego agregado después de capturar no la tiene; con uno solo así, el menú usa su
-dibujo propio para no esconderlo, y lo anota en `neo/registro-menu.txt`. Para volver al diseño se
-repiten los tres pasos. `NEO_SIN_DISENO=1` fuerza el dibujo propio.
+Start no abre juegos: un Start un instante antes del Select abriría uno al querer salir. Sin
+controles, el menú sale al de fábrica a los 30 s.
+
+**Pantalla.** Usa doble búfer con las dos páginas de la capa OSD: cada cuadro se copia a la página
+que no se ve y se muestra con `FBIOPAN_DISPLAY`. Antes de abrir un juego vuelve a la primera página.
+
+**Medido en QEMU en la laptop** (falta medir en el aparato):
+
+- leer la biblioteca y armar la interfaz tarda 354 ms, con 62 juegos y gamelists de 1 000 entradas;
+- un cuadro tarda de 26 a 37 ms;
+- el primero con imágenes nuevas tarda de 100 a 250 ms.
 
 **`neo-retro-<sistema>`** (`src/retro.c` + `pantalla.c` + `mandos.c`) es un frontend libretro
 mínimo, con un núcleo enlazado dentro:
@@ -165,7 +163,7 @@ Para gpSP, `neo/sistema/gba_bios.bin` es la BIOS del usuario, copiada de la MP80
 - **Tabla:** MBR con firma `0x0000d3be`, como la de fábrica.
 - **Arranque:** el de fábrica en los bytes 0 a 445 y en los sectores 1 a 2047.
 - **Partición:** FAT32 tipo 0x0C desde el sector 8192, con `res/`, `neo/`, `roms/`, `save/` y
-  `download/`. Con `--diseno <carpeta>` incluye las pantallas de Neo Arcade en `neo/diseno/`. El clúster depende del tamaño: 4 KB hasta 8 GB y 32 KB, como el de fábrica, desde 32
+  `download/`. El clúster depende del tamaño: 4 KB hasta 8 GB y 32 KB, como el de fábrica, desde 32
   GB. FAT32 pide al menos 65 525 clústeres; con menos, Linux la toma por FAT16.
 
 Usa `sfdisk`, `mkfs.fat` y `mtools`, sin montar nada. Toma los archivos de fábrica de `fabrica/`, que
@@ -252,9 +250,12 @@ En el Debian de WSL, con `qemu-user-static`, `binfmt-support`, `e2fsprogs`, `lzo
 - `NEO_SIMULAR=1 NEO_ROMS=/mnt/e/roms NEO_CAPTURA=/tmp/menu.png qemu-arm-static compilado/neo-menu`
   dibuja el menú con los juegos de la tarjeta. En WSL la tarjeta se monta con
   `sudo mount -t drvfs E: /mnt/e`; el montaje se pierde cuando WSL se reinicia.
-- Con `NEO_SIMULAR=16` la pantalla simulada es RGB565, como la del aparato, y el menú usa el diseño
-  de Neo Arcade si `NEO_NEO` apunta a una carpeta con `diseno/`. `NEO_SIMULAR_TECLAS=derecha,x,rb…`
-  aplica botones antes de la captura, y `neo-menu <registro> --portada` captura la portada.
+- El menú necesita `NEO_SIMULAR=16`: la pantalla simulada es RGB565, como la del aparato.
+  `NEO_SIMULAR_TECLAS=derecha,x,rb…` aplica botones antes de la captura («medio» la deja a mitad de
+  la animación), y `neo-menu <registro> --portada` captura la portada.
+- `~/gamestick/sim/` es una tarjeta de prueba con los 62 juegos como archivos vacíos, sus
+  `gamelist.xml` y sus imágenes de la MP80, en carpetas con los nombres de la MP80. `~/gamestick/sim2/`
+  tiene la forma vieja: `fc/` y `sfc/` con fichas en `neo/medios/`.
 
 Verificado así el 2026-10-22, con una captura de cada emulador en su pantalla de título:
 

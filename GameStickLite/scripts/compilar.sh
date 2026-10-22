@@ -4,7 +4,7 @@
 # moderno, y musl no tiene ese límite. Se corre dentro del Debian de WSL, con Zig 0.13 en ~/zig.
 #
 #   neo-prueba           prueba de pantalla, controles y sonido
-#   neo-menu             menú de juegos
+#   neo-menu             menú de juegos (necesita python3-fonttools, python3-brotli y librsvg2-bin)
 #   neo-retro-<sistema>  un emulador por núcleo libretro: src/retro.c con el núcleo enlazado dentro
 #                        nes (FCEUmm), snes (Snes9x 2005), gb (Gambatte, también Game Boy Color),
 #                        gba (gpSP con recompilador ARM), md (PicoDrive con núcleos en C)
@@ -52,6 +52,7 @@ nucleo() { # <carpeta> <makefile> <archivo .a> [más variables de make, por ejem
 }
 
 bajar tinyalsa https://github.com/tinyalsa/tinyalsa.git 1.1.1
+bajar stb https://github.com/nothings/stb.git a7d4c2175630e1ea5b6f8dd00ab96fed0b97b96d
 bajar libretro-fceumm https://github.com/libretro/libretro-fceumm.git ac0d00a
 bajar snes9x2005 https://github.com/libretro/snes9x2005.git a79dfe9
 bajar gambatte-libretro https://github.com/libretro/gambatte-libretro.git d9d6cd0
@@ -84,7 +85,13 @@ COMUN=("${OBJETIVO[@]}" -static -fno-pie -no-pie -O2 -s -Wall -Wextra -Wno-sign-
        -Wno-missing-field-initializers -I"$RAIZ/src")
 
 "$ZIG" cc "${COMUN[@]}" -o "$SALIDA/neo-prueba" "$RAIZ/src/prueba.c" "$RAIZ/src/pantalla.c" 2>&1 | filtrar
-"$ZIG" cc "${COMUN[@]}" -o "$SALIDA/neo-menu" "$RAIZ/src/menu.c" "$RAIZ/src/diseno.c" "$RAIZ/src/pantalla.c" "$RAIZ/src/mandos.c" 2>&1 | filtrar
+
+# El menú lleva dentro las fuentes de Neo Arcade y los íconos (scripts/generar-recursos.py), y lee
+# texto e imágenes con stb_truetype y stb_image.
+python3 "$RAIZ/scripts/generar-recursos.py" "$RAIZ/../app/fuentes" "$SALIDA/recursos"
+"$ZIG" cc "${COMUN[@]}" -I"$SALIDA/recursos" -I"$FUENTES/stb" -o "$SALIDA/neo-menu" \
+  "$RAIZ/src/menu.c" "$RAIZ/src/interfaz.c" "$RAIZ/src/biblioteca.c" "$RAIZ/src/imagenes.c" "$RAIZ/src/texto.c" \
+  "$RAIZ/src/dibujo.c" "$RAIZ/src/pantalla.c" "$RAIZ/src/mandos.c" "$SALIDA/recursos/recursos.c" -lm 2>&1 | filtrar
 
 # Con STATIC_LINKING=1 los núcleos dejan fuera estas piezas de libretro-common (suponen que el
 # frontend las trae, como RetroArch); se compilan aparte, de la copia de FCEUmm.

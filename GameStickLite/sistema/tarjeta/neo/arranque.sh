@@ -6,7 +6,7 @@
 NEO=/mnt/neo
 echo "arranque: $(date), núcleo $(uname -r)"
 # Lo primero: la portada de Neo Arcade sobre la imagen del fabricante. Se queda hasta que dibuja el menú.
-if [ -f "$NEO/neo-menu" ] && [ -f "$NEO/diseno/portada.frm" ]; then
+if [ -f "$NEO/neo-menu" ]; then
   timeout 10 "$NEO/neo-menu" "$NEO/registro-menu.txt" --portada
   echo "portada: $?"
 fi

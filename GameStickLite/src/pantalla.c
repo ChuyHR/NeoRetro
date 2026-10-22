@@ -13,6 +13,7 @@
 #include "font8x8_ext_latin.h"
 
 Pantalla pantalla;
+static size_t memoria_fb;
 
 int abrir_pantalla(void (*registrar)(const char *formato, ...)) {
   int fd = open("/dev/fb0", O_RDWR);
@@ -65,6 +66,8 @@ int abrir_pantalla(void (*registrar)(const char *formato, ...)) {
       close(fd);
       return -1;
     }
+    pantalla.fd = fd;
+    memoria_fb = fix.smem_len;
   }
   pantalla.ancho = pantalla.var.xres;
   pantalla.alto = pantalla.var.yres;
@@ -152,14 +155,41 @@ int texto(int x, int y, int escala, uint32_t c, const char *s) {
   return x;
 }
 
+static void ver_pagina(int pagina) {
+  pantalla.var.yoffset = (unsigned)(pagina * pantalla.alto);
+  if (ioctl(pantalla.fd, FBIOPAN_DISPLAY, &pantalla.var) == 0) pantalla.pagina = pagina;
+  else pantalla.doble = 0;  // el controlador no deja cambiar de página: se dibuja directo en la primera
+}
+
 void mostrar(void) {
-  if (pantalla.fb) memcpy(pantalla.fb, pantalla.lienzo, pantalla.tam);
+  if (!pantalla.fb) return;
+  if (pantalla.doble) {
+    int oculta = !pantalla.pagina;
+    memcpy(pantalla.fb + (size_t)oculta * pantalla.tam, pantalla.lienzo, pantalla.tam);
+    ver_pagina(oculta);
+    if (!pantalla.doble) memcpy(pantalla.fb, pantalla.lienzo, pantalla.tam);
+  } else {
+    memcpy(pantalla.fb, pantalla.lienzo, pantalla.tam);
+  }
 }
 
 void limpiar_pantalla(void) {
   if (!pantalla.lienzo) return;
   memset(pantalla.lienzo, 0, pantalla.tam);
-  mostrar();
+  if (!pantalla.fb) return;
+  memset(pantalla.fb, 0, pantalla.doble ? 2 * pantalla.tam : pantalla.tam);
+  if (pantalla.doble) ver_pagina(0);
+}
+
+void activar_doble_bufer(void) {
+  if (pantalla.fb && pantalla.var.yres_virtual >= 2 * pantalla.var.yres && memoria_fb >= 2 * pantalla.tam) {
+    pantalla.doble = 1;
+    pantalla.pagina = (int)(pantalla.var.yoffset / pantalla.var.yres);
+  }
+}
+
+void pantalla_tras_otro_programa(void) {
+  if (pantalla.doble) ver_pagina(0);
 }
 
 // PNG sin comprimir (bloques «stored»): para ver en la laptop lo que se dibujó en la simulación.
