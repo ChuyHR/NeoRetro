@@ -53,9 +53,10 @@ Detalle de la placa y del arranque en [docs/fase0.md](docs/fase0.md); lo constru
 
 **Pendiente, en orden:**
 
-1. Pasar a la tarjeta el menú nuevo, `arranque.sh` y los `gamelist.xml` e imágenes de los 60 juegos,
-   y quitar `neo/diseno/` (31.8 MB del menú descartado). Luego, que el usuario lo pruebe en el aparato
-   y medir allí la velocidad del carrusel.
+1. Que el usuario pruebe el menú nuevo en el aparato y medir allí la velocidad del carrusel. Ya está en
+   la tarjeta (2026-10-22, 16:40) con `arranque.sh`, los `gamelist.xml` de la MP80 en
+   `roms/<carpeta>/` y las imágenes de los 60 juegos (88 archivos, verificados por SHA-256). Se quitó
+   `neo/diseno/` (34 MB del menú descartado). Leer `neo/registro-menu.txt` al regresar la tarjeta.
 2. Si la imagen del fabricante sigue apareciendo antes de la portada, pedirle una foto. El kernel
    trae el controlador de logo de Amlogic (`aml_logo`), pero no tiene la imagen dentro.
 3. Pospuesto por el usuario para el final: velocidad de SNES, GBA y Mega Drive en el aparato, sonido
