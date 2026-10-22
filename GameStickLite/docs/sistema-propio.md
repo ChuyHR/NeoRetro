@@ -134,6 +134,23 @@ Windows, que antepone el byte de reporte 00. Son 8 bytes:
   El mapeo de la MP80 dice que la derecha es Y-. Con ese mapeo el usuario jugó Metal Slug sin
   notar nada, así que se dejó así. **Por confirmar en el Game Stick.**
 
+**Segunda prueba:** `CLAIMINTERFACE` daba «Resource busy», porque `usbhid` sí toma la interfaz aunque
+no le dé driver de control. Se suelta con `USBDEVFS_DISCONNECT` antes de tomarla. El registro dice:
+«la interfaz 0 la tenía «usbhid»; se soltó».
+
+**Tercera prueba (2026-10-22): funciona.** El usuario jugó Bomberman (NES) con el tablero:
+
+- la palanca y los botones responden;
+- se ve fluido: 598 cuadros en 10 s, 1 801 en 30 s;
+- moneda + Start regresó al menú;
+- el sonido abrió la tarjeta 0, dispositivo 0, a 48 000 Hz, sin huecos. No se pudo oír: la TV del
+  usuario no tiene bocinas.
+
+Se corrigió además que el eje suelto (byte Z), que cambia solo, contara como uso e impidiera que el
+menú y los juegos se cerraran por inactividad.
+
+**Falta medir en el aparato:** Super Nintendo, GBA y Mega Drive, los núcleos más pesados.
+
 ## Probar en la laptop
 
 En el Debian de WSL, con `qemu-user-static`, `binfmt-support`, `e2fsprogs`, `lzop` y
