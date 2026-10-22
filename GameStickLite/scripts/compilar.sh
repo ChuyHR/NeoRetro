@@ -106,6 +106,23 @@ fi
 retro() { # <sistema> <cc|c++> <bibliotecas del núcleo…>
   local sistema=$1 compilador=$2
   shift 2
+  # Un núcleo que define un nombre global igual a una función de la biblioteca de C que usa nuestro
+  # código (pasó con «sync» en FCEUmm) hace que el enlazador estático conecte la llamada al núcleo: el
+  # programa truena. Se revisa antes de enlazar.
+  local tmp nuestros choques
+  tmp="$(mktemp -d)"
+  for c in retro.c pantalla.c mandos.c; do
+    "$ZIG" cc "${OBJETIVO[@]}" -O2 -I"$RAIZ/src" -I"$FUENTES/tinyalsa/include" -I"$LRC/include" -c "$RAIZ/src/$c" -o "$tmp/$c.o"
+  done
+  nuestros=$(arm-linux-gnueabi-nm -u "$tmp"/*.o | awk '{print $NF}' | grep -v '^retro_' | sort -u)
+  # Entre los argumentos también van opciones del enlazador (-Wl,…): solo se revisan los archivos.
+  choques=$(for b in "$@"; do if [ -f "$b" ]; then arm-linux-gnueabi-nm -g --defined-only "$b" 2>/dev/null | awk '{print $NF}'; fi; done |
+            sort -u | comm -12 - <(echo "$nuestros"))
+  rm -rf "$tmp"
+  if [ -n "$choques" ]; then
+    echo "El núcleo de neo-retro-$sistema define nombres que nuestro código usa de la biblioteca de C: $choques" >&2
+    return 1
+  fi
   "$ZIG" "$compilador" "${COMUN[@]}" -I"$FUENTES/tinyalsa/include" -I"$LRC/include" \
     -o "$SALIDA/neo-retro-$sistema" -x c "$RAIZ/src/retro.c" "$RAIZ/src/pantalla.c" "$RAIZ/src/mandos.c" \
     "$FUENTES/tinyalsa/src/pcm.c" -x none "$@" "$FUENTES/libretro-common.a" -lm 2>&1 | filtrar

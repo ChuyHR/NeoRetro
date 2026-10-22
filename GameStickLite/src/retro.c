@@ -19,6 +19,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
+#include <sys/syscall.h>
 #include <time.h>
 #include <tinyalsa/asoundlib.h>
 #include <unistd.h>
@@ -328,7 +329,9 @@ static void guardar_partidas(void) {
       anotar("partida: falló al guardar %s (%s)", m->ruta, strerror(errno));
     }
   }
-  sync();
+  // Por syscall y no con sync(): FCEUmm define una variable global llamada «sync» (boards/jyasic.c) y
+  // el enlazador estático conectaba la llamada a ella; el emulador de NES tronaba al guardar.
+  syscall(SYS_sync);
 }
 
 // Juego en memoria para los núcleos que lo aceptan así; los que piden la ruta (need_fullpath) la usan.
