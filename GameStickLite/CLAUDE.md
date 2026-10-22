@@ -47,16 +47,20 @@ Detalle de la placa y del arranque en [docs/fase0.md](docs/fase0.md); lo constru
   y después el menú de fábrica. El menú `neo-menu` y cinco emuladores (NES, SNES, Game Boy y Color,
   GBA, Mega Drive) funcionan con el tablero Zero Delay del usuario por usbfs, porque el kernel no crea
   su control. Hay 60 juegos de la biblioteca del usuario, copiados de la MP80. Las partidas se guardan.
-- **Diseño de Neo Arcade (sin probar en el aparato):** el menú pinta pantallas capturadas de Neo
-  Arcade (`neo/diseno/`, 124 pantallas) y una portada al encender para tapar la imagen del fabricante.
-  Verificado en QEMU con la pantalla en RGB565.
+- **Diseño con capturas de Neo Arcade, descartado por el usuario:** el menú pinta pantallas
+  capturadas (`neo/diseno/`, 124) y una portada al encender. Funciona en el aparato, pero Favoritos y
+  Recientes muestran los vecinos de ALL GAMES, y cada juego nuevo pide pasar la tarjeta por la laptop.
+  El usuario dijo que eso «no es viable para nadie».
 
 **Pendiente, en orden:**
 
-1. Que el usuario pruebe en el aparato el diseño y la portada. Si la imagen del fabricante sigue
-   apareciendo antes de la portada, pedirle una foto: no se sabe qué la pinta (u-boot dice «not
-   display in uboot» y el `init` de fábrica está cifrado).
-2. Pospuesto por el usuario para el final: velocidad de SNES, GBA y Mega Drive en el aparato, sonido
+1. **Un menú que se arme en el aparato**, sin paso por la laptop: recursos, opciones y
+   recomendación (C con OpenGL ES 2.0 en la Mali) en [docs/hardware.md](docs/hardware.md). El usuario
+   va a pedir el diseño a GPT con [docs/prompt-diseno-gpt.md](docs/prompt-diseno-gpt.md). Antes de
+   construirlo, probar la Mali en el aparato.
+2. Si la imagen del fabricante sigue apareciendo antes de la portada, pedirle una foto. El kernel
+   trae el controlador de logo de Amlogic (`aml_logo`), pero no tiene la imagen dentro.
+3. Pospuesto por el usuario para el final: velocidad de SNES, GBA y Mega Drive en el aparato, sonido
    en una TV con bocinas y confirmar izquierda y derecha de la palanca.
 
 ## Relación con Neo Arcade
