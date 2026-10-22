@@ -18,17 +18,25 @@ int abrir_pantalla(void (*registrar)(const char *formato, ...)) {
   int fd = open("/dev/fb0", O_RDWR);
   if (fd < 0) {
     if (!getenv("NEO_SIMULAR")) return -1;
-    // Simulación: 1280x720 a 32 bits, el modo HDMI más común en estos aparatos.
+    // Simulación: 1280x720 a 32 bits, o a 16 bits en RGB565 (como el Game Stick) con NEO_SIMULAR=16.
     pantalla.simulada = 1;
     memset(&pantalla.var, 0, sizeof pantalla.var);
     pantalla.var.xres = 1280;
     pantalla.var.yres = 720;
-    pantalla.var.bits_per_pixel = 32;
-    pantalla.var.red = (struct fb_bitfield){16, 8, 0};
-    pantalla.var.green = (struct fb_bitfield){8, 8, 0};
-    pantalla.var.blue = (struct fb_bitfield){0, 8, 0};
-    pantalla.var.transp = (struct fb_bitfield){24, 8, 0};
-    pantalla.paso = 1280 * 4;
+    if (!strcmp(getenv("NEO_SIMULAR"), "16")) {
+      pantalla.var.bits_per_pixel = 16;
+      pantalla.var.red = (struct fb_bitfield){11, 5, 0};
+      pantalla.var.green = (struct fb_bitfield){5, 6, 0};
+      pantalla.var.blue = (struct fb_bitfield){0, 5, 0};
+      pantalla.paso = 1280 * 2;
+    } else {
+      pantalla.var.bits_per_pixel = 32;
+      pantalla.var.red = (struct fb_bitfield){16, 8, 0};
+      pantalla.var.green = (struct fb_bitfield){8, 8, 0};
+      pantalla.var.blue = (struct fb_bitfield){0, 8, 0};
+      pantalla.var.transp = (struct fb_bitfield){24, 8, 0};
+      pantalla.paso = 1280 * 4;
+    }
   } else {
     struct fb_fix_screeninfo fix;
     if (ioctl(fd, FBIOGET_VSCREENINFO, &pantalla.var) < 0 || ioctl(fd, FBIOGET_FSCREENINFO, &fix) < 0) {
@@ -183,7 +191,7 @@ static void trozo(FILE *f, const char *tipo, const uint8_t *datos, uint32_t n) {
 }
 
 void guardar_png(const char *ruta) {
-  if (pantalla.bpp != 32) return;  // la simulación siempre es de 32 bits
+  if (pantalla.bpp != 32 && pantalla.bpp != 16) return;
   int w = pantalla.ancho, h = pantalla.alto;
   size_t fila = (size_t)w * 3 + 1, crudo = fila * h;
   uint8_t *img = malloc(crudo);
@@ -191,8 +199,13 @@ void guardar_png(const char *ruta) {
     uint8_t *d = img + y * fila;
     *d++ = 0;
     for (int x = 0; x < w; x++) {
-      uint32_t c = *(uint32_t *)(pantalla.lienzo + (size_t)y * pantalla.paso + x * 4);
-      *d++ = c >> 16; *d++ = c >> 8; *d++ = c;
+      if (pantalla.bpp == 32) {
+        uint32_t c = *(uint32_t *)(pantalla.lienzo + (size_t)y * pantalla.paso + x * 4);
+        *d++ = c >> 16; *d++ = c >> 8; *d++ = c;
+      } else {  // RGB565
+        uint16_t c = *(uint16_t *)(pantalla.lienzo + (size_t)y * pantalla.paso + x * 2);
+        *d++ = (c >> 8) & 0xF8; *d++ = (c >> 3) & 0xFC; *d++ = (c << 3) & 0xF8;
+      }
     }
   }
   size_t bloques = (crudo + 65534) / 65535, n = 2 + crudo + bloques * 5 + 4;

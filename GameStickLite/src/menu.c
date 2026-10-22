@@ -15,7 +15,7 @@
 //
 // En la laptop (QEMU): NEO_SIMULAR=1 dibuja un cuadro y lo guarda en NEO_CAPTURA; NEO_ROMS y NEO_NEO
 // cambian las carpetas de juegos y de neo/.
-// Uso: neo-menu [registro]
+// Uso: neo-menu [registro] [--portada]
 #include <dirent.h>
 #include <limits.h>
 #include <stdarg.h>
@@ -29,6 +29,7 @@
 #include <time.h>
 #include <unistd.h>
 
+#include "diseno.h"
 #include "mandos.h"
 #include "pantalla.h"
 
@@ -500,10 +501,7 @@ static void siguiente_lista(void) {
   }
 }
 
-static void jugar(void) {
-  Sistema *si = &sistemas[actual];
-  if (!si->n) return;
-  Juego j = si->juegos[si->elegido];
+static void jugar_juego(Juego j) {
   Sistema *real = &sistemas[j.sistema];
   char emulador[PATH_MAX], juego[PATH_MAX * 2], reg[PATH_MAX];
   snprintf(emulador, sizeof emulador, "%s/%s", carpeta_programas, real->emulador);
@@ -532,6 +530,11 @@ static void jugar(void) {
   if (!WIFEXITED(estado) || WEXITSTATUS(estado) != 0) avisar("El juego no pudo abrirse. Revisa el registro.");
 }
 
+static void jugar(void) {
+  Sistema *si = &sistemas[actual];
+  if (si->n) jugar_juego(si->juegos[si->elegido]);
+}
+
 // Espera a que se suelten los botones: Select + Start del juego no debe llegar al menú.
 static void esperar_suelto(void) {
   long hasta = ahora_ms() + 3000;
@@ -544,7 +547,289 @@ static void esperar_suelto(void) {
   }
 }
 
+// ---- Modo diseño: las pantallas de Neo Arcade ------------------------------------------------------
+// Cada pantalla de neo/diseno/ es Neo Arcade con un juego elegido. Las vistas de sistemas y ALL GAMES
+// tienen la suya por juego; Favoritos y Recientes usan la del juego en ALL GAMES con la barra de esa
+// pestaña encima. El menú de acciones (JUGAR o FAVORITOS, y la estrella) también va encima.
+// Botones como en Neo Arcade: izquierda/derecha juego, LB/RB pestaña, arriba/abajo acción, A hace la
+// acción, X favorito, LT/RT letra, Select Favoritos y Recientes, Select + Start mantenidos 2 s salir.
+
+static Diseno diseno;
+#define RECIEN(b) (ahora[b] && !previos[b])
+
+typedef struct {
+  const char *id, *nombre;
+  int n;
+  char **claves, **titulos;
+  int dinamica;  // Favoritos y Recientes: se arman con lo guardado
+} VistaMenu;
+
+static VistaMenu vistas[DISENO_MAX_VISTAS + 2];
+static int n_vistas, vista_todos = -1, vista_favoritos, vista_recientes;
+static int elegido_en[DISENO_MAX_VISTAS + 2];
+static char *claves_dinamicas[2][MAX_JUEGOS], *titulos_dinamicos[2][MAX_JUEGOS];
+
+// Las pantallas se capturan en la laptop con los juegos de ese momento. Un juego que se agregó después
+// no tiene la suya y el diseño lo dejaría fuera: con uno solo así se usa el dibujo propio.
+static int juegos_sin_pantalla(void) {
+  const VistaDiseno *todos = NULL;
+  for (int k = 0; k < diseno.n_vistas; k++)
+    if (!strcmp(diseno.vistas[k].id, "todos")) todos = &diseno.vistas[k];
+  if (!todos) return -1;
+  int faltan = 0;
+  char clave[PATH_MAX];
+  for (int s = PRIMER_SISTEMA; s < N_SISTEMAS; s++)
+    for (int i = 0; i < sistemas[s].n; i++) {
+      clave_de(&sistemas[s].juegos[i], clave, sizeof clave);
+      if (diseno_buscar(todos, clave) < 0 && faltan++ < 5) anotar("diseño: %s no tiene pantalla", clave);
+    }
+  return faltan;
+}
+
+static void armar_vistas_dinamicas(void) {
+  if (vista_todos < 0) return;
+  const VistaDiseno *todos = &diseno.vistas[vista_todos];
+  for (int k = 0; k < 2; k++) {
+    VistaMenu *v = &vistas[k ? vista_recientes : vista_favoritos];
+    char **fuente = k ? recientes : favoritos;
+    int n_fuente = k ? n_recientes : n_favoritos;
+    v->n = 0;
+    for (int i = 0; i < n_fuente; i++) {
+      int j = diseno_buscar(todos, fuente[i]);
+      if (j < 0) continue;  // ya no está en la tarjeta
+      claves_dinamicas[k][v->n] = todos->claves[j];
+      titulos_dinamicos[k][v->n] = todos->titulos[j];
+      v->n++;
+    }
+    v->claves = claves_dinamicas[k];
+    v->titulos = titulos_dinamicos[k];
+    int *e = &elegido_en[k ? vista_recientes : vista_favoritos];
+    if (*e >= v->n) *e = v->n ? v->n - 1 : 0;
+  }
+}
+
+static int dv_actual, accion_actual;  // accion: 0 JUGAR, 1 FAVORITOS
+
+static const char *clave_elegida(void) {
+  VistaMenu *v = &vistas[dv_actual];
+  return v->n ? v->claves[elegido_en[dv_actual]] : NULL;
+}
+
+static void ruta_pantalla(int dv, int i, char *ruta, size_t tam) {
+  VistaMenu *v = &vistas[dv];
+  if (v->dinamica) snprintf(ruta, tam, "todos/%03d.frm", diseno_buscar(&diseno.vistas[vista_todos], v->claves[i]));
+  else snprintf(ruta, tam, "%s/%03d.frm", v->id, i);
+}
+
+static void pintar_diseno(void) {
+  VistaMenu *v = &vistas[dv_actual];
+  char ruta[160];
+  if (!v->n) {  // Favoritos o Recientes vacíos: no se llega, pero por si acaso
+    rectangulo(0, 0, pantalla.ancho, pantalla.alto, color(5, 9, 20));
+  } else {
+    int i = elegido_en[dv_actual];
+    ruta_pantalla(dv_actual, i, ruta, sizeof ruta);
+    if (diseno_pintar(ruta) < 0) {
+      rectangulo(0, 0, pantalla.ancho, pantalla.alto, color(5, 9, 20));
+      texto(40, 340, 3, color(255, 210, 63), "No encuentro esta pantalla en neo/diseno.");
+    }
+    if (v->dinamica) diseno_pintar(dv_actual == vista_favoritos ? "barras/favoritos.frm" : "barras/recientes.frm");
+    snprintf(ruta, sizeof ruta, "acciones/%s-%s.frm", accion_actual ? "favorito" : "jugar",
+             es_favorito(v->claves[i]) >= 0 ? "si" : "no");
+    diseno_pintar(ruta);
+  }
+  if (ahora_ms() < aviso_hasta) {  // aviso en el pie, en un recuadro: tapa las ayudas unos segundos
+    int w = (int)largo(aviso) * 16 + 48, x = (pantalla.ancho - w) / 2, y = pantalla.alto - 54;
+    rectangulo(x, y, w, 52, color(8, 13, 31));
+    marco(x, y, w, 52, 3, color(255, 22, 140));
+    texto(x + 24, y + 18, 2, color(245, 247, 255), aviso);
+  }
+  mostrar();
+  // Se dejan en memoria las pantallas de los vecinos: es lo que se pide después.
+  if (v->n > 1) {
+    ruta_pantalla(dv_actual, (elegido_en[dv_actual] + 1) % v->n, ruta, sizeof ruta);
+    diseno_precargar(ruta);
+    ruta_pantalla(dv_actual, (elegido_en[dv_actual] + v->n - 1) % v->n, ruta, sizeof ruta);
+    diseno_precargar(ruta);
+  }
+}
+
+static void cambiar_vista(int paso) {
+  for (int k = 0; k < n_vistas; k++) {
+    dv_actual = (dv_actual + paso + n_vistas) % n_vistas;
+    if (vistas[dv_actual].n) return;
+  }
+}
+
+static void favorito_elegido(void) {
+  const char *clave = clave_elegida();
+  Juego j;
+  if (!clave || !buscar_juego(clave, &j)) return;
+  cambiar_favorito(&j);
+  armar_vistas_dinamicas();
+  if (!vistas[dv_actual].n) cambiar_vista(-1);  // se quitó el último favorito estando en Favoritos
+}
+
+static void saltar_letra_diseno(int adelante) {
+  VistaMenu *v = &vistas[dv_actual];
+  if (v->n < 2) return;
+  int *e = &elegido_en[dv_actual], i = *e, actual_letra = letra(v->titulos[i]);
+  if (adelante) {
+    while (i < v->n - 1 && letra(v->titulos[i]) == actual_letra) i++;
+  } else {
+    while (i > 0 && letra(v->titulos[i - 1]) == actual_letra) i--;
+    if (i == *e && i > 0) {
+      int previa = letra(v->titulos[i - 1]);
+      while (i > 0 && letra(v->titulos[i - 1]) == previa) i--;
+    }
+  }
+  *e = i;
+}
+
+static int ultima_vista_real;
+static void siguiente_lista_diseno(void) {
+  if (!vistas[dv_actual].dinamica) ultima_vista_real = dv_actual;
+  int orden[] = {vista_favoritos, vista_recientes, ultima_vista_real};
+  int pos = dv_actual == vista_favoritos ? 0 : dv_actual == vista_recientes ? 1 : 2;
+  for (int k = 1; k <= 3; k++) {
+    int candidata = orden[(pos + k) % 3];
+    if (vistas[candidata].n) {
+      dv_actual = candidata;
+      return;
+    }
+  }
+}
+
+static int menu_diseno(void) {
+  for (int i = 0; i < diseno.n_vistas; i++) {
+    VistaDiseno *d = &diseno.vistas[i];
+    vistas[n_vistas] = (VistaMenu){d->id, d->nombre, d->n, d->claves, d->titulos, 0};
+    if (!strcmp(d->id, "todos")) vista_todos = n_vistas;
+    n_vistas++;
+  }
+  vista_favoritos = n_vistas;
+  vistas[n_vistas++] = (VistaMenu){"favoritos", "FAVORITOS", 0, NULL, NULL, 1};
+  vista_recientes = n_vistas;
+  vistas[n_vistas++] = (VistaMenu){"recientes", "RECIENTES", 0, NULL, NULL, 1};
+  armar_vistas_dinamicas();
+  dv_actual = 0;
+  if (!vistas[dv_actual].n) cambiar_vista(1);
+  anotar("menú: con las pantallas de Neo Arcade");
+
+  if (pantalla.simulada) {
+    // NEO_SIMULAR_TECLAS: acciones separadas por comas (derecha, izquierda, rb, lb, abajo, x, select).
+    char teclas[512];
+    snprintf(teclas, sizeof teclas, "%s", getenv("NEO_SIMULAR_TECLAS") ? getenv("NEO_SIMULAR_TECLAS") : "");
+    for (char *t = strtok(teclas, ","); t; t = strtok(NULL, ",")) {
+      VistaMenu *v = &vistas[dv_actual];
+      if (!strcmp(t, "derecha") && v->n) elegido_en[dv_actual] = (elegido_en[dv_actual] + 1) % v->n;
+      if (!strcmp(t, "izquierda") && v->n) elegido_en[dv_actual] = (elegido_en[dv_actual] + v->n - 1) % v->n;
+      if (!strcmp(t, "rb")) cambiar_vista(1);
+      if (!strcmp(t, "lb")) cambiar_vista(-1);
+      if (!strcmp(t, "abajo")) accion_actual = 1;
+      if (!strcmp(t, "arriba")) accion_actual = 0;
+      if (!strcmp(t, "x")) favorito_elegido();
+      if (!strcmp(t, "select")) siguiente_lista_diseno();
+      if (!strcmp(t, "rt")) saltar_letra_diseno(1);
+    }
+    pintar_diseno();
+    anotar("simulación: vista %s, juego %d, %s", vistas[dv_actual].nombre, elegido_en[dv_actual],
+           clave_elegida() ? clave_elegida() : "-");
+    if (getenv("NEO_CAPTURA")) guardar_png(getenv("NEO_CAPTURA"));
+    return 0;
+  }
+
+  abrir_mandos(anotar);
+  long inicio = ahora_ms(), ultima_busqueda = inicio, salir_desde = 0, siguiente_repeticion = 0;
+  int direccion_previa = -1, previos[BOTONES], select_con_start = 0, firma_previa = -1;
+  for (int b = 0; b < BOTONES; b++) previos[b] = 1;
+  const char *motivo = NULL;
+  while (!motivo) {
+    long t = ahora_ms();
+    if (!numero_de_mandos() && t - ultima_busqueda > 2000) {
+      abrir_mandos(anotar);
+      ultima_busqueda = t;
+    }
+    leer_mandos();
+    if (!numero_de_mandos()) {
+      long resta = (SALIR_SIN_MANDOS_MS - (t - inicio)) / 1000;
+      snprintf(aviso, sizeof aviso, "Conecta el tablero. Menú de fábrica en %ld s.", resta > 0 ? resta : 0);
+      aviso_hasta = t + 1000;
+      if (t - inicio >= SALIR_SIN_MANDOS_MS) motivo = "sin controles";
+    }
+    int ahora[BOTONES];
+    for (int b = 0; b < BOTONES; b++) ahora[b] = apretado_alguno(b);
+    VistaMenu *v = &vistas[dv_actual];
+    int *e = &elegido_en[dv_actual];
+
+    // Izquierda y derecha mueven el carrusel, con repetición al mantener, como en Neo Arcade.
+    int direccion = ahora[BOTON_IZQUIERDA] ? BOTON_IZQUIERDA : ahora[BOTON_DERECHA] ? BOTON_DERECHA : -1;
+    int mover = 0;
+    if (direccion != direccion_previa) {
+      mover = direccion >= 0;
+      siguiente_repeticion = t + 380;
+    } else if (direccion >= 0 && t >= siguiente_repeticion) {
+      mover = 1;
+      siguiente_repeticion = t + 120;
+    }
+    direccion_previa = direccion;
+    if (mover && v->n) *e = (*e + (direccion == BOTON_DERECHA ? 1 : v->n - 1)) % v->n;
+    if (RECIEN(BOTON_ARRIBA)) accion_actual = 0;
+    if (RECIEN(BOTON_ABAJO)) accion_actual = 1;
+    if (RECIEN(BOTON_R)) cambiar_vista(1);
+    if (RECIEN(BOTON_L)) cambiar_vista(-1);
+    if (RECIEN(BOTON_R2)) saltar_letra_diseno(1);
+    if (RECIEN(BOTON_L2)) saltar_letra_diseno(0);
+    if (RECIEN(BOTON_Y)) favorito_elegido();  // la X del tablero
+
+    if (ahora[BOTON_SELECT] && ahora[BOTON_START]) {
+      select_con_start = 1;
+      if (!salir_desde) salir_desde = t;
+      if (t - salir_desde >= SALIR_MANTENIENDO_MS) motivo = "Select + Start";
+    } else {
+      salir_desde = 0;
+      if (!ahora[BOTON_SELECT] && previos[BOTON_SELECT] && !select_con_start) siguiente_lista_diseno();
+      if (!ahora[BOTON_SELECT]) select_con_start = 0;
+      if (RECIEN(BOTON_B) && !select_con_start && clave_elegida()) {
+        if (accion_actual == 1) {
+          favorito_elegido();
+        } else {
+          Juego j;
+          if (buscar_juego(clave_elegida(), &j)) {
+            jugar_juego(j);
+            armar_vistas_dinamicas();  // ahora está en Recientes
+            esperar_suelto();
+            for (int b = 0; b < BOTONES; b++) ahora[b] = 1;
+            firma_previa = -1;
+          } else {
+            avisar("Ese juego ya no está en la tarjeta.");
+          }
+        }
+      }
+    }
+    memcpy(previos, ahora, sizeof previos);
+
+    const char *clave = clave_elegida();
+    int firma = dv_actual * 1000003 + elegido_en[dv_actual] * 8 + accion_actual * 4 +
+                (clave && es_favorito(clave) >= 0) * 2 + (ahora_ms() < aviso_hasta);
+    if (firma != firma_previa) {
+      pintar_diseno();
+      firma_previa = firma;
+    }
+    usleep(15000);
+  }
+  anotar("fin del menú: %s", motivo);
+  cerrar_mandos();
+  limpiar_pantalla();
+  if (registro) fclose(registro);
+  return 0;
+}
+
 int main(int argc, char **argv) {
+  // «--portada» (al final): solo pinta la pantalla de arranque de Neo Arcade y sale sin borrarla.
+  // arranque.sh la llama al encender, antes que todo, para tapar la imagen del fabricante.
+  int portada = argc > 1 && !strcmp(argv[argc - 1], "--portada");
+  if (portada) argc--;
   registro = fopen(argc > 1 ? argv[1] : "/mnt/neo/registro-menu.txt", "a");
   // Los emuladores están junto a este programa; neo/ es esa misma carpeta salvo en las pruebas.
   snprintf(carpeta_programas, sizeof carpeta_programas, "%s", argv[0]);
@@ -557,9 +842,23 @@ int main(int argc, char **argv) {
     anotar("sin pantalla: se termina");
     return 1;
   }
+  if (portada) {
+    int pintada = diseno_abrir(&diseno, carpeta_neo, anotar) == 0 && diseno_pintar("portada.frm") == 0;
+    if (pintada) mostrar();
+    if (pintada && pantalla.simulada && getenv("NEO_CAPTURA")) guardar_png(getenv("NEO_CAPTURA"));
+    anotar(pintada ? "portada a la vista" : "sin portada: falta diseno/portada.frm");
+    if (registro) fclose(registro);
+    return pintada ? 0 : 1;
+  }
   leer_biblioteca();
   leer_datos_usuario();
   armar_listas();
+  // Con las pantallas de Neo Arcade en la tarjeta, el menú se ve como Neo Arcade; si no, el propio.
+  if (!getenv("NEO_SIN_DISENO") && diseno_abrir(&diseno, carpeta_neo, anotar) == 0) {
+    int faltan = juegos_sin_pantalla();
+    if (!faltan) return menu_diseno();
+    anotar("diseño: juegos sin pantalla: %d; se usa el dibujo propio para mostrarlos todos", faltan);
+  }
   if (!sistemas[actual].n) cambiar_sistema(1);
   if (pantalla.simulada) {
     if (getenv("NEO_SIMULAR_FAVORITO")) cambiar_favorito(&sistemas[actual].juegos[0]);

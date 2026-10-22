@@ -84,7 +84,7 @@ COMUN=("${OBJETIVO[@]}" -static -fno-pie -no-pie -O2 -s -Wall -Wextra -Wno-sign-
        -Wno-missing-field-initializers -I"$RAIZ/src")
 
 "$ZIG" cc "${COMUN[@]}" -o "$SALIDA/neo-prueba" "$RAIZ/src/prueba.c" "$RAIZ/src/pantalla.c" 2>&1 | filtrar
-"$ZIG" cc "${COMUN[@]}" -o "$SALIDA/neo-menu" "$RAIZ/src/menu.c" "$RAIZ/src/pantalla.c" "$RAIZ/src/mandos.c" 2>&1 | filtrar
+"$ZIG" cc "${COMUN[@]}" -o "$SALIDA/neo-menu" "$RAIZ/src/menu.c" "$RAIZ/src/diseno.c" "$RAIZ/src/pantalla.c" "$RAIZ/src/mandos.c" 2>&1 | filtrar
 
 # Con STATIC_LINKING=1 los núcleos dejan fuera estas piezas de libretro-common (suponen que el
 # frontend las trae, como RetroArch); se compilan aparte, de la copia de FCEUmm.

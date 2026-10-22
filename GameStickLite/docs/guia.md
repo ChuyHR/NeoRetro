@@ -6,18 +6,24 @@ el arranque de fábrica es distinto y esta tarjeta no arranca.
 ## Usarlo
 
 1. Conecta el tablero al USB del Game Stick **antes** de encenderlo.
-2. Al encender aparece el menú de Neo Arcade Lite. La primera vez sale antes una pantalla de prueba
-   de controles: mantén cualquier botón 5 segundos para pasar.
+2. Al encender aparece la portada de Neo Arcade y después el menú, con el mismo diseño que Neo
+   Arcade en la MP80. La primera vez sale antes una pantalla de prueba de controles: mantén cualquier
+   botón 5 segundos para pasar.
 
 | Botón | En el menú | En el juego |
 |---|---|---|
-| Palanca arriba y abajo | Elegir juego | Mover |
-| Palanca izquierda y derecha, LB y RB | Cambiar de consola | Mover |
-| LT y RT | Saltar a la letra anterior o siguiente | Según el juego |
-| A | Jugar | Según el juego |
+| Palanca izquierda y derecha | Elegir juego en el carrusel | Mover |
+| Palanca arriba y abajo | Elegir JUGAR o FAVORITOS | Mover |
+| A | Jugar, o lo elegido abajo | Según el juego |
 | X | Agregar o quitar de Favoritos | Según el juego |
+| LB y RB | Cambiar de consola | Según el juego |
+| LT y RT | Saltar a la letra anterior o siguiente | Según el juego |
 | Moneda (Select) | Ver Favoritos y Recientes | Moneda |
 | Moneda + Start | Mantenidos 2 s: menú de fábrica | Volver al menú |
+
+Si agregaste juegos y todavía no se capturaron sus pantallas, el menú aparece con su dibujo sencillo
+(lista a la izquierda, carátula a la derecha) para que se vean todos. Ahí la palanca arriba y abajo
+elige el juego, y a los lados cambia de consola.
 
 Las partidas guardadas dentro de los juegos (Pokémon, Zelda y otros) se escriben en la tarjeta
 solas, cada vez que cambian y al salir. No hace falta hacer nada.
@@ -42,6 +48,10 @@ los controles inalámbricos que traía el aparato.
 Los juegos van sin comprimir: los `.zip` se descomprimen antes. Las carátulas y las fichas salen de
 la biblioteca de Neo Arcade de la MP80, con `scripts/preparar-medios.py`.
 
+Para que los juegos nuevos salgan con el diseño de Neo Arcade, sus pantallas se capturan en la laptop
+con `scripts/preparar-diseno.py`, `scripts/capturar-diseno.mjs` y `scripts/convertir-diseno.py`
+(detalle en `docs/sistema-propio.md`).
+
 ## Dónde queda cada cosa en la tarjeta
 
 | Carpeta | Qué guarda |
@@ -49,6 +59,7 @@ la biblioteca de Neo Arcade de la MP80, con `scripts/preparar-medios.py`.
 | `neo/` | El sistema propio: menú, emuladores y arranque |
 | `neo/partidas/` | Las partidas guardadas, por consola |
 | `neo/medios/` | Carátulas y fichas |
+| `neo/diseno/` | Las pantallas de Neo Arcade y la portada |
 | `neo/sistema/gba_bios.bin` | La BIOS de GBA |
 | `neo/datos-usuario.txt` | Favoritos y recientes |
 | `neo/registro-*.txt`, `neo/diagnostico.txt` | Lo que pasó en cada encendido, para revisar fallas |
@@ -64,7 +75,8 @@ archivos de fábrica, que no están en el repositorio. Su origen está en `docs/
 ```bash
 bash scripts/compilar.sh
 bash scripts/armar-imagen.sh --tamano-mb 8192 --roms <carpeta con fc/, sfc/…> \
-     --medios <neo/medios de otra tarjeta> --bios <carpeta con gba_bios.bin>
+     --medios <neo/medios de otra tarjeta> --bios <carpeta con gba_bios.bin> \
+     --diseno <neo/diseno que arma convertir-diseno.py>
 ```
 
 El resultado, `compilado/gamestick.img`, se escribe en la microSD con balenaEtcher o Win32DiskImager.
