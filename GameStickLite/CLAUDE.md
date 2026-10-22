@@ -21,6 +21,11 @@ construido y cómo probarlo está en [docs/sistema-propio.md](docs/sistema-propi
   `compilado/`. Baja las fuentes de terceros a `~/gamestick/fuentes` en versión fija.
 - `bash scripts/armar-data03.sh <DATA03 original V1.5>`: arma el `DATA03` con el lanzador en
   `compilado/DATA03`.
+- `bash scripts/armar-imagen.sh [--tamano-mb N] [--roms …] [--medios …] [--bios …]`: imagen completa
+  de la microSD en `compilado/gamestick.img`. Usa `fabrica/`, que está fuera del repositorio.
+- `python3 scripts/preparar-medios.py <origen> <tarjeta>`: carátulas y fichas del menú, a partir del
+  `gamelist.xml` y las imágenes de Neo Arcade.
+- La guía para el usuario está en [docs/guia.md](docs/guia.md).
 - **Probar en QEMU:** ver [docs/sistema-propio.md](docs/sistema-propio.md), «Probar en la laptop».
 - **Ojo:** WSL monta `E:` (la tarjeta) solo si estaba al arrancar. Si no, usar
   `sudo mount -t drvfs E: /mnt/e`. Y `wsl -d Debian -e bash -c '…'` necesita `MSYS_NO_PATHCONV=1` desde

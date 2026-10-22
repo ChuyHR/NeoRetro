@@ -60,15 +60,28 @@ Debian de WSL) con `scripts/compilar.sh`.
 - al primer botón reproduce un `.wav` de fábrica con `/usr/res/bin/aplay`;
 - se cierra al mantener un botón 5 s, tras 60 s sin uso o a los 3 minutos.
 
-**`neo-menu`** (`src/menu.c` + `pantalla.c` + `mandos.c`):
+**`neo-menu`** (`src/menu.c` + `pantalla.c` + `mandos.c`), al estilo de Neo Arcade:
 
-- lista los juegos de `/mnt/roms/{fc,sfc,md,gb,gbc,gba}`, por sistema y en orden alfabético, y
-  muestra los títulos sin extensión ni marcas entre paréntesis;
-- arriba y abajo eligen (con repetición al mantener), izquierda y derecha cambian de sistema, A o
-  Start abren el juego con `neo-retro-<sistema>`;
-- con Select + Start mantenidos 2 s se sale al menú de fábrica. También sale tras 15 minutos sin uso,
-  o a los 30 s si no hay ningún control;
-- solo redibuja cuando cambia algo: pintar 1280x720 en cada cuadro es lento en el Cortex-A9.
+- **Pestañas:** los sistemas con juegos, más FAVORITOS y RECIENTES cuando tienen algo.
+- **Lista y ficha:** la lista va a la izquierda, con los títulos sin extensión ni marcas entre
+  paréntesis y `*` en los favoritos. A la derecha van la carátula y la ficha: nombre, año, género,
+  jugadores, desarrollador y la descripción partida en renglones.
+- **Botones** (con los nombres de Neo Arcade):
+  - arriba y abajo eligen el juego, con repetición al mantener;
+  - izquierda y derecha, o LB y RB, cambian de sistema;
+  - LT y RT saltan de letra;
+  - A juega y X marca favorito;
+  - Select solo pasa por Favoritos, Recientes y el sistema de antes;
+  - Select + Start mantenidos 2 s salen al menú de fábrica.
+- **Start no abre juegos:** un Start un instante antes del Select abriría uno al querer salir.
+- **Sin controles:** sale al menú de fábrica a los 30 s. No sale por inactividad.
+- **Datos guardados:** favoritos y recientes (20) quedan en `neo/datos-usuario.txt`. Se escribe
+  aparte y se renombra.
+- **Carátulas y fichas:** `neo/medios/<carpeta>/<juego>.img` (RGB565 con cabecera `NEOI`) y `.txt`.
+  Las prepara `scripts/preparar-medios.py` con el `gamelist.xml` y las imágenes de Neo Arcade de la
+  MP80. Hay 59 de los 60 juegos copiados.
+- **Velocidad:** solo redibuja cuando cambia algo, porque pintar 1280x720 en cada cuadro es lento en
+  el Cortex-A9.
 
 **`neo-retro-<sistema>`** (`src/retro.c` + `pantalla.c` + `mandos.c`) es un frontend libretro
 mínimo, con un núcleo enlazado dentro:
@@ -89,7 +102,36 @@ Para gpSP, `neo/sistema/gba_bios.bin` es la BIOS del usuario, copiada de la MP80
   interpolación lineal. El sonido marca el paso del juego.
 - **Controles** (`mandos.c`): el DragonRise 0079:0006 usa el mapeo que el usuario hizo en la MP80,
   con la palanca girada; otros controles usan un mapeo genérico.
-- **Salir:** Select + Start (moneda + Start) o tras 5 minutos sin uso.
+- **Salir:** Select + Start (moneda + Start). No sale por inactividad, para no cerrar un juego en
+  pausa. Ante SIGTERM, SIGINT o SIGHUP sale por el camino normal.
+- **Partidas** (`RETRO_MEMORY_SAVE_RAM` y `RETRO_MEMORY_RTC`):
+  - se leen de `neo/partidas/<sistema>/<juego>.srm` (y `.rtc`) al abrir;
+  - se escriben si cambiaron, revisando cada 30 s, y al salir;
+  - para saber si cambiaron se compara una huella FNV-1a;
+  - se escriben aparte, con `fsync`, y se renombran.
+
+  Comprobado en QEMU con Pokémon Oro: guardó 32 KB y en la siguiente vuelta los cargó.
+
+## Imagen completa de la tarjeta
+
+`scripts/armar-imagen.sh` arma `compilado/gamestick.img`, lista para balenaEtcher o Win32DiskImager:
+
+- **Tabla:** MBR con firma `0x0000d3be`, como la de fábrica.
+- **Arranque:** el de fábrica en los bytes 0 a 445 y en los sectores 1 a 2047.
+- **Partición:** FAT32 tipo 0x0C desde el sector 8192, con `res/`, `neo/`, `roms/`, `save/` y
+  `download/`. El clúster depende del tamaño: 4 KB hasta 8 GB y 32 KB, como el de fábrica, desde 32
+  GB. FAT32 pide al menos 65 525 clústeres; con menos, Linux la toma por FAT16.
+
+Usa `sfdisk`, `mkfs.fat` y `mtools`, sin montar nada. Toma los archivos de fábrica de `fabrica/`, que
+no está en el repositorio, y los comprueba con `fabrica/HUELLAS.txt`.
+
+Verificado con una imagen de 2 GB:
+
+- el primer MB es igual al de fábrica salvo 6 bytes de la tabla;
+- `fsck.fat` la da limpia;
+- la cadena completa corre en el `chroot` montando la partición de la imagen en `/mnt`.
+
+La guía para el usuario está en [guia.md](guia.md).
 
 ## El tablero del usuario no aparece como control en el Game Stick (2026-10-22)
 

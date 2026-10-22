@@ -2,12 +2,16 @@
 // (estático con musl, sin dlopen): se compila un neo-retro-<sistema> por núcleo. Video directo a
 // /dev/fb0 con escala entera y centrado, sonido por ALSA con tinyalsa (el sonido marca el paso del
 // juego) y controles por evdev (mandos.c).
-// Salir: Select + Start (moneda + Start en un tablero), o 5 minutos sin tocar nada.
+// Salir: Select + Start (moneda + Start en un tablero). No se sale por inactividad: un juego en pausa
+// no se cierra solo.
+// Partidas: la memoria de guardado del cartucho (y el reloj, en los que lo tienen) se lee de
+// /mnt/neo/partidas/<sistema>/ al abrir y se escribe cuando cambia (revisando cada 30 s) y al salir.
 //
 // En la laptop (QEMU): NEO_SIMULAR=1 corre NEO_CUADROS cuadros sin sonido y guarda el último en
 // NEO_CAPTURA como PNG.
 // Uso: neo-retro-<sistema> <juego> [registro]
 #include <errno.h>
+#include <signal.h>
 #include <stdarg.h>
 #include <stdbool.h>
 #include <stdint.h>
@@ -23,7 +27,7 @@
 #include "mandos.h"
 #include "pantalla.h"
 
-#define SALIR_SIN_USO_MS (5 * 60 * 1000)
+#define REVISAR_PARTIDA_MS 30000
 
 static FILE *registro;
 static long inicio_ms;
@@ -245,6 +249,88 @@ static int16_t estado(unsigned puerto, unsigned dispositivo, unsigned indice, un
   return apretado((int)puerto, (int)id);
 }
 
+// ---- Partidas ------------------------------------------------------------------------------------
+
+typedef struct {
+  unsigned tipo;           // RETRO_MEMORY_SAVE_RAM o RETRO_MEMORY_RTC
+  const char *extension;   // .srm o .rtc, como RetroArch
+  char ruta[512];
+  uint32_t huella;         // de lo último escrito o leído
+} Memoria;
+
+static Memoria memorias[] = {{RETRO_MEMORY_SAVE_RAM, ".srm"}, {RETRO_MEMORY_RTC, ".rtc"}};
+#define N_MEMORIAS (int)(sizeof memorias / sizeof *memorias)
+
+static volatile sig_atomic_t terminar;
+static void pedir_terminar(int senal) { terminar = senal; }
+
+static uint32_t huella(const uint8_t *d, size_t n) {  // FNV-1a: alcanza para saber si cambió
+  uint32_t h = 2166136261u;
+  while (n--) h = (h ^ *d++) * 16777619u;
+  return h;
+}
+
+// sistema sale del nombre del programa (neo-retro-gb → gb); juego, del archivo sin la extensión.
+static void preparar_partidas(const char *programa, const char *juego) {
+  const char *p = strrchr(programa, '-');
+  const char *sistema = p ? p + 1 : "otros";
+  const char *raiz = getenv("NEO_PARTIDAS") ? getenv("NEO_PARTIDAS") : "/mnt/neo/partidas";  // otra en las pruebas
+  char carpeta[256];
+  snprintf(carpeta, sizeof carpeta, "%s/%s", raiz, sistema);
+  mkdir(raiz, 0755);
+  mkdir(carpeta, 0755);
+  const char *base = strrchr(juego, '/');
+  base = base ? base + 1 : juego;
+  char nombre[256];
+  snprintf(nombre, sizeof nombre, "%s", base);
+  char *punto = strrchr(nombre, '.');
+  if (punto && punto != nombre) *punto = 0;
+  for (int i = 0; i < N_MEMORIAS; i++) {
+    Memoria *m = &memorias[i];
+    snprintf(m->ruta, sizeof m->ruta, "%s/%s%s", carpeta, nombre, m->extension);
+    size_t tam = retro_get_memory_size(m->tipo);
+    uint8_t *datos = retro_get_memory_data(m->tipo);
+    if (!tam || !datos) continue;
+    FILE *f = fopen(m->ruta, "rb");
+    if (f) {
+      size_t leidos = fread(datos, 1, tam, f);
+      fclose(f);
+      anotar("partida: se cargaron %zu de %zu bytes de %s", leidos, tam, m->ruta);
+    }
+    m->huella = huella(datos, tam);
+  }
+}
+
+static void guardar_partidas(void) {
+  for (int i = 0; i < N_MEMORIAS; i++) {
+    Memoria *m = &memorias[i];
+    size_t tam = retro_get_memory_size(m->tipo);
+    uint8_t *datos = retro_get_memory_data(m->tipo);
+    if (!tam || !datos || !m->ruta[0]) continue;
+    uint32_t h = huella(datos, tam);
+    if (h == m->huella) continue;  // sin cambios no se escribe: la tarjeta dura más
+    // Se escribe aparte y se renombra: si se apaga a la mitad, la partida anterior queda entera.
+    char temporal[520];
+    snprintf(temporal, sizeof temporal, "%s.nuevo", m->ruta);
+    FILE *f = fopen(temporal, "wb");
+    if (!f) {
+      anotar("partida: no se pudo escribir %s (%s)", temporal, strerror(errno));
+      continue;
+    }
+    size_t escritos = fwrite(datos, 1, tam, f);
+    fflush(f);
+    fsync(fileno(f));
+    fclose(f);
+    if (escritos == tam && rename(temporal, m->ruta) == 0) {
+      m->huella = h;
+      anotar("partida: guardados %zu bytes en %s", tam, m->ruta);
+    } else {
+      anotar("partida: falló al guardar %s (%s)", m->ruta, strerror(errno));
+    }
+  }
+  sync();
+}
+
 // Juego en memoria para los núcleos que lo aceptan así; los que piden la ruta (need_fullpath) la usan.
 static void *leer_archivo(const char *ruta, long *tam) {
   FILE *f = fopen(ruta, "rb");
@@ -305,6 +391,12 @@ int main(int argc, char **argv) {
     limpiar_pantalla();
     return 1;
   }
+  preparar_partidas(argv[0], argv[1]);
+  // Si a este programa lo terminan desde fuera (el timeout del arranque, por ejemplo), sale por el
+  // camino normal y guarda la partida.
+  signal(SIGTERM, pedir_terminar);
+  signal(SIGINT, pedir_terminar);
+  signal(SIGHUP, pedir_terminar);
   struct retro_system_av_info av;
   retro_get_system_av_info(&av);
   anotar("video: %ux%u, %.3f cuadros por segundo; sonido %.0f Hz", av.geometry.base_width,
@@ -324,6 +416,7 @@ int main(int argc, char **argv) {
 
   // Sin sonido, el paso lo marca el reloj.
   long periodo_us = (long)(1000000.0 / av.timing.fps), siguiente = 0, ultimo_informe = ahora_ms();
+  long ultima_revision = ahora_ms();
   ultimo_uso = ahora_ms();
   const char *motivo = NULL;
   while (!motivo) {
@@ -354,7 +447,11 @@ int main(int argc, char **argv) {
     }
     for (int i = 0; i < numero_de_mandos(); i++)
       if (apretado(i, BOTON_SELECT) && apretado(i, BOTON_START)) motivo = "Select + Start";
-    if (ahora_ms() - ultimo_uso > SALIR_SIN_USO_MS) motivo = "5 minutos sin uso";
+    if (terminar) motivo = "señal de terminar";
+    if (ahora_ms() - ultima_revision >= REVISAR_PARTIDA_MS) {
+      guardar_partidas();
+      ultima_revision = ahora_ms();
+    }
     if (ahora_ms() - ultimo_informe >= 10000) {
       anotar("rendimiento: %ld cuadros en %.1f s, %ld huecos de sonido", cuadros, (ahora_ms() - inicio_ms) / 1000.0,
              subocupaciones);
@@ -363,6 +460,7 @@ int main(int argc, char **argv) {
   }
   anotar("fin: %s, %ld cuadros", motivo, cuadros);
   if (simulado && getenv("NEO_CAPTURA")) guardar_png(getenv("NEO_CAPTURA"));
+  guardar_partidas();
   retro_unload_game();
   retro_deinit();
   if (pcm) pcm_close(pcm);
