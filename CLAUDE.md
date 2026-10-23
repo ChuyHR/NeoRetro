@@ -55,6 +55,10 @@ usuario (ver abajo). Lo verificado:
   entero («nitido»), pero al usuario le pareció muy pixeleado: pidió elegirlo en Configuración (Imagen de
   los juegos: ORIGINAL, NÍTIDA, CRT, CRT SUAVE) y el CRT recomendado de fábrica (crt-hyllian-fast).
   Resultados en `docs/visual-enhancement-testing.md`; perfiles y cómo apagarlos en `docs/visual-profiles.md`.
+- Continuar y menú del juego (2026-10-22, pedido del usuario): en Configuración, «Continuar donde te
+  quedaste» (estado automático de RetroArch al salir y al abrir, de fábrica SÍ) y «Menú del juego»
+  (mantener Select 2 s abre el menú de RetroArch para pausar, guardar o cargar; de fábrica activado).
+  Van a retroarch.cfg con la combinación para salir (`clavesDeConfiguracion` en `retroarch-cfg.js`).
 
 **Fase 8.** El instalador de la consola (`scripts/instalador/instalar-neo-arcade.sh`), la imagen USB
 (`armar-iso-consola.sh` con `consola.sh`), la vuelta atrás (`volver-al-escritorio.sh`), Apagar y

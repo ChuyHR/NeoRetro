@@ -18,6 +18,8 @@ export const AJUSTES_INICIALES = Object.freeze({
   tema: 'azul',
   salir: 'select-start',
   imagen: 'crt',
+  continuar: true,
+  menu: 'mantener-select',
 });
 
 const OPCIONES = {
@@ -25,6 +27,7 @@ const OPCIONES = {
   tema: ['azul', 'magenta', 'violeta', 'naranja'],
   salir: ['select-start', 'mantener-start', 'lr-select-start'],
   imagen: ['original', 'nitido', 'crt', 'crt-suave'],
+  menu: ['mantener-select', 'ninguno'],
 };
 const PERFILES = ['normal'];
 
@@ -69,6 +72,7 @@ export function limpiarDatos(datos) {
   const ajustes = datos.ajustes ?? {};
   if (typeof ajustes.crt === 'boolean') limpio.ajustes.crt = ajustes.crt;
   if (typeof ajustes.animaciones === 'boolean') limpio.ajustes.animaciones = ajustes.animaciones;
+  if (typeof ajustes.continuar === 'boolean') limpio.ajustes.continuar = ajustes.continuar;
   if (Number.isInteger(ajustes.volumen) && ajustes.volumen >= 0 && ajustes.volumen <= 100) limpio.ajustes.volumen = ajustes.volumen;
   for (const [clave, valores] of Object.entries(OPCIONES)) {
     if (valores.includes(ajustes[clave])) limpio.ajustes[clave] = ajustes[clave];

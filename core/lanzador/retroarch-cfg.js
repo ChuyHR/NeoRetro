@@ -1,5 +1,6 @@
-// Ajusta claves de retroarch.cfg antes de abrir un juego: hoy, la combinación del mando para salir que
-// se eligió en Configuración. Solo toca esas claves y no reescribe el archivo si ya estaban así.
+// Ajusta claves de retroarch.cfg antes de abrir un juego: lo que se eligió en Configuración (la
+// combinación para salir, la del menú del juego y continuar donde te quedaste). Solo toca esas claves y
+// no reescribe el archivo si ya estaban así.
 // RetroArch está cerrado en ese momento (Neo Arcade no abre dos juegos a la vez), así que no las pisa.
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
@@ -10,6 +11,25 @@ export const COMBOS_SALIR = {
   'mantener-start': '7', // mantener Start dos segundos
   'lr-select-start': '3', // L1 + R1 + Start + Select
 };
+
+// Valores de input_menu_toggle_gamepad_combo (la misma lista de RetroArch): abre su menú, que pausa el
+// juego y deja guardar, cargar o reiniciar.
+export const COMBOS_MENU = {
+  'mantener-select': '8', // mantener Select dos segundos
+  ninguno: '0',
+};
+
+// Las claves de retroarch.cfg que dependen de Configuración. Continuar donde te quedaste: al cerrar,
+// RetroArch guarda un estado automático y, al volver a abrir el juego, lo carga.
+export function clavesDeConfiguracion(opciones = {}) {
+  const continuar = opciones.continuar === false ? 'false' : 'true';
+  return {
+    input_quit_gamepad_combo: COMBOS_SALIR[opciones.salir] ?? COMBOS_SALIR['select-start'],
+    input_menu_toggle_gamepad_combo: COMBOS_MENU[opciones.menu] ?? COMBOS_MENU['mantener-select'],
+    savestate_auto_save: continuar,
+    savestate_auto_load: continuar,
+  };
+}
 
 export function conClaves(texto, claves) {
   let resultado = texto;

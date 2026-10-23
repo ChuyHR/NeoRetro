@@ -18,6 +18,8 @@ export const FILAS_CONFIGURACION = [
   ['tema-azul', 'tema-magenta', 'tema-violeta', 'tema-naranja'],
   ['salir-select-start', 'salir-mantener-start', 'salir-lr-select-start'],
   ['imagen-original', 'imagen-nitido', 'imagen-crt', 'imagen-crt-suave'],
+  ['continuar-si', 'continuar-no'],
+  ['menu-mantener-select', 'menu-ninguno'],
   ['probar-control', 'configurar-control'],
   ['apagar', 'reiniciar'],
   ['restablecer'],
@@ -423,6 +425,10 @@ function pulsar(estado, boton, datos) {
       return conAjuste(estado, { salir: opcion });
     case 'imagen':
       return conAjuste(estado, { imagen: opcion });
+    case 'continuar':
+      return conAjuste(estado, { continuar: opcion === 'si' });
+    case 'menu':
+      return conAjuste(estado, { menu: opcion });
     default:
       break;
   }

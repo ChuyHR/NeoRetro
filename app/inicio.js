@@ -144,7 +144,8 @@ async function jugar() {
   if (!juego) return;
   enJuego = true;
   try {
-    const resultado = await puente.jugar(juego.id, { salir: estado.ajustes.salir, imagen: estado.ajustes.imagen });
+    const { salir, imagen, continuar, menu } = estado.ajustes;
+    const resultado = await puente.jugar(juego.id, { salir, imagen, continuar, menu });
     if (resultado.ok) despachar({ tipo: 'jugado', valor: { id: juego.id, fecha: new Date().toISOString(), segundos: (resultado.duracionMs ?? 0) / 1000 } });
     despachar(resultado.ok ? 'juego-terminado' : { tipo: 'error-lanzamiento', valor: resultado.mensaje });
   } finally {

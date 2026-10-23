@@ -6,7 +6,7 @@ import { after, test } from 'node:test';
 
 import { AJUSTES_INICIALES as AJUSTES_INTERFAZ } from '../app/ajustes.js';
 import { AJUSTES_INICIALES, crearAlmacen, datosIniciales, limpiarDatos, MAX_RECIENTES } from '../core/almacenamiento/almacenamiento.js';
-import { conClaves } from '../core/lanzador/retroarch-cfg.js';
+import { clavesDeConfiguracion, conClaves } from '../core/lanzador/retroarch-cfg.js';
 
 const temporales = [];
 after(() => Promise.all(temporales.map((carpeta) => rm(carpeta, { recursive: true, force: true }))));
@@ -60,6 +60,21 @@ test('se escribe un JSON legible, juntando los cambios seguidos, y se lee igual 
   assert.equal(leido.ultimoSistema, 'snes');
   await writeFile(archivo, '{ esto no es JSON');
   assert.deepEqual(await crearAlmacen(archivo).cargar(), datosIniciales());
+});
+
+test('Configuración llega a RetroArch: salir, menú del juego y continuar donde te quedaste', () => {
+  assert.deepEqual(clavesDeConfiguracion(), {
+    input_quit_gamepad_combo: '4', input_menu_toggle_gamepad_combo: '8', savestate_auto_save: 'true', savestate_auto_load: 'true',
+  });
+  assert.deepEqual(clavesDeConfiguracion({ salir: 'mantener-start', menu: 'ninguno', continuar: false }), {
+    input_quit_gamepad_combo: '7', input_menu_toggle_gamepad_combo: '0', savestate_auto_save: 'false', savestate_auto_load: 'false',
+  });
+  // Lo que llegue mal se queda en lo de fábrica.
+  assert.equal(clavesDeConfiguracion({ menu: 'otro' }).input_menu_toggle_gamepad_combo, '8');
+  const limpio = limpiarDatos({ ajustes: { continuar: 'si', menu: 'abajo-select' } }).ajustes;
+  assert.equal(limpio.continuar, true);
+  assert.equal(limpio.menu, 'mantener-select');
+  assert.equal(limpiarDatos({ ajustes: { continuar: false, menu: 'ninguno' } }).ajustes.continuar, false);
 });
 
 test('la combinación para salir se escribe en retroarch.cfg sin tocar lo demás', () => {

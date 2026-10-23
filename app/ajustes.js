@@ -10,6 +10,8 @@ export const AJUSTES_INICIALES = Object.freeze({
   tema: 'azul',
   salir: 'select-start',
   imagen: 'crt',
+  continuar: true,
+  menu: 'mantener-select',
 });
 
 // Colores del tema, tomados de la paleta del prototipo. El azul es el de fábrica.
@@ -35,6 +37,13 @@ export const IMAGENES = {
   nitido: 'NÍTIDA',
   crt: 'CRT',
   'crt-suave': 'CRT SUAVE',
+};
+
+// Combinación del mando que pausa el juego y abre el menú de RetroArch (guardar, cargar, reiniciar).
+// Mantener Select es la moneda en un tablero: se aprieta un instante para meter créditos, no 2 s.
+export const MENUS_JUEGO = {
+  'mantener-select': 'MANTENER SELECT',
+  ninguno: 'DESACTIVADO',
 };
 
 export const PASO_VOLUMEN = 10;

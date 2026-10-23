@@ -100,6 +100,18 @@ Neo Arcade lee los juegos nuevos al volver a abrirse (o al reiniciar la consola)
 - **Para salir de un juego**: Select + Start (en Configuración puedes cambiarlo a mantener Start o a
   LB + RB + Select + Start), o Esc en el teclado. En el mando de Xbox son View + Menú; en un tablero,
   moneda + Start. Mantén el primero y aprieta el segundo.
+- **Continuar donde te quedaste** (Configuración, de fábrica en SÍ): al salir de un juego se guarda el
+  punto exacto, y al volver a abrirlo sigue ahí. Sirve también en los de arcade, que no guardan
+  partida. Para empezar de nuevo, abre el menú del juego y elige Reiniciar.
+- **Menú del juego** (Configuración, de fábrica «mantener Select»): mantén Select 2 segundos dentro
+  de un juego (la moneda, en un tablero). El juego se pausa y aparece el menú de RetroArch, en español.
+  Desde ahí:
+  - **Reanudar** sigue jugando;
+  - **Guardar estado** y **Cargar estado** guardan o recuperan un punto cuando quieras;
+  - **Reiniciar** empieza de nuevo;
+  - **Cerrar contenido** sale del juego.
+
+  Los juegos que guardan partida por su cuenta, como Pokémon o Zelda, lo siguen haciendo solos.
 - **Cómo se ven los juegos**: Configuración → Imagen de los juegos.
   - CRT (de fábrica) imita la pantalla de las máquinas de arcade.
   - CRT SUAVE se parece más a una TV de tubo.

@@ -71,15 +71,17 @@ test('Configuración va por filas: arriba y abajo cambian de ajuste, izquierda y
   assert.equal(pasos([...abajo(6), 'aceptar'], configuracion).ajustes.imagen, 'original');
   assert.equal(pasos([...abajo(6), 'derecha', 'aceptar'], configuracion).ajustes.imagen, 'nitido');
   assert.equal(pasos([...abajo(6), 'derecha', 'derecha', 'derecha', 'aceptar'], configuracion).ajustes.imagen, 'crt-suave');
-  assert.equal(pasos([...abajo(7), 'aceptar'], configuracion).ventana, 'prueba-control');
-  assert.equal(pasos([...abajo(10), 'aceptar'], configuracion).ventana, null);
+  assert.equal(pasos([...abajo(7), 'derecha', 'aceptar'], configuracion).ajustes.continuar, false);
+  assert.equal(pasos([...abajo(8), 'derecha', 'aceptar'], configuracion).ajustes.menu, 'ninguno');
+  assert.equal(pasos([...abajo(9), 'aceptar'], configuracion).ventana, 'prueba-control');
+  assert.equal(pasos([...abajo(12), 'aceptar'], configuracion).ventana, null);
 });
 
 test('Restablecer pide una segunda pulsación y devuelve los ajustes de fábrica', () => {
   const cambiados = pasos(['ajustes', 'derecha', 'aceptar', 'abajo', 'derecha', 'aceptar']);
   assert.equal(cambiados.ajustes.crt, false);
   assert.equal(cambiados.ajustes.neon, 'bajo');
-  const una = pasos(['abajo', 'abajo', 'abajo', 'abajo', 'abajo', 'abajo', 'abajo', 'abajo', 'aceptar'], cambiados);
+  const una = pasos(['abajo', 'abajo', 'abajo', 'abajo', 'abajo', 'abajo', 'abajo', 'abajo', 'abajo', 'abajo', 'aceptar'], cambiados);
   assert.equal(una.confirmar, 'restablecer');
   assert.equal(una.ajustes.neon, 'bajo');
   const dos = pasos(['aceptar'], una);
@@ -163,7 +165,7 @@ test('un mando sin configurar abre «Configurar control» la primera vez que se 
 });
 
 test('«Probar control» enciende lo que se mantiene pulsado y anota el último código', () => {
-  const prueba = pasos(['ajustes', 'abajo', 'abajo', 'abajo', 'abajo', 'abajo', 'abajo', 'abajo', 'aceptar']);
+  const prueba = pasos(['ajustes', 'abajo', 'abajo', 'abajo', 'abajo', 'abajo', 'abajo', 'abajo', 'abajo', 'abajo', 'aceptar']);
   assert.equal(prueba.ventana, 'prueba-control');
   const pulsado = pasos([{ tipo: 'control', valor: { mando: 'x', control: 'a', pulsado: true } }, { tipo: 'crudo', valor: { mando: 'x', tipo: 'boton', codigo: 304, valor: 1 } }], prueba);
   assert.deepEqual(pulsado.prueba.pulsados, ['a']);
@@ -177,7 +179,7 @@ test('el pie sigue a la última entrada usada', () => {
 });
 
 test('Apagar y Reiniciar piden una segunda pulsación; moverse cancela la confirmación', () => {
-  const equipo = pasos(['ajustes', 'abajo', 'abajo', 'abajo', 'abajo', 'abajo', 'abajo', 'abajo', 'abajo']);
+  const equipo = pasos(['ajustes', 'abajo', 'abajo', 'abajo', 'abajo', 'abajo', 'abajo', 'abajo', 'abajo', 'abajo', 'abajo']);
   const una = pasos(['aceptar'], equipo);
   assert.equal(una.confirmar, 'apagar');
   assert.equal(una.equipo, null);

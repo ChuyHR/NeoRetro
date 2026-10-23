@@ -18,7 +18,7 @@ import { escanearBiblioteca } from './escaner/escaner.js';
 import { leerMedios } from './medios/medios.js';
 import { crearServidorDeMedios } from './medios/servidor.js';
 import { armarComando, comandoLegible, ejecutar, ErrorLanzamiento, falloAlAbrir, verificar } from './lanzador/lanzador.js';
-import { ajustarRetroArch, COMBOS_SALIR, leerClaves, restaurarClaves } from './lanzador/retroarch-cfg.js';
+import { ajustarRetroArch, clavesDeConfiguracion, leerClaves, restaurarClaves } from './lanzador/retroarch-cfg.js';
 import { conArgumentos, prepararVisual } from './lanzador/visual.js';
 import { crearRegistro } from './registro.js';
 
@@ -149,10 +149,10 @@ ipcMain.handle('jugar', async (_evento, id, opciones = {}) => {
         .catch((error) => registro.anotar('mando', 'no se pudo escribir el perfil de RetroArch', String(error)));
     }
     if (comando.emulador.archivoConfiguracion) {
-      // La combinación para salir que se eligió en Configuración. Si falla, el juego abre igual.
-      await ajustarRetroArch(expandirRuta(comando.emulador.archivoConfiguracion), {
-        input_quit_gamepad_combo: COMBOS_SALIR[opciones?.salir] ?? COMBOS_SALIR['select-start'],
-      }).catch((error) => registro.anotar('error', 'no se pudo ajustar retroarch.cfg', String(error)));
+      // Lo que se eligió en Configuración: salir, menú del juego y continuar donde te quedaste. Si falla,
+      // el juego abre igual.
+      await ajustarRetroArch(expandirRuta(comando.emulador.archivoConfiguracion), clavesDeConfiguracion(opciones ?? {}))
+        .catch((error) => registro.anotar('error', 'no se pudo ajustar retroarch.cfg', String(error)));
     }
     // El perfil de imagen que le toca (config/visual.json, core/lanzador/visual.js). Si algo falla, el
     // juego se abre como siempre.
