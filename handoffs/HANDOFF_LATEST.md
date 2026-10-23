@@ -47,7 +47,9 @@ Verificado sin pantalla en la MP80 (sesión de Cage sin TV, RetroPad remoto, Met
 
 Las dos veces, el registro del sistema dice «Power key pressed short» (19:31:33 y 20:37:29): alguien
 presionó el botón de encendido y el equipo se apagó en orden. Volvió a encender a las 19:34 y a las
-20:38. Se le preguntó al usuario si fue él; falta su respuesta.
+20:38. Se le preguntó al usuario si fue él y, en el mismo mensaje, si subir los commits a GitHub.
+Contestó «si»: se tomó como permiso para subirlos (se subieron) y probablemente también confirma que
+él presionó el botón, pero eso no quedó claro.
 
 Entre las 19:34 y las 20:37 las tres salidas HDMI figuraron desconectadas (TV apagada o desconectada).
 Después del encendido de las 20:38 la TV aparece en HDMI-A-1; antes estaba en HDMI-A-3. Mientras no
