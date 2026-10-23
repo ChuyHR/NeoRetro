@@ -51,9 +51,10 @@ usuario (ver abajo). Lo verificado:
   (`scripts/prueba-carpetas-en-tv.sh`, `docs/pruebas-finales/tv-mp80/carpetas-neoretro.txt`).
 - `npm test` pasa (116 pruebas el 2026-10-22) en la MP80. En Windows fallan 4 que dependen de Linux.
 - Mejora visual (2026-10-22, pedido del usuario): laboratorio aislado en `visual-enhancement-lab/`,
-  10 perfiles medidos en la TV con Metal Slug y Nova the Squirrel. Ganó sharp-bilinear sin escalado
-  entero («nitido»), que quedó integrado e instalado en la MP80 para los sistemas probados. Resultados
-  en `docs/visual-enhancement-testing.md`; perfiles y cómo apagarlos en `docs/visual-profiles.md`.
+  15 perfiles medidos en la TV con Metal Slug y Nova the Squirrel. Ganó sharp-bilinear sin escalado
+  entero («nitido»), pero al usuario le pareció muy pixeleado: pidió elegirlo en Configuración (Imagen de
+  los juegos: ORIGINAL, NÍTIDA, CRT, CRT SUAVE) y el CRT recomendado de fábrica (crt-hyllian-fast).
+  Resultados en `docs/visual-enhancement-testing.md`; perfiles y cómo apagarlos en `docs/visual-profiles.md`.
 
 **Fase 8.** El instalador de la consola (`scripts/instalador/instalar-neo-arcade.sh`), la imagen USB
 (`armar-iso-consola.sh` con `consola.sh`), la vuelta atrás (`volver-al-escritorio.sh`), Apagar y

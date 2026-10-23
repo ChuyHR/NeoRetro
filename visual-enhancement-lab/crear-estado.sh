@@ -9,7 +9,14 @@ COD="$(cd "$(dirname "$0")" && pwd)"
 LAB="$(dirname "$COD")"
 T="$LAB/trabajo"
 CORES="$HOME/.var/app/org.libretro.RetroArch/config/retroarch/cores"
-export XDG_RUNTIME_DIR="/run/user/$(id -u)" WAYLAND_DISPLAY=wayland-0
+# La sesión de la TV (Cage de Neo Arcade), salvo que ya se esté en otra (una sesión sin pantalla).
+export XDG_RUNTIME_DIR="/run/user/$(id -u)" WAYLAND_DISPLAY="${WAYLAND_DISPLAY:-wayland-0}"
+# Las pruebas se ven en la TV y le quitan el foco a lo que haya: con un juego abierto (el usuario
+# jugando), RetroArch lo pausaría. El 2026-10-22 pasó con una partida de Metal Slug 3.
+if pgrep -x retroarch >/dev/null; then
+  echo "Hay un juego abierto en la TV; no se corre para no interrumpirlo." >&2
+  exit 3
+fi
 
 rm -f "$T/states/nova.state"
 timeout 120 flatpak run org.libretro.RetroArch --config "$T/base.cfg" --appendconfig "$COD/perfiles/A-original.cfg" \

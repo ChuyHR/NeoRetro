@@ -21,6 +21,15 @@ El escalado entero es el más exacto, pero achica la imagen: en Neo Geo usa 896 
 un arcade vertical como 1941, 768. Queda disponible como perfil «entero», y el CRT ligero como
 «crt-ligero».
 
+**Actualización de la noche del 2026-10-22.**
+
+- El usuario probó «nitido» en la TV con Metal Slug 3 y dijo: «no veo mucho cambio, se ven muy
+  pixeleadas».
+- Se midieron cinco CRT más, en la mayoría a pantalla completa (sección «Segunda ronda: CRT»).
+- El usuario pidió que la imagen fuera configurable y que el CRT recomendado quedara de fábrica.
+- Quedó en Configuración → Imagen de los juegos, con «CRT» (crt-hyllian-fast) de fábrica, y «NÍTIDA»
+  como opción.
+
 ## Juegos de prueba
 
 | Juego | Sistema y núcleo | Resolución | Por qué | Licencia |
@@ -192,6 +201,45 @@ Para quien prefiera otra imagen quedan dos perfiles más:
 - **«crt-ligero»:** el aspecto de TV de tubo, con el costo de no tener shader.
 
 Cómo elegirlos está en [visual-profiles.md](visual-profiles.md).
+
+## Segunda ronda: CRT (2026-10-22, 18:57)
+
+Metal Slug, mismo cuadro y mismo método, a 1080p. «Pantalla» quiere decir sin escalado entero, a toda
+la altura de la TV, como «nitido». La hoja con la misma zona en cada uno está en
+[visual-comparison/comparacion-crt.png](visual-comparison/comparacion-crt.png).
+
+| Perfil | Imagen | FPS | ms sin límite | GPU 3D | GPU MHz | W GPU | W equipo |
+|---|---|---|---|---|---|---|---|
+| A original | 1440×1080 | 60.0 | 1.28 | 10.5 % | 96 | 0.07 | 3.22 |
+| F sharp-bilinear | 1440×1080 | 60.0 | 1.31 | 11.5 % | 92 | 0.08 | 3.18 |
+| K entero + crt-pi | 1196×896 | 60.0 | 1.31 | 12.8 % | 80 | 0.08 | 3.13 |
+| L pantalla + crt-lottes-fast | 1440×1080 | 60.0 | 3.78 | 61.3 % | 326 | 0.31 | 3.53 |
+| **M pantalla + crt-hyllian-fast** | 1440×1080 | 60.0 | 1.39 | 24.3 % | 121 | 0.11 | 3.21 |
+| N pantalla + crt-aperture | 1440×1080 | 60.0 | 6.07 | 64.3 % | 543 | 0.52 | 3.82 |
+| O pantalla + zfast-crt | 1440×1080 | 60.0 | 1.28 | 14.8 % | 106 | 0.09 | 3.27 |
+
+**Cuidado con esta ronda:**
+
+- La CPU y la memoria de RetroArch no valen aquí. El usuario tenía abierto Metal Slug 3 desde Neo
+  Arcade, y el muestreo tomó ese proceso.
+- Las pruebas se abrieron encima de su partida y RetroArch la pausó unos 6 minutos.
+- Ahora los scripts del laboratorio no corren si hay un juego abierto, y el muestreo toma el proceso
+  más nuevo.
+- La GPU sí vale: la partida del usuario estaba en pausa y no la usaba.
+
+**Lo que se vio:**
+
+- crt-hyllian-fast da líneas marcadas con bordes definidos y buen brillo, con poco costo. Se
+  recomendó, y el usuario lo pidió de fábrica.
+- crt-lottes-fast es el más suave y parecido a una TV de tubo, con costo medio. Queda como «CRT
+  SUAVE».
+- zfast-crt es el más barato, pero más oscuro.
+- crt-aperture es brillante pero pesado.
+- crt-pi con escalado entero queda oscuro y chico.
+
+**Por verificar en la TV:** crt-hyllian-fast se midió solo con Metal Slug. Falta la prueba de un juego
+de cada sistema (`probar-sistemas.sh M-pantalla-crt-hyllian-fast`). Los otros perfiles la pasaron, y
+si un shader no carga el juego se abre igual.
 
 ## Latencia
 

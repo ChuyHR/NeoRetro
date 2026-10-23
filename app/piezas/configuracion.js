@@ -1,8 +1,9 @@
 // Ventana de configuración. Del prototipo viene el efecto CRT y su estilo; lo demás (neón, animaciones,
-// volumen, color del tema, combinación para salir, el mando, apagar o reiniciar el equipo y
-// Restablecer) sigue ese mismo estilo. Cada
+// volumen, color del tema, combinación para salir, la imagen de los juegos, el mando, apagar o
+// reiniciar el equipo y Restablecer) sigue ese mismo estilo. «Efecto CRT» es el de la interfaz de Neo
+// Arcade; «Imagen de los juegos» es el perfil de RetroArch (core/lanzador/visual.js). Cada
 // fila es un ajuste: el borde del color del tema marca la opción elegida y el brillo marca el foco.
-import { SALIDAS, TEMAS } from '../ajustes.js';
+import { IMAGENES, SALIDAS, TEMAS } from '../ajustes.js';
 import { BOTONES } from '../estado.js';
 import { montar } from './dom.js';
 import { marcarFoco } from './foco.js';
@@ -25,6 +26,7 @@ export function crearConfiguracion(lienzo, { despachar }) {
       <div style="${FILA}"><span>Volumen</span><div style="display: flex; align-items: center; gap: 10px">${boton('volumen-menos', '-')}<span data-ref="volumen" style="min-width: 90px; text-align: center"></span>${boton('volumen-mas', '+')}</div></div>
       <div style="${FILA}"><span>Color del tema</span><div style="display: flex; gap: 10px">${Object.entries(TEMAS).map(([tema, color]) => boton(`tema-${tema}`, `${punto(color)}${NOMBRES_TEMA[tema]}`)).join('')}</div></div>
       <div style="${FILA}"><span>Salir del juego</span><div style="display: flex; gap: 10px">${Object.entries(SALIDAS).map(([salida, texto]) => boton(`salir-${salida}`, texto)).join('')}</div></div>
+      <div style="${FILA}"><span>Imagen de los juegos</span><div style="display: flex; gap: 10px">${Object.entries(IMAGENES).map(([imagen, texto]) => boton(`imagen-${imagen}`, texto)).join('')}</div></div>
       <div style="${FILA}"><span>Control</span><div style="display: flex; gap: 10px">${boton('probar-control', 'PROBAR')}${boton('configurar-control', 'CONFIGURAR')}</div></div>
       <span data-ref="mandos" style="margin-top: -6px; font-family: 'Share Tech Mono', monospace; font-size: 24px; color: #8997B8"></span>
       <div style="${FILA}"><span>Equipo</span><div style="display: flex; gap: 10px">${boton('apagar', 'APAGAR')}${boton('reiniciar', 'REINICIAR')}</div></div>
@@ -47,6 +49,7 @@ export function crearConfiguracion(lienzo, { despachar }) {
     ajustes.animaciones ? 'animaciones-si' : 'animaciones-no',
     `tema-${ajustes.tema}`,
     `salir-${ajustes.salir}`,
+    `imagen-${ajustes.imagen}`,
   ]);
 
   return {

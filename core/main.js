@@ -158,6 +158,7 @@ ipcMain.handle('jugar', async (_evento, id, opciones = {}) => {
     // juego se abre como siempre.
     const visual = await prepararVisual(configuracion.visual, {
       sistemaId: ubicado.sistema.id, juegoId: id, emulador: comando.emulador, carpeta: app.getPath('userData'),
+      preferido: opciones?.imagen, // Imagen de los juegos, en Configuración
     }).catch((error) => ({ perfil: null, argumentos: [], claves: [], motivo: `no se pudo preparar: ${error.message}` }));
     await registro.anotar('visual', visual.perfil ?? '-', visual.argumentos.length ? 'aplicado' : visual.motivo);
     const archivoRetroArch = comando.emulador.archivoConfiguracion ? expandirRuta(comando.emulador.archivoConfiguracion) : null;

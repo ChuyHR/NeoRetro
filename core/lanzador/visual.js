@@ -23,11 +23,14 @@ export async function driverDeVideo(emulador) {
   return texto.match(/^video_driver = "(.*)"$/m)?.[1] ?? null;
 }
 
-// El perfil que le toca a un juego: el suyo, el de su sistema o el predeterminado. null si la mejora
+// El perfil que le toca a un juego: el suyo; en un sistema con perfil, el que se eligió en Configuración
+// (preferido) o el del sistema; en los demás (3D o sin probar), el predeterminado. null si la mejora
 // está apagada o no hay configuración.
-export function elegirPerfil(visual, sistemaId, juegoId) {
+export function elegirPerfil(visual, sistemaId, juegoId, preferido = null) {
   if (!visual?.activo) return null;
-  return visual.porJuego?.[juegoId] ?? visual.porSistema?.[sistemaId] ?? visual.predeterminado ?? null;
+  if (visual.porJuego?.[juegoId]) return visual.porJuego[juegoId];
+  if (visual.porSistema?.[sistemaId]) return preferido && visual.perfiles?.[preferido] ? preferido : visual.porSistema[sistemaId];
+  return visual.predeterminado ?? null;
 }
 
 // Los ajustes del perfil como líneas de un .cfg de RetroArch. null si alguno no es válido: una clave
@@ -59,8 +62,8 @@ export async function ubicarShader(shader, emulador) {
 // Prepara el perfil de un juego. Devuelve { perfil, argumentos, claves, motivo }: sin argumentos, el
 // juego se abre como siempre; claves son las de retroarch.cfg que el perfil cambia (hay que
 // devolverlas al cerrar). carpeta es donde se escribe el .cfg del perfil (la de datos de la app).
-export async function prepararVisual(visual, { sistemaId, juegoId, emulador, carpeta }) {
-  const nombre = elegirPerfil(visual, sistemaId, juegoId);
+export async function prepararVisual(visual, { sistemaId, juegoId, emulador, carpeta, preferido = null }) {
+  const nombre = elegirPerfil(visual, sistemaId, juegoId, preferido);
   if (!nombre) return { perfil: null, argumentos: [], claves: [], motivo: 'mejora visual apagada' };
   if (!emulador?.perfilesVisuales) return { perfil: nombre, argumentos: [], claves: [], motivo: 'el emulador no usa perfiles' };
   const perfil = visual.perfiles?.[nombre];

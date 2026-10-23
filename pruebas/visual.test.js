@@ -50,6 +50,20 @@ test('a cada juego le toca su perfil, el de su sistema o el predeterminado', () 
   assert.equal(elegirPerfil(null, 'neogeo', 'neogeo/kof98.zip'), null);
 });
 
+test('la imagen elegida en Configuración vale en los sistemas con perfil, no en los demás', () => {
+  assert.equal(elegirPerfil(VISUAL, 'neogeo', 'neogeo/kof98.zip', 'entero'), 'entero');
+  assert.equal(elegirPerfil(VISUAL, 'neogeo', 'neogeo/kof98.zip', 'original'), 'original');
+  assert.equal(elegirPerfil(VISUAL, 'neogeo', 'neogeo/kof98.zip', 'no-existe'), 'nitido');
+  assert.equal(elegirPerfil(VISUAL, 'n64', 'n64/mario.z64', 'entero'), 'original'); // 3D: no se toca
+  assert.equal(elegirPerfil(VISUAL, 'neogeo', 'neogeo/mslug.zip', 'nitido'), 'entero'); // el perfil del juego manda
+});
+
+test('las opciones de Imagen de los juegos existen en config/visual.json', async () => {
+  const { IMAGENES, AJUSTES_INICIALES } = await import('../app/ajustes.js');
+  for (const imagen of Object.keys(IMAGENES)) assert.ok(configuracion.visual.perfiles[imagen], imagen);
+  assert.ok(configuracion.visual.perfiles[AJUSTES_INICIALES.imagen]);
+});
+
 test('un ajuste que podría colar otras claves en el .cfg se rechaza', () => {
   assert.deepEqual(lineasCfg({ video_scale_integer: 'true', video_smooth: false }), ['video_scale_integer = "true"', 'video_smooth = "false"']);
   assert.equal(lineasCfg({ 'video scale': 'true' }), null);

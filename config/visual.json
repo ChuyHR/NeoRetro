@@ -1,5 +1,5 @@
 {
-  "_nota": "Perfiles de imagen de RetroArch (docs/visual-profiles.md). activo en false apaga la mejora: todos los juegos se abren como antes. Cada perfil trae claves de retroarch.cfg (retroarch) y, si lleva, un shader con su ruta dentro de la carpeta de shaders de RetroArch: shader para el driver gl (GLSL) y shaderSlang para vulkan, glcore y d3d. A cada juego le toca el suyo (porJuego, con el id sistema/archivo), el de su sistema (porSistema) o el predeterminado. «nitido» ganó en el laboratorio (docs/visual-enhancement-testing.md) y va solo en los sistemas donde se probó; los demás siguen en «original». Para cambiarlo en la consola instalada se copia este archivo a ~/NeoRetro/config/ y se edita ahí.",
+  "_nota": "Perfiles de imagen de RetroArch (docs/visual-profiles.md). activo en false apaga la mejora: todos los juegos se abren como antes. Cada perfil trae claves de retroarch.cfg (retroarch) y, si lleva, un shader con su ruta dentro de la carpeta de shaders de RetroArch: shader para el driver gl (GLSL) y shaderSlang para vulkan, glcore y d3d. A cada juego le toca el suyo (porJuego, con el id sistema/archivo); en los sistemas de porSistema, el que se eligió en Configuración (Imagen de los juegos: original, nitido, crt o crt-suave) o, si no llega ninguno, el de porSistema; en los demás, el predeterminado. Los valores salieron del laboratorio (docs/visual-enhancement-testing.md); el usuario pidió de fábrica «crt». Para cambiarlo en la consola instalada se copia este archivo a ~/NeoRetro/config/ y se edita ahí.",
   "activo": true,
   "predeterminado": "original",
   "perfiles": {
@@ -15,6 +15,24 @@
       },
       "shader": "shaders_glsl/interpolation/sharp-bilinear-simple.glslp",
       "shaderSlang": "shaders_slang/pixel-art-scaling/sharp-bilinear-simple.slangp"
+    },
+    "crt": {
+      "descripcion": "CRT a pantalla completa con crt-hyllian-fast: líneas de barrido marcadas y bordes definidos. El que se recomendó y el de fábrica: con Metal Slug, 24 % de GPU a 121 MHz.",
+      "retroarch": {
+        "video_scale_integer": "false",
+        "video_shader_enable": "true"
+      },
+      "shader": "shaders_glsl/crt/crt-hyllian-fast.glslp",
+      "shaderSlang": "shaders_slang/crt/crt-hyllian-fast.slangp"
+    },
+    "crt-suave": {
+      "descripcion": "CRT a pantalla completa con crt-lottes-fast: el más parecido a una TV de tubo, más suave. Con Metal Slug, 61 % de GPU a 326 MHz.",
+      "retroarch": {
+        "video_scale_integer": "false",
+        "video_shader_enable": "true"
+      },
+      "shader": "shaders_glsl/crt/crt-lottes-fast.glslp",
+      "shaderSlang": "shaders_slang/crt/crt-lottes-fast.slangp"
     },
     "entero": {
       "descripcion": "Escalado entero exacto, sin shader. Cada pixel mide lo mismo, pero la imagen queda más chica (en Neo Geo a 1080p, 896 de 1080 líneas; en arcade vertical, 768).",
@@ -34,18 +52,18 @@
     }
   },
   "porSistema": {
-    "arcade": "nitido",
-    "neogeo": "nitido",
-    "cps": "nitido",
-    "nes": "nitido",
-    "snes": "nitido",
-    "gb": "nitido",
-    "gbc": "nitido",
-    "gba": "nitido",
-    "mastersystem": "nitido",
-    "megadrive": "nitido",
-    "gamegear": "nitido",
-    "pcengine": "nitido"
+    "arcade": "crt",
+    "neogeo": "crt",
+    "cps": "crt",
+    "nes": "crt",
+    "snes": "crt",
+    "gb": "crt",
+    "gbc": "crt",
+    "gba": "crt",
+    "mastersystem": "crt",
+    "megadrive": "crt",
+    "gamegear": "crt",
+    "pcengine": "crt"
   },
   "porJuego": {}
 }

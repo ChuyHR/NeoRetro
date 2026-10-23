@@ -14,7 +14,14 @@ LAB="$(dirname "$COD")"
 T="$LAB/trabajo"
 R="$LAB/resultados/$(date +%Y%m%d-%H%M)"
 CORES="$HOME/.var/app/org.libretro.RetroArch/config/retroarch/cores"
-export XDG_RUNTIME_DIR="/run/user/$(id -u)" WAYLAND_DISPLAY=wayland-0
+# La sesión de la TV (Cage de Neo Arcade), salvo que ya se esté en otra (una sesión sin pantalla).
+export XDG_RUNTIME_DIR="/run/user/$(id -u)" WAYLAND_DISPLAY="${WAYLAND_DISPLAY:-wayland-0}"
+# Las pruebas se ven en la TV y le quitan el foco a lo que haya: con un juego abierto (el usuario
+# jugando), RetroArch lo pausaría. El 2026-10-22 pasó con una partida de Metal Slug 3.
+if pgrep -x retroarch >/dev/null; then
+  echo "Hay un juego abierto en la TV; no se corre para no interrumpirlo." >&2
+  exit 3
+fi
 CUADROS_SIN_LIMITE=3000
 CUADROS_TIEMPO_REAL=1800
 mkdir -p "$R"/{capturas,hud,gpu,proc,registros}
@@ -51,7 +58,8 @@ hud() { echo "GALLIUM_HUD=fps,frametime,cpu GALLIUM_HUD_VISIBLE=false GALLIUM_HU
 # CPU y memoria del proceso de RetroArch entre el segundo 5 y el 25 del tiempo real.
 muestrear_proceso() { # <archivo>
   local pid=""
-  for _ in $(seq 100); do pid=$(pgrep -x retroarch | head -1); [ -n "$pid" ] && break; sleep 0.1; done
+  # El más nuevo: si ya había un juego abierto (el del usuario), no es el que se mide.
+  for _ in $(seq 100); do pid=$(pgrep -n -x retroarch); [ -n "$pid" ] && break; sleep 0.1; done
   [ -z "$pid" ] && { echo "sin proceso" >"$1"; return; }
   sleep 5
   local a t0 b t1

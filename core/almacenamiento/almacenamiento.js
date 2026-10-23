@@ -17,12 +17,14 @@ export const AJUSTES_INICIALES = Object.freeze({
   volumen: 70,
   tema: 'azul',
   salir: 'select-start',
+  imagen: 'crt',
 });
 
 const OPCIONES = {
   neon: ['alto', 'bajo'],
   tema: ['azul', 'magenta', 'violeta', 'naranja'],
   salir: ['select-start', 'mantener-start', 'lr-select-start'],
+  imagen: ['original', 'nitido', 'crt', 'crt-suave'],
 };
 const PERFILES = ['normal'];
 

@@ -100,6 +100,14 @@ Neo Arcade lee los juegos nuevos al volver a abrirse (o al reiniciar la consola)
 - **Para salir de un juego**: Select + Start (en Configuración puedes cambiarlo a mantener Start o a
   LB + RB + Select + Start), o Esc en el teclado. En el mando de Xbox son View + Menú; en un tablero,
   moneda + Start. Mantén el primero y aprieta el segundo.
+- **Cómo se ven los juegos**: Configuración → Imagen de los juegos.
+  - CRT (de fábrica) imita la pantalla de las máquinas de arcade.
+  - CRT SUAVE se parece más a una TV de tubo.
+  - NÍTIDA deja los píxeles parejos y definidos.
+  - ORIGINAL no cambia nada.
+
+  Vale para los juegos 2D. Los de Nintendo 64, PlayStation y Dreamcast se ven igual con cualquier
+  opción.
 - **Si un mando deja de responder a ratos**, revisa el cable: uno dañado o que solo sirve para cargar
   hace que el equipo lo pierda y lo vuelva a encontrar cada pocos segundos. Prueba otro cable u otro
   puerto.

@@ -61,7 +61,7 @@ xbox pulsar abajo; xbox pulsar abajo; xbox pulsar a; sleep 0.6; captura 05b-deta
 xbox pulsar b; xbox pulsar arriba; xbox pulsar arriba; sleep 0.5
 xbox pulsar rb; sleep 0.5; captura 06-sistema-siguiente
 xbox pulsar menu; sleep 0.6; captura 07-configuracion
-for fila in 1 2 3 4 5 6; do xbox pulsar abajo; done # la fila de Control, en PROBAR
+for fila in 1 2 3 4 5 6 7; do xbox pulsar abajo; done # la fila de Control, en PROBAR
 xbox pulsar a; sleep 0.5
 xbox bajar a; xbox bajar rt; sleep 0.5; captura 08-probar-control-a-y-rt; xbox subir a; xbox subir rt
 xbox bajar b; sleep 2.5; xbox subir b; sleep 0.5; captura 09-tras-mantener-b

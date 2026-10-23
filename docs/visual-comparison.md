@@ -63,3 +63,16 @@ Además, no cuesta nada medible: la GPU sigue en su frecuencia mínima.
 
 El CRT es cuestión de gusto. Por eso «crt-ligero» queda como perfil para quien lo quiera, sin ser el
 predeterminado.
+
+## Los CRT a pantalla completa (segunda ronda)
+
+Al ver «nitido» en la TV, al usuario le pareció que el cambio era poco y que se veía muy pixeleado.
+[comparacion-crt.png](visual-comparison/comparacion-crt.png) compara hoy, sharp-bilinear y cinco CRT,
+casi todos sin achicar la imagen.
+
+- **crt-hyllian-fast** quedó de fábrica («CRT» en Configuración): funde los píxeles en líneas de
+  barrido, conserva los bordes y el brillo, y cuesta poco.
+- **crt-lottes-fast** («CRT SUAVE») es el más parecido a una TV de tubo.
+
+Los recortes están ampliados al doble; a la distancia de la TV, todos los CRT se ven más suaves que
+aquí.

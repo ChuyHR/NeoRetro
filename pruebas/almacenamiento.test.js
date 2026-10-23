@@ -22,14 +22,15 @@ test('solo se guarda lo que tiene la forma esperada', () => {
     ultimoPorSistema: { snes: 'snes/a.sfc', malo: 7 },
     ultimoSistema: 'snes',
     perfil: 'administrador',
-    ajustes: { crt: false, neon: 'cegador', volumen: 250, tema: 'magenta', salir: 'mantener-start', extra: 1 },
+    ajustes: { crt: false, neon: 'cegador', volumen: 250, tema: 'magenta', salir: 'mantener-start', imagen: 'crt-suave', extra: 1 },
     otro: 'campo',
   });
   assert.deepEqual(limpio.favoritos, ['snes/a.sfc']);
   assert.deepEqual(limpio.recientes, [{ id: 'x', fecha: '2026-10-20T10:00:00Z' }]);
   assert.deepEqual(limpio.ultimoPorSistema, { snes: 'snes/a.sfc' });
   assert.equal(limpio.perfil, 'normal');
-  assert.deepEqual(limpio.ajustes, { ...AJUSTES_INICIALES, crt: false, tema: 'magenta', salir: 'mantener-start' });
+  assert.deepEqual(limpio.ajustes, { ...AJUSTES_INICIALES, crt: false, tema: 'magenta', salir: 'mantener-start', imagen: 'crt-suave' });
+  assert.equal(limpiarDatos({ ajustes: { imagen: 'hq9x' } }).ajustes.imagen, AJUSTES_INICIALES.imagen);
   assert.equal(limpio.otro, undefined);
   const muchos = limpiarDatos({ recientes: Array.from({ length: 80 }, (_, i) => ({ id: `j${i}`, fecha: '2026-10-20T10:00:00Z' })) });
   assert.equal(muchos.recientes.length, MAX_RECIENTES);

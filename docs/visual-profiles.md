@@ -1,8 +1,17 @@
 # Perfiles de imagen
 
 Neo Arcade aplica a cada juego de RetroArch un perfil de imagen (escalado y shader) antes de abrirlo.
-El usuario no configura nada: el perfil sale del sistema del juego. Por qué se eligieron estos valores,
-en [visual-enhancement-testing.md](visual-enhancement-testing.md).
+No hace falta configurar cada juego. La imagen se elige una vez en **Configuración → Imagen de los
+juegos**:
+
+| Opción | Perfil |
+|---|---|
+| ORIGINAL | Sin cambios |
+| NÍTIDA | Píxeles parejos |
+| **CRT** (de fábrica) | crt-hyllian-fast |
+| CRT SUAVE | crt-lottes-fast |
+
+Por qué se eligieron estos valores, en [visual-enhancement-testing.md](visual-enhancement-testing.md).
 
 ## Qué se implementó
 
@@ -14,12 +23,19 @@ en [visual-enhancement-testing.md](visual-enhancement-testing.md).
 | `core/lanzador/retroarch-cfg.js` | Lee y devuelve las claves que el perfil cambia en `retroarch.cfg` |
 | `core/configuracion.js` | Lee `visual.json`; si falta o tiene un error, sigue sin perfiles |
 | `core/main.js` | Al abrir un juego: aplica el perfil, devuelve `retroarch.cfg` al cerrar y vuelve a abrir sin perfil si RetroArch se cerró al empezar |
-| `pruebas/visual.test.js` | 11 pruebas de lo anterior |
+| `app/ajustes.js`, `app/estado.js`, `app/piezas/configuracion.js` | La fila «Imagen de los juegos» de Configuración y su valor de fábrica |
+| `app/inicio.js` | Manda la imagen elegida junto con la orden de abrir el juego |
+| `core/almacenamiento/almacenamiento.js` | Guarda la imagen elegida y descarta valores que no existen |
+| `pruebas/visual.test.js` | 13 pruebas de los perfiles; las de Configuración van en `estado.test.js` y `almacenamiento.test.js` |
 
 ## Cómo se aplica
 
-1. Al abrir un juego, el perfil es el del juego (`porJuego`), si no el de su sistema (`porSistema`),
-   y si no el predeterminado.
+1. Al abrir un juego se elige su perfil, en este orden:
+   - el del juego, si tiene (`porJuego`);
+   - en un sistema con perfil (`porSistema`), el que se eligió en Configuración, que llega con la
+     orden de abrir el juego;
+   - si no llegó ninguno, el de `porSistema`;
+   - en los demás sistemas, el predeterminado.
 2. Neo Arcade escribe las claves del perfil en `retroarch-perfil-visual.cfg`, en su carpeta de datos
    (en la MP80, `~/.config/neo-arcade/`).
 3. RetroArch se abre con `--appendconfig <ese archivo>` y `--set-shader=<shader>`. El
@@ -34,16 +50,18 @@ pasa `--set-shader=` vacío, que además apaga los presets automáticos.
 
 ## Los perfiles
 
-| Perfil | Escalado | Shader | Para qué |
+| Perfil | Escalado | Shader | En Configuración |
 |---|---|---|---|
-| `original` | El de RetroArch | ninguno | Lo de antes: no agrega nada al comando |
-| `nitido` | Llena la altura | sharp-bilinear-simple | El predeterminado de los sistemas probados |
-| `entero` | Entero | ninguno | Píxeles exactos, imagen más chica |
-| `crt-ligero` | Entero | zfast-crt | Aspecto de TV de tubo |
+| `original` | El de RetroArch | ninguno | ORIGINAL. No agrega nada al comando |
+| `nitido` | Llena la altura | sharp-bilinear-simple | NÍTIDA. El ganador del laboratorio por fidelidad |
+| `crt` | Llena la altura | crt-hyllian-fast | CRT. **El de fábrica**: lo pidió el usuario, que veía la imagen nítida demasiado pixeleada |
+| `crt-suave` | Llena la altura | crt-lottes-fast | CRT SUAVE. El más parecido a una TV de tubo |
+| `entero` | Entero | ninguno | Solo en `visual.json`. Píxeles exactos, imagen más chica |
+| `crt-ligero` | Entero | zfast-crt | Solo en `visual.json` |
 
-`nitido` va en arcade, Neo Geo, CPS, NES, SNES, Game Boy, Game Boy Color, GBA, Master System, Mega
-Drive, Game Gear y PC Engine. Los demás sistemas se quedan en `original`: son 3D (Nintendo 64,
-PlayStation, Dreamcast) o no se probaron.
+La imagen de Configuración se aplica en estos sistemas: arcade, Neo Geo, CPS, NES, SNES, Game Boy, Game
+Boy Color, GBA, Master System, Mega Drive, Game Gear y PC Engine. Los demás se quedan en `original`:
+son 3D (Nintendo 64, PlayStation, Dreamcast) o no se probaron.
 
 ## Formato de `visual.json`
 
@@ -59,7 +77,7 @@ PlayStation, Dreamcast) o no se probaron.
       "shaderSlang": "shaders_slang/pixel-art-scaling/sharp-bilinear-simple.slangp"
     }
   },
-  "porSistema": { "neogeo": "nitido" },
+  "porSistema": { "neogeo": "crt" },
   "porJuego": { "neogeo/mslug.zip": "crt-ligero" }
 }
 ```
@@ -92,8 +110,10 @@ Neo Arcade usa ese archivo en lugar del suyo y lo lee al arrancar, así que desp
 
 ## Cómo desactivar las mejoras
 
-- **Todas:** `"activo": false` en `~/NeoRetro/config/visual.json`. Todos los juegos se abren con el
-  comando de antes.
+- **Desde la TV:** Configuración → Imagen de los juegos → ORIGINAL. Vale para el siguiente juego que
+  se abra.
+- **Todas, también las de `porJuego`:** `"activo": false` en `~/NeoRetro/config/visual.json`. Todos
+  los juegos se abren con el comando de antes.
 - **Un sistema o un juego:** se les pone `"original"`.
 - **Volver a la configuración original:** basta con borrar `~/NeoRetro/config/visual.json` (si se
   creó) para regresar a los valores de la app, o poner `"activo": false` para no usar ninguno.

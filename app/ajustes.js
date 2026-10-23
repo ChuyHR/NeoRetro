@@ -9,6 +9,7 @@ export const AJUSTES_INICIALES = Object.freeze({
   volumen: 70,
   tema: 'azul',
   salir: 'select-start',
+  imagen: 'crt',
 });
 
 // Colores del tema, tomados de la paleta del prototipo. El azul es el de fábrica.
@@ -24,6 +25,16 @@ export const SALIDAS = {
   'select-start': 'SELECT + START',
   'mantener-start': 'MANTENER START',
   'lr-select-start': 'LB + RB + SELECT + START',
+};
+
+// Imagen de los juegos retro: el perfil de config/visual.json que se usa en los sistemas que tienen uno
+// (docs/visual-profiles.md). «nitido» ganó en el laboratorio; el usuario pidió de fábrica el CRT que se
+// le recomendó (crt-hyllian-fast), el más nítido y ligero de los CRT a pantalla completa.
+export const IMAGENES = {
+  original: 'ORIGINAL',
+  nitido: 'NÍTIDA',
+  crt: 'CRT',
+  'crt-suave': 'CRT SUAVE',
 };
 
 export const PASO_VOLUMEN = 10;
