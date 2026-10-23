@@ -49,7 +49,11 @@ usuario (ver abajo). Lo verificado:
   regresión de las fases 3, 4 y 6 en la TV. Ahí está también qué pide la skill que el plan no tiene.
 - Carpetas de la consola en `~/NeoRetro` (ajuste 10), probadas en la TV sin instalar la consola
   (`scripts/prueba-carpetas-en-tv.sh`, `docs/pruebas-finales/tv-mp80/carpetas-neoretro.txt`).
-- `npm test` pasa (101 pruebas) en WSL y en la MP80. En Windows fallan 4 que dependen de Linux.
+- `npm test` pasa (116 pruebas el 2026-10-22) en la MP80. En Windows fallan 4 que dependen de Linux.
+- Mejora visual (2026-10-22, pedido del usuario): laboratorio aislado en `visual-enhancement-lab/`,
+  10 perfiles medidos en la TV con Metal Slug y Nova the Squirrel. Ganó sharp-bilinear sin escalado
+  entero («nitido»), que quedó integrado e instalado en la MP80 para los sistemas probados. Resultados
+  en `docs/visual-enhancement-testing.md`; perfiles y cómo apagarlos en `docs/visual-profiles.md`.
 
 **Fase 8.** El instalador de la consola (`scripts/instalador/instalar-neo-arcade.sh`), la imagen USB
 (`armar-iso-consola.sh` con `consola.sh`), la vuelta atrás (`volver-al-escritorio.sh`), Apagar y
@@ -375,7 +379,11 @@ Electron con JavaScript sin framework ni paso de compilación: lo que está en `
   también se avisa. `main.js` escribe antes en RetroArch la combinación para salir
   (`retroarch-cfg.js`) y los perfiles de los mandos, deja ver «Abriendo…» 1.2 s, oculta la ventana,
   espera a que el emulador cierre y la vuelve a mostrar con foco (encima de todo durante 300 ms, como
-  pide la tabla de riesgos; también al abrir la app). `core/registro.js` anota cada lectura,
+  pide la tabla de riesgos; también al abrir la app). Antes de abrir un juego de RetroArch aplica su
+  perfil de imagen (`core/lanzador/visual.js`, `config/visual.json`): lo pasa con `--appendconfig` y
+  `--set-shader`, devuelve al cerrar las claves que RetroArch guardó del perfil en `retroarch.cfg`, y si
+  algo falla abre el juego como siempre. Ver `docs/visual-profiles.md`; los valores salieron del
+  laboratorio `visual-enhancement-lab/` (`docs/visual-enhancement-testing.md`). `core/registro.js` anota cada lectura,
   lanzamiento (con código de salida, duración y número de proceso), mando y error en
   `registros/neo-arcade.log`, y los emuladores con su versión cinco segundos después de abrir.
 - `core/entrada/` lee los mandos (ajuste 4). `lector-mandos.py` (solo biblioteca estándar de Python)

@@ -125,6 +125,19 @@ Hipótesis que el laboratorio debe confirmar o descartar:
 
 ## Compatibilidad y rendimiento esperado
 
-Hipótesis, sin medir todavía: el escalado entero no cuesta nada, los shaders de una pasada caben con
-holgura en la GPU de la MP80 a 1080p, y crt-royale es el más probable en fallar. Los resultados medidos
-están en [visual-enhancement-testing.md](visual-enhancement-testing.md).
+Hipótesis antes de medir: el escalado entero no cuesta nada, los shaders de una pasada caben con
+holgura en la GPU de la MP80 a 1080p, y crt-royale es el más probable en fallar.
+
+## Lo que respondió el laboratorio
+
+- **`--appendconfig` sí se aplica, pero RetroArch lo guarda al cerrar** en su `retroarch.cfg` cuando
+  `config_save_on_exit` está activo. Neo Arcade lee esas claves antes del juego y las devuelve al
+  cerrar.
+- **El shader no se carga desde un `.cfg`** en RetroArch 1.22: va con `--set-shader`.
+- **Rendimiento:** todos los perfiles, crt-royale incluido, sostienen 60 FPS a 1080p y a 720p.
+  crt-royale no falla, pero lleva la GPU al 60 % y sube el consumo del equipo 1.4 W.
+- **Ganador:** sharp-bilinear sin escalado entero. El escalado entero sí deja la imagen chica: 71 % de
+  la altura en arcade vertical y 89 % en NES.
+
+Detalle en [visual-enhancement-testing.md](visual-enhancement-testing.md),
+[visual-comparison.md](visual-comparison.md) y [visual-profiles.md](visual-profiles.md).

@@ -27,6 +27,8 @@ configuración de Neo Arcade. Lo que se encontró está en `docs/visual-enhancem
 | `crear-estado.sh` | Deja el estado de Nova the Squirrel dentro del primer nivel |
 | `medir.sh` | Corre cada juego con cada perfil y guarda capturas, tiempos de cuadro, GPU, CPU y memoria |
 | `resumir.mjs` | Convierte una medición en `resultados.json` y `tabla.md` |
+| `probar-fallas.sh` | Qué hace RetroArch con un shader que no existe o no compila, un perfil que falta, una clave rara, y si guarda el perfil al cerrar |
+| `probar-sistemas.sh` | Un perfil con un juego de cada sistema de la biblioteca: que abra y que el shader cargue |
 | `comparar.py` | Hojas con la misma zona del juego en cada perfil |
 | `control-remoto.py` | RetroPad y comandos de RetroArch por la red local |
 
@@ -41,7 +43,10 @@ cd ~/visual-enhancement-lab/codigo
 bash preparar.sh
 bash crear-estado.sh
 bash medir.sh                 # o solo algunos perfiles: bash medir.sh B-entero C-entero-zfast-crt
+JUEGOS=mslug bash medir.sh    # solo un juego
 node resumir.mjs ../resultados/ultimo
+bash probar-fallas.sh
+bash probar-sistemas.sh F-pantalla-sharp-bilinear
 ```
 
 Cada medición queda en `~/visual-enhancement-lab/resultados/<fecha>/`. Para borrar todo el
