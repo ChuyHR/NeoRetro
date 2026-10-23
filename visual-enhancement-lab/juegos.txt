@@ -1,0 +1,11 @@
+# Juegos de prueba: id|núcleo|archivo|cuadro de la captura|estado inicial (en trabajo/estados) o -
+# __LAB__ es la carpeta del laboratorio en la MP80. Los juegos no van en el repositorio.
+#
+# nova: Nova the Squirrel (NES), juego casero con licencia GPL-3.0, de su repositorio oficial
+# (NovaSquirrel/NovaTheSquirrel, v1.0.6a). No tiene demostración: el estado «nova» lo deja dentro del
+# primer nivel (crear-estado.sh).
+# mslug: Metal Slug (Neo Geo, FBNeo), la copia que el usuario tiene en su biblioteca de la MP80. Su
+# demostración, arrancando con la memoria de la máquina limpia, muestra en el cuadro 7200 dos
+# explosiones, soldados, un paracaídas, el fondo con detalle y el texto de créditos.
+nova|mesen|__LAB__/juegos/nova.nes|600|nova
+mslug|fbneo|~/NeoRetro/roms/neogeo/mslug.zip|7200|-

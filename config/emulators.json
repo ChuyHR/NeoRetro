@@ -1,5 +1,5 @@
 {
-  "_nota": "Emuladores instalados desde Flathub (docs/decision-tecnica.md). comando es lo que reemplaza a {emulador} en systems.json. flatpak se usa para comprobar que la app está instalada antes de lanzar. carpetaNucleos y carpetaBios son las que usa la versión de Flathub (comprobadas en la MP80 con RetroArch 1.22.2). carpetaPerfilesMando es donde RetroArch busca los perfiles de mando: scripts/configurar-retroarch.sh copia ahí los que trae y Neo Arcade agrega los de los mandos que se configuran en Ajustes. ~ es la carpeta del usuario.",
+  "_nota": "Emuladores instalados desde Flathub (docs/decision-tecnica.md). comando es lo que reemplaza a {emulador} en systems.json. flatpak se usa para comprobar que la app está instalada antes de lanzar. carpetaNucleos y carpetaBios son las que usa la versión de Flathub (comprobadas en la MP80 con RetroArch 1.22.2). carpetaPerfilesMando es donde RetroArch busca los perfiles de mando: scripts/configurar-retroarch.sh copia ahí los que trae y Neo Arcade agrega los de los mandos que se configuran en Ajustes. perfilesVisuales indica que el emulador acepta los perfiles de imagen de config/visual.json. ~ es la carpeta del usuario.",
   "emuladores": {
     "retroarch": {
       "nombre": "RetroArch",
@@ -8,7 +8,16 @@
       "carpetaNucleos": "~/.var/app/org.libretro.RetroArch/config/retroarch/cores",
       "carpetaBios": "~/.var/app/org.libretro.RetroArch/config/retroarch/system",
       "carpetaPerfilesMando": "~/.var/app/org.libretro.RetroArch/config/retroarch/autoconfig",
-      "archivoConfiguracion": "~/.var/app/org.libretro.RetroArch/config/retroarch/retroarch.cfg"
+      "archivoConfiguracion": "~/.var/app/org.libretro.RetroArch/config/retroarch/retroarch.cfg",
+      "perfilesVisuales": true,
+      "shaders": {
+        "_nota": "enEmulador es la carpeta de shaders como la ve RetroArch dentro de Flatpak; enEquipo, la misma vista desde fuera, para comprobar que el shader de un perfil exista antes de abrir el juego (instalación de todo el sistema o solo del usuario).",
+        "enEmulador": "/app/share/libretro/shaders",
+        "enEquipo": [
+          "/var/lib/flatpak/app/org.libretro.RetroArch/current/active/files/share/libretro/shaders",
+          "~/.local/share/flatpak/app/org.libretro.RetroArch/current/active/files/share/libretro/shaders"
+        ]
+      }
     },
     "dolphin": {
       "nombre": "Dolphin",

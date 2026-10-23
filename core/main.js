@@ -18,7 +18,8 @@ import { escanearBiblioteca } from './escaner/escaner.js';
 import { leerMedios } from './medios/medios.js';
 import { crearServidorDeMedios } from './medios/servidor.js';
 import { armarComando, comandoLegible, ejecutar, ErrorLanzamiento, falloAlAbrir, verificar } from './lanzador/lanzador.js';
-import { ajustarRetroArch, COMBOS_SALIR } from './lanzador/retroarch-cfg.js';
+import { ajustarRetroArch, COMBOS_SALIR, leerClaves, restaurarClaves } from './lanzador/retroarch-cfg.js';
+import { conArgumentos, prepararVisual } from './lanzador/visual.js';
 import { crearRegistro } from './registro.js';
 
 // Los medios llegan a la página por medio://, que el navegador debe tratar como origen seguro y al que
@@ -69,6 +70,9 @@ const configuracion = await cargarConfiguracion();
 // discos se quedan en la de Electron.
 const CARPETAS = carpetasDelUsuario(configuracion, app.getPath('userData'));
 const registro = crearRegistro(CARPETAS.registros);
+if (configuracion.errorVisual) {
+  registro.anotar('error', 'config/visual.json no se pudo leer; los juegos se abren sin perfil visual', configuracion.errorVisual);
+}
 const esperar = (ms) => new Promise((listo) => setTimeout(listo, ms));
 let ventana = null;
 let enJuego = false;
@@ -150,12 +154,34 @@ ipcMain.handle('jugar', async (_evento, id, opciones = {}) => {
         input_quit_gamepad_combo: COMBOS_SALIR[opciones?.salir] ?? COMBOS_SALIR['select-start'],
       }).catch((error) => registro.anotar('error', 'no se pudo ajustar retroarch.cfg', String(error)));
     }
+    // El perfil de imagen que le toca (config/visual.json, core/lanzador/visual.js). Si algo falla, el
+    // juego se abre como siempre.
+    const visual = await prepararVisual(configuracion.visual, {
+      sistemaId: ubicado.sistema.id, juegoId: id, emulador: comando.emulador, carpeta: app.getPath('userData'),
+    }).catch((error) => ({ perfil: null, argumentos: [], claves: [], motivo: `no se pudo preparar: ${error.message}` }));
+    await registro.anotar('visual', visual.perfil ?? '-', visual.argumentos.length ? 'aplicado' : visual.motivo);
+    const archivoRetroArch = comando.emulador.archivoConfiguracion ? expandirRuta(comando.emulador.archivoConfiguracion) : null;
+    const previas = visual.argumentos.length && archivoRetroArch
+      ? await leerClaves(archivoRetroArch, visual.claves).catch(() => null)
+      : null;
+    // RetroArch guarda al cerrar lo del perfil en su retroarch.cfg: se devuelve como estaba.
+    const devolver = () => previas && restaurarClaves(archivoRetroArch, previas)
+      .catch((error) => registro.anotar('error', 'no se pudo devolver retroarch.cfg tras el perfil visual', String(error)));
     mandos?.soltarTodo();
     await esperar(PANTALLA_LANZAMIENTO_MS);
     if (OCULTAR_AL_JUGAR) ventana.hide();
-    const resultado = await ejecutar(comando);
+    let usado = conArgumentos(comando, visual.argumentos);
+    let resultado = await ejecutar(usado);
+    await devolver();
+    if (usado !== comando && falloAlAbrir(resultado)) {
+      // La mejora nunca impide jugar: sin el perfil, el juego se abre otra vez.
+      await registro.anotar('visual', visual.perfil, `el emulador se cerró al abrir con el perfil (salida ${resultado.codigo}); se abre sin él`,
+        (resultado.errores ?? '').replace(/\s*\n\s*/g, ' | '));
+      usado = comando;
+      resultado = await ejecutar(comando);
+    }
     const { codigo, senal, duracionMs, pid } = resultado;
-    await registro.anotar('lanzamiento', comandoLegible(comando), `salida ${codigo ?? senal}`, `${duracionMs} ms`, `proceso ${pid}`);
+    await registro.anotar('lanzamiento', comandoLegible(usado), `salida ${codigo ?? senal}`, `${duracionMs} ms`, `proceso ${pid}`);
     if (falloAlAbrir(resultado)) {
       // En un renglón, para que el registro siga siendo uno por evento.
       if (resultado.errores) await registro.anotar('error', 'salida de errores del emulador', resultado.errores.replace(/\s*\n\s*/g, ' | '));

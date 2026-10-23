@@ -1,5 +1,5 @@
-// Lee config/systems.json, config/emulators.json, config/biblioteca.json, config/gamepad-map.json y
-// config/sistema.json.
+// Lee config/systems.json, config/emulators.json, config/biblioteca.json, config/gamepad-map.json,
+// config/sistema.json y, si está, config/visual.json.
 // NEO_ARCADE_CONFIG señala una carpeta de configuración propia: en la consola instalada es
 // ~/NeoRetro/config, y en las pruebas una carpeta aparte. Cada archivo se busca primero ahí y, si no
 // está, en la de la app; así basta con copiar ahí el que se quiera cambiar, y los demás siguen al día
@@ -35,11 +35,19 @@ export async function cargarConfiguracion(entorno = process.env) {
     leer('gamepad-map.json'),
     leer('sistema.json'),
   ]);
+  // Los perfiles de imagen son opcionales: si visual.json falta o tiene un error, los juegos se abren
+  // como antes. El error se guarda para anotarlo en el registro.
+  const { visual, errorVisual } = await leer('visual.json').then(
+    (datos) => ({ visual: datos, errorVisual: null }),
+    (error) => ({ visual: null, errorVisual: error.code === 'ENOENT' ? null : String(error.message) }),
+  );
   return {
     sistemas,
     emuladores,
     mapaMando,
     sistema,
+    visual,
+    errorVisual,
     carpetaRoms: expandirRuta(entorno.NEO_ARCADE_ROMS ?? biblioteca.roms),
     carpetaMedios: expandirRuta(entorno.NEO_ARCADE_MEDIOS ?? biblioteca.medios),
     // Opcionales: dónde va lo que se recuerda (datos-usuario.json, mandos.json) y el registro. Sin

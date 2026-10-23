@@ -21,6 +21,30 @@ export function conClaves(texto, claves) {
   return resultado;
 }
 
+// Quita del texto las líneas de esas claves.
+export function sinClaves(texto, claves) {
+  return claves.reduce((resultado, clave) => resultado.replace(new RegExp(`^${clave} = .*\\n?`, 'm'), ''), texto);
+}
+
+// Lo que valen unas claves en retroarch.cfg (null si la clave no está). RetroArch guarda al cerrar lo
+// que trae un --appendconfig como si fuera suyo (visual-enhancement-lab/probar-fallas.sh, caso 5): con
+// esto, Neo Arcade lo devuelve después del juego.
+export async function leerClaves(archivo, claves) {
+  const texto = await readFile(archivo, 'utf8').catch(() => '');
+  return Object.fromEntries(claves.map((clave) => [clave, texto.match(new RegExp(`^${clave} = "(.*)"$`, 'm'))?.[1] ?? null]));
+}
+
+export async function restaurarClaves(archivo, previas) {
+  const antes = await readFile(archivo, 'utf8').catch(() => null);
+  if (antes === null) return false;
+  const presentes = Object.fromEntries(Object.entries(previas).filter(([, valor]) => valor !== null));
+  const ausentes = Object.keys(previas).filter((clave) => previas[clave] === null);
+  const despues = sinClaves(conClaves(antes, presentes), ausentes);
+  if (despues === antes) return false;
+  await writeFile(archivo, despues);
+  return true;
+}
+
 export async function ajustarRetroArch(archivo, claves) {
   const antes = await readFile(archivo, 'utf8').catch(() => '');
   const despues = conClaves(antes, claves);
