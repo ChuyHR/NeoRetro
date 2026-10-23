@@ -76,6 +76,25 @@ test('con un perfil y su shader, el .cfg del perfil va con --appendconfig y el s
   assert.match(await readFile(archivo, 'utf8'), /^video_scale_integer = "false"$/m);
 });
 
+test('con vulkan o glcore se usa la variante slang del shader; con gl, la GLSL', async () => {
+  const glsl = 'shaders_glsl/interpolation/sharp-bilinear-simple.glslp';
+  const slang = 'shaders_slang/pixel-art-scaling/sharp-bilinear-simple.slangp';
+  const base = await emuladorDePrueba([glsl, slang]);
+  const carpeta = await carpetaTemporal();
+  const visual = { ...VISUAL, perfiles: { ...VISUAL.perfiles, nitido: { ...VISUAL.perfiles.nitido, shaderSlang: slang } } };
+  for (const [driver, esperado] of [['vulkan', slang], ['glcore', slang], ['gl', glsl]]) {
+    const cfg = path.join(carpeta, `${driver}.cfg`);
+    await writeFile(cfg, `video_driver = "${driver}"\n`);
+    const { argumentos } = await prepararVisual(visual, { sistemaId: 'neogeo', juegoId: 'neogeo/kof98.zip', emulador: { ...base, archivoConfiguracion: cfg }, carpeta });
+    assert.equal(argumentos.at(-1), `--set-shader=/app/share/libretro/shaders/${esperado}`, driver);
+  }
+  // Sin variante para ese driver: el juego se abre como siempre.
+  const cfg = path.join(carpeta, 'vulkan.cfg');
+  const sinSlang = await prepararVisual(VISUAL, { sistemaId: 'neogeo', juegoId: 'neogeo/kof98.zip', emulador: { ...base, archivoConfiguracion: cfg }, carpeta });
+  assert.deepEqual(sinSlang.argumentos, []);
+  assert.match(sinSlang.motivo, /no tiene shader para el driver vulkan/);
+});
+
 test('un perfil sin shader apaga además los presets automáticos de RetroArch', async () => {
   const visual = await prepararVisual(VISUAL, { sistemaId: 'neogeo', juegoId: 'neogeo/mslug.zip', emulador: await emuladorDePrueba(), carpeta: await carpetaTemporal() });
   assert.equal(visual.perfil, 'entero');
@@ -133,7 +152,10 @@ test('config/visual.json: perfiles válidos y sistemas que existen', () => {
   assert.ok(visual.perfiles[visual.predeterminado]);
   for (const [nombre, perfil] of Object.entries(visual.perfiles)) {
     assert.ok(lineasCfg(perfil.retroarch), `ajustes de ${nombre}`);
-    if (perfil.shader) assert.ok(!perfil.shader.includes('..') && !path.isAbsolute(perfil.shader), `shader de ${nombre}`);
+    for (const shader of [perfil.shader, perfil.shaderSlang].filter(Boolean)) {
+      assert.ok(!shader.includes('..') && !path.isAbsolute(shader), `shader de ${nombre}`);
+    }
+    if (perfil.shader) assert.ok(perfil.shaderSlang, `${nombre} necesita también su variante slang`);
   }
   const ids = new Set(configuracion.sistemas.map((s) => s.id));
   for (const [sistema, perfil] of Object.entries(visual.porSistema)) {

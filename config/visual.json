@@ -1,5 +1,5 @@
 {
-  "_nota": "Perfiles de imagen de RetroArch (docs/visual-profiles.md). activo en false apaga la mejora: todos los juegos se abren como antes. Cada perfil trae claves de retroarch.cfg (retroarch) y, si lleva, un shader con su ruta dentro de la carpeta de shaders de RetroArch (shader). A cada juego le toca el suyo (porJuego, con el id sistema/archivo), el de su sistema (porSistema) o el predeterminado. «nitido» ganó en el laboratorio (docs/visual-enhancement-testing.md) y va solo en los sistemas donde se probó; los demás siguen en «original». Para cambiarlo en la consola instalada se copia este archivo a ~/NeoRetro/config/ y se edita ahí.",
+  "_nota": "Perfiles de imagen de RetroArch (docs/visual-profiles.md). activo en false apaga la mejora: todos los juegos se abren como antes. Cada perfil trae claves de retroarch.cfg (retroarch) y, si lleva, un shader con su ruta dentro de la carpeta de shaders de RetroArch: shader para el driver gl (GLSL) y shaderSlang para vulkan, glcore y d3d. A cada juego le toca el suyo (porJuego, con el id sistema/archivo), el de su sistema (porSistema) o el predeterminado. «nitido» ganó en el laboratorio (docs/visual-enhancement-testing.md) y va solo en los sistemas donde se probó; los demás siguen en «original». Para cambiarlo en la consola instalada se copia este archivo a ~/NeoRetro/config/ y se edita ahí.",
   "activo": true,
   "predeterminado": "original",
   "perfiles": {
@@ -9,17 +9,28 @@
     },
     "nitido": {
       "descripcion": "Llena la altura de la TV con pixeles parejos: sharp-bilinear reparte el resto de la escala en un borde mínimo suavizado. Es el ganador del laboratorio.",
-      "retroarch": { "video_scale_integer": "false", "video_shader_enable": "true" },
-      "shader": "shaders_glsl/interpolation/sharp-bilinear-simple.glslp"
+      "retroarch": {
+        "video_scale_integer": "false",
+        "video_shader_enable": "true"
+      },
+      "shader": "shaders_glsl/interpolation/sharp-bilinear-simple.glslp",
+      "shaderSlang": "shaders_slang/pixel-art-scaling/sharp-bilinear-simple.slangp"
     },
     "entero": {
       "descripcion": "Escalado entero exacto, sin shader. Cada pixel mide lo mismo, pero la imagen queda más chica (en Neo Geo a 1080p, 896 de 1080 líneas; en arcade vertical, 768).",
-      "retroarch": { "video_scale_integer": "true", "video_shader_enable": "false" }
+      "retroarch": {
+        "video_scale_integer": "true",
+        "video_shader_enable": "false"
+      }
     },
     "crt-ligero": {
       "descripcion": "Escalado entero con zfast-crt: líneas de barrido y máscara suaves. Para quien prefiere el aspecto de TV de tubo; cuesta casi lo mismo que sin shader.",
-      "retroarch": { "video_scale_integer": "true", "video_shader_enable": "true" },
-      "shader": "shaders_glsl/crt/zfast-crt.glslp"
+      "retroarch": {
+        "video_scale_integer": "true",
+        "video_shader_enable": "true"
+      },
+      "shader": "shaders_glsl/crt/zfast-crt.glslp",
+      "shaderSlang": "shaders_slang/crt/zfast-crt.slangp"
     }
   },
   "porSistema": {

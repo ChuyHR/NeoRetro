@@ -5,13 +5,23 @@
 // La mejora nunca impide jugar: un perfil que no existe, una clave inválida o un shader que no está
 // dejan el comando como era, y el motivo queda en el registro.
 import { constants } from 'node:fs';
-import { access, mkdir, writeFile } from 'node:fs/promises';
+import { access, mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
 import { expandirRuta } from '../configuracion.js';
 
 const CLAVE = /^[a-z0-9_]+$/;
+// Estos drivers de video de RetroArch cargan shaders slang; gl carga GLSL. Con el que no le toca,
+// RetroArch ignora el shader y usa el de fábrica (visual-enhancement-testing.md, compatibilidad).
+const CON_SLANG = new Set(['vulkan', 'glcore', 'd3d10', 'd3d11', 'd3d12', 'metal']);
 const existe = (ruta) => access(ruta, constants.R_OK).then(() => true, () => false);
+
+// El video_driver del retroarch.cfg del usuario, o null si no se sabe (RetroArch usará gl).
+export async function driverDeVideo(emulador) {
+  if (!emulador?.archivoConfiguracion) return null;
+  const texto = await readFile(expandirRuta(emulador.archivoConfiguracion), 'utf8').catch(() => '');
+  return texto.match(/^video_driver = "(.*)"$/m)?.[1] ?? null;
+}
 
 // El perfil que le toca a un juego: el suyo, el de su sistema o el predeterminado. null si la mejora
 // está apagada o no hay configuración.
@@ -58,9 +68,12 @@ export async function prepararVisual(visual, { sistemaId, juegoId, emulador, car
   const lineas = lineasCfg(perfil.retroarch);
   if (!lineas) return { perfil: nombre, argumentos: [], claves: [], motivo: `el perfil «${nombre}» tiene un ajuste inválido` };
   let shader = '';
-  if (perfil.shader) {
-    shader = await ubicarShader(perfil.shader, emulador);
-    if (!shader) return { perfil: nombre, argumentos: [], claves: [], motivo: `no está el shader ${perfil.shader}` };
+  if (perfil.shader || perfil.shaderSlang) {
+    const driver = await driverDeVideo(emulador);
+    const buscado = CON_SLANG.has(driver) ? perfil.shaderSlang : perfil.shader;
+    if (!buscado) return { perfil: nombre, argumentos: [], claves: [], motivo: `el perfil no tiene shader para el driver ${driver}` };
+    shader = await ubicarShader(buscado, emulador);
+    if (!shader) return { perfil: nombre, argumentos: [], claves: [], motivo: `no está el shader ${buscado}` };
   }
   if (!lineas.length && !shader) return { perfil: nombre, argumentos: [], claves: [], motivo: 'perfil sin cambios' };
   const archivo = path.join(carpeta, 'retroarch-perfil-visual.cfg');
