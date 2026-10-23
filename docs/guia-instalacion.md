@@ -104,12 +104,14 @@ Neo Arcade lee los juegos nuevos al volver a abrirse (o al reiniciar la consola)
   punto exacto, y al volver a abrirlo sigue ahí. Sirve también en los de arcade, que no guardan
   partida. Para empezar de nuevo, abre el menú del juego y elige Reiniciar.
 - **Menú del juego** (Configuración, de fábrica «mantener Select»): mantén Select 2 segundos dentro
-  de un juego (la moneda, en un tablero). El juego se pausa y aparece el menú de RetroArch, en español.
-  Desde ahí:
+  de un juego (la moneda, en un tablero). El juego se pausa y aparece el «Menú rápido» de RetroArch,
+  en español. Se acepta con el botón de abajo (A en el mando de Xbox) y se vuelve con el de la derecha
+  (B). Desde ahí:
   - **Reanudar** sigue jugando;
-  - **Guardar estado** y **Cargar estado** guardan o recuperan un punto cuando quieras;
   - **Reiniciar** empieza de nuevo;
-  - **Cerrar contenido** sale del juego.
+  - **Cerrar contenido** sale del juego y regresa a Neo Arcade;
+  - **Guardados rápidos** → **Guardado rápido** y **Carga rápida** guardan o recuperan un punto cuando
+    quieras.
 
   Los juegos que guardan partida por su cuenta, como Pokémon o Zelda, lo siguen haciendo solos.
 - **Cómo se ven los juegos**: Configuración → Imagen de los juegos.

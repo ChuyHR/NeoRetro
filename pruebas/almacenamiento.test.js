@@ -65,9 +65,11 @@ test('se escribe un JSON legible, juntando los cambios seguidos, y se lee igual 
 test('Configuración llega a RetroArch: salir, menú del juego y continuar donde te quedaste', () => {
   assert.deepEqual(clavesDeConfiguracion(), {
     input_quit_gamepad_combo: '4', input_menu_toggle_gamepad_combo: '8', savestate_auto_save: 'true', savestate_auto_load: 'true',
+    quit_on_close_content: '2',
   });
   assert.deepEqual(clavesDeConfiguracion({ salir: 'mantener-start', menu: 'ninguno', continuar: false }), {
     input_quit_gamepad_combo: '7', input_menu_toggle_gamepad_combo: '0', savestate_auto_save: 'false', savestate_auto_load: 'false',
+    quit_on_close_content: '2',
   });
   // Lo que llegue mal se queda en lo de fábrica.
   assert.equal(clavesDeConfiguracion({ menu: 'otro' }).input_menu_toggle_gamepad_combo, '8');

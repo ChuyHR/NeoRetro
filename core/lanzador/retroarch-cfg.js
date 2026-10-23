@@ -28,6 +28,10 @@ export function clavesDeConfiguracion(opciones = {}) {
     input_menu_toggle_gamepad_combo: COMBOS_MENU[opciones.menu] ?? COMBOS_MENU['mantener-select'],
     savestate_auto_save: continuar,
     savestate_auto_load: continuar,
+    // «Cerrar contenido» del menú del juego: con 0, RetroArch se queda en su menú principal sin juego y
+    // con el mando no hay cómo volver a Neo Arcade (probado en la MP80). 2 cierra RetroArch cuando el
+    // juego se abrió desde la línea de comandos, que es como lo abre Neo Arcade.
+    quit_on_close_content: '2',
   };
 }
 
