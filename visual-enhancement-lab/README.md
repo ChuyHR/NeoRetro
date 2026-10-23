@@ -29,6 +29,7 @@ configuración de Neo Arcade. Lo que se encontró está en `docs/visual-enhancem
 | `resumir.mjs` | Convierte una medición en `resultados.json` y `tabla.md` |
 | `probar-fallas.sh` | Qué hace RetroArch con un shader que no existe o no compila, un perfil que falta, una clave rara, y si guarda el perfil al cerrar |
 | `probar-sistemas.sh` | Un perfil con un juego de cada sistema de la biblioteca: que abra y que el shader cargue |
+| `probar-continuar-y-menu.sh` | Continuar donde te quedaste y el menú del juego (Select mantenido, Cerrar contenido), sin usar la TV |
 | `comparar.py` | Hojas con la misma zona del juego en cada perfil |
 | `control-remoto.py` | RetroPad y comandos de RetroArch por la red local |
 
@@ -47,6 +48,8 @@ JUEGOS=mslug bash medir.sh    # solo un juego
 node resumir.mjs ../resultados/ultimo
 bash probar-fallas.sh
 bash probar-sistemas.sh F-pantalla-sharp-bilinear
+# Sin TV, en una sesión de Cage aparte; deja capturas y resultado.txt en trabajo/prueba-continuar-y-menu/
+WLR_BACKENDS=headless WLR_LIBINPUT_NO_DEVICES=1 cage -- bash probar-continuar-y-menu.sh
 ```
 
 Cada medición queda en `~/visual-enhancement-lab/resultados/<fecha>/`. Para borrar todo el

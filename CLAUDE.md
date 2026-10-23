@@ -49,7 +49,7 @@ usuario (ver abajo). Lo verificado:
   regresión de las fases 3, 4 y 6 en la TV. Ahí está también qué pide la skill que el plan no tiene.
 - Carpetas de la consola en `~/NeoRetro` (ajuste 10), probadas en la TV sin instalar la consola
   (`scripts/prueba-carpetas-en-tv.sh`, `docs/pruebas-finales/tv-mp80/carpetas-neoretro.txt`).
-- `npm test` pasa (116 pruebas el 2026-10-22) en la MP80. En Windows fallan 4 que dependen de Linux.
+- `npm test` pasa (119 pruebas el 2026-10-22) en la MP80. En Windows fallan 4 que dependen de Linux.
 - Mejora visual (2026-10-22, pedido del usuario): laboratorio aislado en `visual-enhancement-lab/`,
   15 perfiles medidos en la TV con Metal Slug y Nova the Squirrel. Ganó sharp-bilinear sin escalado
   entero («nitido»), pero al usuario le pareció muy pixeleado: pidió elegirlo en Configuración (Imagen de
@@ -58,7 +58,9 @@ usuario (ver abajo). Lo verificado:
 - Continuar y menú del juego (2026-10-22, pedido del usuario): en Configuración, «Continuar donde te
   quedaste» (estado automático de RetroArch al salir y al abrir, de fábrica SÍ) y «Menú del juego»
   (mantener Select 2 s abre el menú de RetroArch para pausar, guardar o cargar; de fábrica activado).
-  Van a retroarch.cfg con la combinación para salir (`clavesDeConfiguracion` en `retroarch-cfg.js`).
+  Van a retroarch.cfg con la combinación para salir (`clavesDeConfiguracion` en `retroarch-cfg.js`),
+  junto con `quit_on_close_content = "2"`: sin eso, «Cerrar contenido» deja RetroArch en su menú sin
+  juego. Probado sin pantalla en la MP80 con el RetroPad remoto; falta verlo en la TV con el mando.
 
 **Fase 8.** El instalador de la consola (`scripts/instalador/instalar-neo-arcade.sh`), la imagen USB
 (`armar-iso-consola.sh` con `consola.sh`), la vuelta atrás (`volver-al-escritorio.sh`), Apagar y
